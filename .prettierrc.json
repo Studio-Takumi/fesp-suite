@@ -1,0 +1,22 @@
+{
+  "tabWidth": 4,
+  "semi": false,
+  "useTabs": false,
+  "singleQuote": true,
+  "jsxSingleQuote": true,
+  "printWidth": 120,
+  "plugins": ["@trivago/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
+  "tailwindStylesheet": "./packages/config/tailwind/preset.css",
+  "importOrder": ["^node:", "^(react|react-dom|next)(/.*)?$", "<THIRD_PARTY_MODULES>", "^@fesp/", "^~/", "^[./]"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "importOrderCaseInsensitive": true,
+  "overrides": [
+    {
+      "files": ["*.css", "*.json"],
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ]
+}

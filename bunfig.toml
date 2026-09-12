@@ -1,0 +1,15 @@
+# Bun workspace settings
+# https://bun.sh/docs/runtime/bunfig
+
+[install]
+# workspace パッケージはハードリンクで解決（モノレポ既定）
+linker = "hoisted"
+exact = false
+peer = true
+
+[install.cache]
+disable = false
+
+[test]
+# 各ワークスペースは Vitest を使うため、bun test は既定では拾わない
+root = "./"

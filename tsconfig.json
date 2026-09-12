@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "//": "ルートは型チェックの入口を持たない。各ワークスペースの tsconfig.json を参照すること。",
+  "files": [],
+  "include": []
+}

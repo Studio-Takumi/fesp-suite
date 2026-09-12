@@ -1,0 +1,24 @@
+{
+  "name": "@fesp/types",
+  "version": "0.1.0",
+  "private": true,
+  "description": "共通型（zod から導出できないもの・Supabase 生成型の置き場）",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"(types) テスト対象なし\"",
+    "clean": "rm -rf .turbo"
+  },
+  "devDependencies": {
+    "@fesp/config": "workspace:*",
+    "eslint": "^10.10.0",
+    "typescript": "~5.9.3"
+  }
+}

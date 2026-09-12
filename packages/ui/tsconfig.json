@@ -1,0 +1,8 @@
+{
+  "extends": "@fesp/config/tsconfig/library.json",
+  "compilerOptions": {
+    "types": ["vitest/globals", "@testing-library/jest-dom"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "vitest.config.ts", "vitest.setup.ts"],
+  "exclude": ["node_modules", ".turbo"]
+}

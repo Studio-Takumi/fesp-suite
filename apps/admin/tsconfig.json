@@ -1,0 +1,11 @@
+{
+  "extends": "@fesp/config/tsconfig/nextjs.json",
+  "compilerOptions": {
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "paths": {
+      "~/*": ["./*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", ".next", ".open-next", ".turbo", "e2e"]
+}

@@ -1,0 +1,6 @@
+# wrangler dev 用のローカルシークレット（.dev.vars にコピーして使う / コミット禁止）
+SUPABASE_URL="https://xxxxxxxxxxxx.supabase.co"
+SUPABASE_ANON_KEY="eyJhbGciOi..."
+SUPABASE_SERVICE_ROLE_KEY=""
+SUPABASE_JWKS_URL="https://xxxxxxxxxxxx.supabase.co/auth/v1/.well-known/jwks.json"
+SUPABASE_JWT_ISSUER="https://xxxxxxxxxxxx.supabase.co/auth/v1"

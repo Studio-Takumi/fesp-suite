@@ -1,0 +1,4 @@
+@import '@fesp/config/tailwind/preset.css';
+
+/* 共通UIパッケージのクラスもスキャン対象に含める */
+@source '../../../packages/ui/src';

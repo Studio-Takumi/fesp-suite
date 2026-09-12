@@ -1,0 +1,15 @@
+node_modules
+.next
+.open-next
+.turbo
+.wrangler
+dist
+build
+coverage
+playwright-report
+test-results
+bun.lock
+*.gen.ts
+
+# next build が毎回生成し直す
+next-env.d.ts

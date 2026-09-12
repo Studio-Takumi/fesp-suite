@@ -1,0 +1,5 @@
+@import '@fesp/config/tailwind/preset.css';
+
+@source '../../../packages/ui/src';
+@source '../app';
+@source '../components';

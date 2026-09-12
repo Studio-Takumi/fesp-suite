@@ -1,0 +1,58 @@
+@import '@fesp/config/tailwind/preset.css';
+
+@source '../../../packages/ui/src';
+@source '../app';
+@source '../components';
+
+/* TipTap エディタ内の最低限の体裁（本文は prose クラスで包む） */
+@layer components {
+  .prose :where(h1) {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-block: 0.75em 0.4em;
+  }
+  .prose :where(h2) {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-block: 0.75em 0.4em;
+  }
+  .prose :where(p) {
+    margin-block: 0.5em;
+    line-height: 1.8;
+  }
+  .prose :where(ul) {
+    list-style: disc;
+    padding-inline-start: 1.5rem;
+  }
+  .prose :where(ol) {
+    list-style: decimal;
+    padding-inline-start: 1.5rem;
+  }
+  .prose :where(blockquote) {
+    border-inline-start: 3px solid var(--color-border);
+    padding-inline-start: 1rem;
+    color: var(--color-muted-foreground);
+  }
+
+  /* 他ユーザーのカーソル（CollaborationCaret） */
+  .collaboration-carets__caret {
+    border-inline: 1px solid;
+    margin-inline: -1px;
+    pointer-events: none;
+    position: relative;
+    word-break: normal;
+  }
+  .collaboration-carets__label {
+    border-radius: 3px 3px 3px 0;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    left: -1px;
+    line-height: 1;
+    padding: 0.1rem 0.3rem;
+    position: absolute;
+    top: -1.4em;
+    user-select: none;
+    white-space: nowrap;
+  }
+}

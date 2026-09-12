@@ -1,0 +1,29 @@
+{
+  "name": "@fesp/schema",
+  "version": "0.1.0",
+  "private": true,
+  "description": "フロント(React Hook Form)とAPI(Hono)で共有する zod スキーマ。★単一の正本",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf .turbo coverage node_modules/.cache"
+  },
+  "dependencies": {
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@fesp/config": "workspace:*",
+    "eslint": "^10.10.0",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.0"
+  }
+}

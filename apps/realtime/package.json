@@ -1,0 +1,30 @@
+{
+  "name": "@fesp/realtime",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PartyKit + Yjs リアルタイム同期サーバー（ドキュメント1つ = 1 room = 1 Durable Object）",
+  "type": "module",
+  "scripts": {
+    "dev": "partykit dev",
+    "build": "partykit build",
+    "deploy": "partykit deploy",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf .turbo .partykit dist coverage"
+  },
+  "dependencies": {
+    "@fesp/schema": "workspace:*",
+    "jose": "^6.2.12",
+    "y-partykit": "^0.0.33",
+    "yjs": "^13.6.32"
+  },
+  "devDependencies": {
+    "@fesp/config": "workspace:*",
+    "eslint": "^10.10.0",
+    "partykit": "^0.0.115",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.0"
+  }
+}
