@@ -12,6 +12,10 @@ out/
 .turbo/
 *.tsbuildinfo
 
+# supabase (CLI の作業ディレクトリ)
+supabase/.temp/
+supabase/.branches/
+
 # cloudflare / partykit
 .wrangler/
 .partykit/

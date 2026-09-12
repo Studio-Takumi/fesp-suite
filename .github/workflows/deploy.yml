@@ -1,0 +1,54 @@
+name: Deploy
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+# デプロイ同士が競合しないように直列化する（実行中のものは止めない）
+concurrency:
+    group: deploy
+    cancel-in-progress: false
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+
+        env:
+            CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+            CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+            # ビルド時にクライアントへ埋め込まれる値（公開前提）
+            NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+            NEXT_PUBLIC_PARTYKIT_HOST: ${{ vars.NEXT_PUBLIC_PARTYKIT_HOST }}
+            NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+            VITE_API_URL: ${{ vars.VITE_API_URL }}
+            VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+            VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+            VITE_PARTYKIT_HOST: ${{ vars.VITE_PARTYKIT_HOST }}
+
+            # PartyKit（apps/realtime）。未設定なら realtime のデプロイだけ失敗する
+            PARTYKIT_LOGIN: ${{ vars.PARTYKIT_LOGIN }}
+            PARTYKIT_TOKEN: ${{ secrets.PARTYKIT_TOKEN }}
+
+        steps:
+            # turbo の差分判定に直前のコミットが要るので depth=2
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 2
+
+            - uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.4.2
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            # 変更のあったワークスペースと、それに依存するアプリだけをデプロイする。
+            # deploy タスクは turbo.json で build / lint / test に依存させてあるので、
+            # 落ちるものがあればデプロイまで到達しない。
+            - name: Deploy changed apps
+              run: bun run turbo run deploy --filter='...[HEAD^1]'

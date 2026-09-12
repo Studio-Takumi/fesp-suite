@@ -4,7 +4,7 @@
   "main": "src/server.ts",
   "compatibilityDate": "2026-09-01",
   "vars": {
-    "SUPABASE_JWKS_URL": "https://xxxxxxxxxxxx.supabase.co/auth/v1/.well-known/jwks.json",
-    "SUPABASE_JWT_ISSUER": "https://xxxxxxxxxxxx.supabase.co/auth/v1"
+    "SUPABASE_JWKS_URL": "https://xkeiraezgwtwhhwwgvxn.supabase.co/auth/v1/.well-known/jwks.json",
+    "SUPABASE_JWT_ISSUER": "https://xkeiraezgwtwhhwwgvxn.supabase.co/auth/v1"
   }
 }

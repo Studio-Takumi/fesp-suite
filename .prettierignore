@@ -13,3 +13,4 @@ bun.lock
 
 # next build が毎回生成し直す
 next-env.d.ts
+supabase/.temp
