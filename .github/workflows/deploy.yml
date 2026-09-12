@@ -36,7 +36,7 @@ jobs:
 
         steps:
             # turbo の差分判定に直前のコミットが要るので depth=2
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
               with:
                   fetch-depth: 2
 
