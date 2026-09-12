@@ -15,6 +15,19 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
+        # ビルド・テストを通すためだけのダミー値。実値は deploy.yml 側で渡す。
+        # ここに本物のキーを書かないこと（フォークの PR でも実行されるため）
+        env:
+            NEXT_PUBLIC_API_URL: http://localhost:8787
+            NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+            NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy-anon-key
+            NEXT_PUBLIC_PARTYKIT_HOST: 127.0.0.1:1999
+            NEXT_PUBLIC_SITE_URL: http://localhost:3000
+            VITE_API_URL: http://localhost:8787
+            VITE_SUPABASE_URL: http://localhost:54321
+            VITE_SUPABASE_ANON_KEY: ci-dummy-anon-key
+            VITE_PARTYKIT_HOST: 127.0.0.1:1999
+
         steps:
             - uses: actions/checkout@v4
 
@@ -35,6 +48,19 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 30
         needs: verify
+
+        # ビルド・テストを通すためだけのダミー値。実値は deploy.yml 側で渡す。
+        # ここに本物のキーを書かないこと（フォークの PR でも実行されるため）
+        env:
+            NEXT_PUBLIC_API_URL: http://localhost:8787
+            NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+            NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy-anon-key
+            NEXT_PUBLIC_PARTYKIT_HOST: 127.0.0.1:1999
+            NEXT_PUBLIC_SITE_URL: http://localhost:3000
+            VITE_API_URL: http://localhost:8787
+            VITE_SUPABASE_URL: http://localhost:54321
+            VITE_SUPABASE_ANON_KEY: ci-dummy-anon-key
+            VITE_PARTYKIT_HOST: 127.0.0.1:1999
 
         steps:
             - uses: actions/checkout@v4
