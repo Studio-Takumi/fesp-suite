@@ -1,35 +1,37 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "fesp-api",
-  "main": "src/index.ts",
-  "compatibility_date": "2026-09-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "observability": {
-    "enabled": true
-  },
-  "vars": {
-    // 公開して問題ない値のみ。秘密は `wrangler secret put` を使う
-    "ALLOWED_ORIGINS": "http://localhost:3000,http://localhost:3001,http://localhost:5173"
-  },
-  "r2_buckets": [
-    {
-      "binding": "ASSETS_BUCKET",
-      "bucket_name": "fesp-assets-dev",
-      "preview_bucket_name": "fesp-assets-dev"
-    }
-  ],
-  "env": {
-    "production": {
-      "name": "fesp-api-production",
-      "vars": {
-        "ALLOWED_ORIGINS": "https://example.com"
-      },
-      "r2_buckets": [
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "fesp-api",
+    "main": "src/index.ts",
+    "compatibility_date": "2026-09-01",
+    "compatibility_flags": ["nodejs_compat"],
+    "observability": {
+        "enabled": true,
+    },
+    "vars": {
+        // 公開して問題ない値のみ。秘密は `wrangler secret put` を使う
+        "ALLOWED_ORIGINS": "http://localhost:3000,http://localhost:3001,http://localhost:5173,https://fesp-lp.fesp.workers.dev,https://fesp-admin.fesp.workers.dev,https://fesp-web.fesp.workers.dev",
+    },
+    "r2_buckets": [
         {
-          "binding": "ASSETS_BUCKET",
-          "bucket_name": "fesp-assets-production"
-        }
-      ]
-    }
-  }
+            "binding": "ASSETS_BUCKET",
+            "bucket_name": "fesp-assets-dev",
+            "preview_bucket_name": "fesp-assets-dev",
+        },
+    ],
+    "env": {
+        "production": {
+            "name": "fesp-api-production",
+            "vars": {
+                // 独自ドメインを繋いだら実ドメインへ。それまでこの環境は未使用
+                // （現状 main へのマージはトップレベル環境 fesp-api にデプロイされる）
+                "ALLOWED_ORIGINS": "https://example.com",
+            },
+            "r2_buckets": [
+                {
+                    "binding": "ASSETS_BUCKET",
+                    "bucket_name": "fesp-assets-production",
+                },
+            ],
+        },
+    },
 }
