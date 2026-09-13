@@ -18,6 +18,9 @@
     "clean": "rm -rf .turbo .next .open-next coverage playwright-report test-results"
   },
   "dependencies": {
+    "@blocknote/core": "^0.54.2",
+    "@blocknote/react": "^0.54.2",
+    "@blocknote/shadcn": "^0.54.2",
     "@fesp/schema": "workspace:*",
     "@fesp/types": "workspace:*",
     "@fesp/ui": "workspace:*",
