@@ -2,11 +2,19 @@
 
 import { BlockNoteSchema, defaultBlockSpecs } from '@blocknote/core'
 import { ja } from '@blocknote/core/locales'
-import { useCreateBlockNote } from '@blocknote/react'
-import { BlockNoteView } from '@blocknote/shadcn'
+import { BlockNoteViewRaw, ComponentsContext, useCreateBlockNote } from '@blocknote/react'
+import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultComponents } from '@blocknote/shadcn'
 import '@blocknote/shadcn/style.css'
 
 import type { ArticleDocument } from '@fesp/schema'
+
+import { SlashMenuItem } from './SlashMenuItem'
+
+/** スラッシュメニューの項目だけ、説明を常時表示せずホバーのツールチップにする（SlashMenuItem参照） */
+const editorComponents = {
+    ...shadcnComponents,
+    SuggestionMenu: { ...shadcnComponents.SuggestionMenu, Item: SlashMenuItem },
+}
 
 export const articleSchema = BlockNoteSchema.create({
     blockSpecs: {
@@ -45,12 +53,17 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
 
     return (
         <div className='rounded-md border border-border'>
-            <BlockNoteView
-                editor={editor}
-                theme='light'
-                aria-label='本文エディタ'
-                onChange={() => onChange?.(editor.document as ArticleDocument)}
-            />
+            <ShadCNComponentsContext.Provider value={ShadCNDefaultComponents}>
+                <ComponentsContext.Provider value={editorComponents}>
+                    <BlockNoteViewRaw
+                        editor={editor}
+                        theme='light'
+                        className='bn-shadcn'
+                        aria-label='本文エディタ'
+                        onChange={() => onChange?.(editor.document as ArticleDocument)}
+                    />
+                </ComponentsContext.Provider>
+            </ShadCNComponentsContext.Provider>
         </div>
     )
 }
