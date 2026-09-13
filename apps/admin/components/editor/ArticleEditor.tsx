@@ -7,12 +7,14 @@ import { ja } from '@blocknote/core/locales'
 import {
     BlockNoteViewRaw,
     ComponentsContext,
+    type DefaultReactSuggestionItem,
     getDefaultReactSlashMenuItems,
     SuggestionMenuController,
     useCreateBlockNote,
 } from '@blocknote/react'
 import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultComponents } from '@blocknote/shadcn'
 import '@blocknote/shadcn/style.css'
+import { Link as LinkIcon } from 'lucide-react'
 
 import type { ArticleDocument } from '@fesp/schema'
 
@@ -75,10 +77,30 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
     const getSlashMenuItems = useCallback(
         async (query: string) => {
             const items = await getDefaultReactSlashMenuItems(editor)
-            return filterSuggestionItems(
-                items.filter((item) => (item as { key?: string }).key !== 'code_block'),
-                query,
-            )
+
+            // BlockNote標準のスラッシュメニューにはリンクの項目が無い（選択したテキストに
+            // 対してツールバー/Cmd・Ctrl+Kで付与するのが標準の導線）。プレースホルダーの
+            // リンクを挿入し、カーソルがその上に乗ることで標準のLinkToolbar（URL編集UI）が
+            // 自動で開く形にする
+            const linkItem: DefaultReactSuggestionItem = {
+                title: 'リンク',
+                subtext: 'リンクを挿入するために使用',
+                aliases: ['link', 'url', 'リンク', 'ハイパーリンク'],
+                group: '基本ブロック',
+                icon: <LinkIcon size={18} />,
+                onItemClick: () => {
+                    editor.createLink('https://', 'リンク')
+                },
+            }
+
+            // 「基本ブロック」グループの末尾に挿入する。末尾に単純追加すると、末尾のグループ
+            // （高度なブロック等）と同じグループ名が非連続で2回出てしまい、BlockNote側の
+            // グループ見出し描画がグループ名をキーにしているため重複キー警告になる
+            const filtered = items.filter((item) => (item as { key?: string }).key !== 'code_block')
+            const insertAt = filtered.map((item) => item.group).lastIndexOf('基本ブロック') + 1
+            filtered.splice(insertAt, 0, linkItem)
+
+            return filterSuggestionItems(filtered, query)
         },
         [editor],
     )

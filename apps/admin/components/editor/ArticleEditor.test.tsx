@@ -72,4 +72,27 @@ describe('ArticleEditor', () => {
         expect(await screen.findByText('設営完了')).toBeInTheDocument()
         expect(await screen.findByText('雨天でも開催します')).toBeInTheDocument()
     })
+
+    it('リンクを含む記事を表示する', async () => {
+        const content: ArticleDocument = [
+            {
+                id: '1',
+                type: 'paragraph',
+                props: defaultBlockProps,
+                content: [
+                    {
+                        type: 'link',
+                        href: 'https://example.com',
+                        content: [{ type: 'text', text: '公式サイト', styles: {} }],
+                    },
+                ],
+                children: [],
+            },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        const link = await screen.findByRole('link', { name: '公式サイト' })
+        expect(link).toHaveAttribute('href', 'https://example.com')
+    })
 })
