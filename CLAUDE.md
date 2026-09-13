@@ -76,6 +76,7 @@ git commit -m "docs: #1 ほげほげふがふがの仕様を追加"
 ### 6. 実装する
 
 - **既存実装をまねる。** 命名・ディレクトリ構成・エラーハンドリング・テストの書き方を周囲に揃える
+  （レビューで出た命名ルールは [`docs/conventions.md`](./docs/conventions.md) にまとめてある）
 - **デザインは `ui-design.pen` を参照する**（pencil MCP の `read_skill` / `get_style` / `execute` で読む。
   `.pen` は暗号化されているので Read / Grep で開かない）
 - 状態管理の担当分けは [`README.md`](./README.md) の表に従う
