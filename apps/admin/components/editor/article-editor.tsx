@@ -41,6 +41,7 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
         <div className='rounded-md border border-border'>
             <BlockNoteView
                 editor={editor}
+                theme='light'
                 aria-label='本文エディタ'
                 onChange={() => onChange?.(editor.document as ArticleDocument)}
             />
