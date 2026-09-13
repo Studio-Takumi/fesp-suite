@@ -37,6 +37,15 @@
     color: var(--color-muted-foreground);
   }
 
+  /* BlockNote（ArticleEditor）のインラインコード。標準はmonospace指定だけで
+     背景が無く目立たないため、独自に背景・角丸を足す */
+  .bn-inline-content code {
+    background-color: var(--color-muted);
+    border-radius: 0.25rem;
+    padding-inline: 0.3em;
+    font-size: 0.875em;
+  }
+
   /* 他ユーザーのカーソル（CollaborationCaret） */
   .collaboration-carets__caret {
     border-inline: 1px solid;
