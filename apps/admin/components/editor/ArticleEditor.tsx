@@ -9,11 +9,15 @@ import '@blocknote/shadcn/style.css'
 import type { ArticleDocument } from '@fesp/schema'
 
 import { SlashMenuItem } from './SlashMenuItem'
+import { SlashMenuRoot } from './SlashMenuRoot'
 
-/** スラッシュメニューの項目だけ、説明を常時表示せずホバーのツールチップにする（SlashMenuItem参照） */
+/**
+ * スラッシュメニューの見た目をNotionに寄せる。項目は説明を常時表示せずホバーの
+ * ツールチップにし（SlashMenuItem）、外枠は一定の高さでスクロールさせる（SlashMenuRoot）。
+ */
 const editorComponents = {
     ...shadcnComponents,
-    SuggestionMenu: { ...shadcnComponents.SuggestionMenu, Item: SlashMenuItem },
+    SuggestionMenu: { ...shadcnComponents.SuggestionMenu, Root: SlashMenuRoot, Item: SlashMenuItem },
 }
 
 export const articleSchema = BlockNoteSchema.create({
