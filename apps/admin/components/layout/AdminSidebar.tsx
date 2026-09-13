@@ -10,7 +10,7 @@ import { useAdminUiStore } from '~/stores/ui'
 
 import { navGroups } from './admin-nav-items'
 
-const ICON_SIZE = 16
+const ICON_SIZE = 20
 
 export function AdminSidebar() {
     const pathname = usePathname()
@@ -24,7 +24,9 @@ export function AdminSidebar() {
                 isOpen ? 'w-64' : 'w-16',
             )}
         >
-            <div className={cn('flex items-center gap-2 border-b border-border p-3', !isOpen && 'justify-center')}>
+            <div
+                className={cn('flex h-16 items-center gap-2 border-b border-border px-3', !isOpen && 'justify-center')}
+            >
                 <div className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-sky-500'>
                     <span className='text-base font-bold text-white'>F</span>
                 </div>
@@ -50,7 +52,7 @@ export function AdminSidebar() {
                         {group.items.map((item) => {
                             const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
                             const Icon = item.icon
-                            const itemLayout = isOpen ? 'gap-2 px-3 py-2' : 'mx-auto size-10 justify-center'
+                            const itemLayout = isOpen ? 'h-10 gap-2 px-3' : 'mx-auto h-10 w-10 justify-center'
 
                             if (!item.implemented) {
                                 return (
@@ -107,7 +109,7 @@ export function AdminSidebar() {
                     aria-label={isOpen ? 'サイドメニューを閉じる' : 'サイドメニューを開く'}
                     className={cn(
                         'flex items-center rounded-lg text-slate-500 hover:bg-slate-100',
-                        isOpen ? 'w-full gap-2 px-3 py-2' : 'mx-auto size-10 justify-center',
+                        isOpen ? 'h-10 w-full gap-2 px-3' : 'mx-auto h-10 w-10 justify-center',
                     )}
                 >
                     {isOpen ? <PanelLeftClose size={ICON_SIZE} /> : <PanelLeft size={ICON_SIZE} />}
@@ -115,7 +117,9 @@ export function AdminSidebar() {
                 </button>
             </div>
 
-            <div className={cn('flex items-center gap-2 border-t border-border p-3', !isOpen && 'justify-center')}>
+            <div
+                className={cn('flex h-16 items-center gap-2 border-t border-border px-3', !isOpen && 'justify-center')}
+            >
                 <div className='flex size-8 shrink-0 items-center justify-center rounded-full bg-sky-100'>
                     <span className='text-sm font-semibold text-sky-500'>T</span>
                 </div>
