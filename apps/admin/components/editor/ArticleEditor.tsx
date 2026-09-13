@@ -1,8 +1,16 @@
 'use client'
 
-import { BlockNoteSchema, defaultBlockSpecs } from '@blocknote/core'
+import { useCallback } from 'react'
+
+import { BlockNoteSchema, defaultBlockSpecs, filterSuggestionItems } from '@blocknote/core'
 import { ja } from '@blocknote/core/locales'
-import { BlockNoteViewRaw, ComponentsContext, useCreateBlockNote } from '@blocknote/react'
+import {
+    BlockNoteViewRaw,
+    ComponentsContext,
+    getDefaultReactSlashMenuItems,
+    SuggestionMenuController,
+    useCreateBlockNote,
+} from '@blocknote/react'
 import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultComponents } from '@blocknote/shadcn'
 import '@blocknote/shadcn/style.css'
 
@@ -34,6 +42,8 @@ export const articleSchema = BlockNoteSchema.create({
         quote: defaultBlockSpecs.quote,
         divider: defaultBlockSpecs.divider,
         table: defaultBlockSpecs.table,
+        // 裏機能。バッククォート3つ（```）で誰でも作れるが、スラッシュメニューには出さない
+        codeBlock: defaultBlockSpecs.codeBlock,
     },
 })
 
@@ -47,9 +57,10 @@ export type ArticleEditorProps = {
  * BlockNote（Notionライクなブロックエディタ）ベース。
  *
  * ツールバーはBlockNote標準のもの（テキスト選択時のフローティングツールバー・
- * `/` のスラッシュメニュー）をそのまま使う。独自コンポーネントブロックの挿入・テンプレートに
- * よるロックは #24 で対応する。共同編集（Yjs）はこの版では繋がない
- * （同期編集は `collaborative-editor.tsx` の役割）。
+ * `/` のスラッシュメニュー）をそのまま使う。コードブロックは``` で作れる裏機能として
+ * スキーマ上は許可するが、スラッシュメニューには出さない（getSlashMenuItems参照）。
+ * 独自コンポーネントブロックの挿入・テンプレートによるロックは #24 で対応する。
+ * 共同編集（Yjs）はこの版では繋がない（同期編集は `collaborative-editor.tsx` の役割）。
  */
 export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
     const editor = useCreateBlockNote({
@@ -57,6 +68,20 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
         dictionary: ja,
         initialContent: content && content.length > 0 ? content : undefined,
     })
+
+    // コードブロックは裏機能（```で作れる）なのでスラッシュメニューには出さない。
+    // `key` はロケールに依存しない識別子（BlockNoteのi18n辞書のキー名）。
+    // `DefaultReactSuggestionItem` の型定義は`key`を持たないが、実体には残っている
+    const getSlashMenuItems = useCallback(
+        async (query: string) => {
+            const items = await getDefaultReactSlashMenuItems(editor)
+            return filterSuggestionItems(
+                items.filter((item) => (item as { key?: string }).key !== 'code_block'),
+                query,
+            )
+        },
+        [editor],
+    )
 
     return (
         <div className='rounded-md border border-border'>
@@ -67,8 +92,11 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
                         theme='light'
                         className='bn-shadcn'
                         aria-label='本文エディタ'
+                        slashMenu={false}
                         onChange={() => onChange?.(editor.document as ArticleDocument)}
-                    />
+                    >
+                        <SuggestionMenuController triggerCharacter='/' getItems={getSlashMenuItems} />
+                    </BlockNoteViewRaw>
                 </ComponentsContext.Provider>
             </ShadCNComponentsContext.Provider>
         </div>

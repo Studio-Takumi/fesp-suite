@@ -4,8 +4,9 @@ import { z } from 'zod'
  * 記事ドキュメント（BlockNoteのブロック配列JSON）のzodスキーマ。
  *
  * `#5` 時点ではテキスト系ブロック（paragraph/heading/bulletListItem/numberedListItem/
- * checkListItem/toggleListItem/quote/divider/table）のみを対象にする。独自コンポーネント
- * ブロックは `#24` で追加する（docs/article-system.md 参照）。
+ * checkListItem/toggleListItem/quote/divider/table/codeBlock）のみを対象にする。
+ * codeBlockはスラッシュメニューには出さない裏機能（ArticleEditor.tsx参照）。
+ * 独自コンポーネントブロックは `#24` で追加する（docs/article-system.md 参照）。
  * ブロックの形はBlockNoteの `Block` 型（@blocknote/core）に合わせている。
  */
 
@@ -94,6 +95,20 @@ const tableCellPropsSchema = z
     })
     .strict()
 
+const codeBlockPropsSchema = z
+    .object({
+        language: z.string(),
+    })
+    .strict()
+
+/** コードブロックの中身はスタイル（太字等）を持たない「プレーンテキスト」 */
+const plainTextSchema = z.object({
+    type: z.literal('text'),
+    text: z.string().min(1),
+    styles: z.object({}).strict(),
+})
+const plainContentSchema = z.array(plainTextSchema)
+
 const tableCellSchema = z.object({
     type: z.literal('tableCell'),
     props: tableCellPropsSchema,
@@ -122,6 +137,7 @@ export type ArticleBlock = {
         | 'quote'
         | 'divider'
         | 'table'
+        | 'codeBlock'
     props: Record<string, unknown>
     content: (ArticleStyledText | ArticleLink)[] | ArticleTableContent | undefined
     children: ArticleBlock[]
@@ -190,6 +206,13 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             type: z.literal('table'),
             props: tablePropsSchema,
             content: tableContentSchema,
+            children: z.array(articleBlockSchema),
+        }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('codeBlock'),
+            props: codeBlockPropsSchema,
+            content: plainContentSchema,
             children: z.array(articleBlockSchema),
         }),
     ]),

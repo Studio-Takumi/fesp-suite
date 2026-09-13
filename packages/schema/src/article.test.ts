@@ -214,4 +214,32 @@ describe('articleDocumentSchema', () => {
 
         expect(result.success).toBe(false)
     })
+
+    it('コードブロック（裏機能。```で作成）を受理する', () => {
+        const result = articleDocumentSchema.safeParse([
+            {
+                id: '1',
+                type: 'codeBlock',
+                props: { language: 'js' },
+                content: [{ type: 'text', text: 'const x = 1', styles: {} }],
+                children: [],
+            },
+        ])
+
+        expect(result.success).toBe(true)
+    })
+
+    it('コードブロックの中身にスタイル（太字等）が付いていたら拒否する（プレーンテキストのみ）', () => {
+        const result = articleDocumentSchema.safeParse([
+            {
+                id: '1',
+                type: 'codeBlock',
+                props: { language: 'js' },
+                content: [{ type: 'text', text: 'const x = 1', styles: { bold: true } }],
+                children: [],
+            },
+        ])
+
+        expect(result.success).toBe(false)
+    })
 })
