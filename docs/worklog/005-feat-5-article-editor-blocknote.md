@@ -18,6 +18,10 @@ date: 2026-09-14
 表現できる」と判断し、PR #25はcloseしてBlockNoteで作り直した。独自コンポーネントノード・
 テンプレートロックは対象・仕様未確定のため #24 に切り出し、このIssueはスコープ外。
 
+その後、発注者の指示でチェックリスト（`checkListItem`）・トグルリスト（`toggleListItem`）・
+引用（`quote`）・区切り線（`divider`）・表（`table`）も追加した。画像・動画・音声・
+添付ファイル・コードブロックはR2アップロード等が絡むため引き続き対象外。
+
 ## 変更したファイル
 
 | ファイル                                               | 変更内容                                                              |
@@ -52,6 +56,12 @@ date: 2026-09-14
 - **BlockNoteのエディタ生成は`window`に依存しSSR不可**。`/edit`ページ側で`next/dynamic`
   （`ssr: false`）を使ってクライアント限定で読み込む
 - **依存パッケージの追加は指示の範囲内**（「BlockNoteに乗り換えよう」の明示的な指示）
+- **quote/table/tableCellはbulletListItem等とprops・stylesの形が違う。** quoteは
+  `textAlignment`を持たない、tableは`textColor`しか持たない（配置・背景色はセル側の
+  `tableCell`が持つ）。BlockNote本体の`defaultBlockSpecs`の型定義に合わせてそれぞれ専用の
+  props schemaを定義し、**`.strict()`で誤った組み合わせ（例: quoteに`textAlignment`を
+  渡す）を拒否する**ようにした（zodの`z.object`は既定で未知キーを黙って剥がすため、
+  何もしないと「quoteにtextAlignmentを渡しても通ってしまう」テストが書けなかった）
 
 ## テスト
 
@@ -70,9 +80,11 @@ bun run build     ✅
 
 `bun run dev` を実際に起動し、Playwright（headless Chromium）で以下を確認した。
 
-- Markdownショートカット（`# ` → 見出し、`- ` → 箇条書き）が効くこと
+- Markdownショートカット（`# ` → 見出し、`- ` → 箇条書き、`> ` → 引用、`[] ` → チェックリスト、
+  `---` → 区切り線）が効くこと
 - テキスト選択時のフローティングツールバーが表示されること
-- `/` のスラッシュメニューに許可した4種類のブロックのみ出て、画像・テーブル等は出ないこと
+- `/` のスラッシュメニューに許可した9種類のブロックのみ出て、画像・動画・コードブロック等は
+  出ないこと
 - プレースホルダー等のUI文言が日本語化されていること
 - console エラーが出ないこと
 
