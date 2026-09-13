@@ -8,16 +8,19 @@ import '@blocknote/shadcn/style.css'
 
 import type { ArticleDocument } from '@fesp/schema'
 
+import { EmojiGridRoot } from './EmojiGridRoot'
 import { SlashMenuItem } from './SlashMenuItem'
 import { SlashMenuRoot } from './SlashMenuRoot'
 
 /**
- * スラッシュメニューの見た目をNotionに寄せる。項目は説明を常時表示せずホバーの
- * ツールチップにし（SlashMenuItem）、外枠は一定の高さでスクロールさせる（SlashMenuRoot）。
+ * スラッシュメニュー・絵文字ピッカーの見た目をNotionに寄せる。スラッシュメニューは項目の
+ * 説明を常時表示せずホバーのツールチップにし（SlashMenuItem）、どちらも外枠を一定の高さで
+ * スクロールさせる（SlashMenuRoot / EmojiGridRoot）。
  */
 const editorComponents = {
     ...shadcnComponents,
     SuggestionMenu: { ...shadcnComponents.SuggestionMenu, Root: SlashMenuRoot, Item: SlashMenuItem },
+    GridSuggestionMenu: { ...shadcnComponents.GridSuggestionMenu, Root: EmojiGridRoot },
 }
 
 export const articleSchema = BlockNoteSchema.create({
