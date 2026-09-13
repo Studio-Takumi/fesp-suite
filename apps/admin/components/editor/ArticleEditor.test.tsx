@@ -72,4 +72,23 @@ describe('ArticleEditor', () => {
         expect(await screen.findByText('設営完了')).toBeInTheDocument()
         expect(await screen.findByText('雨天でも開催します')).toBeInTheDocument()
     })
+
+    it('コードブロック（裏機能）の中身を<pre><code>で表示する', async () => {
+        const content: ArticleDocument = [
+            {
+                id: '1',
+                type: 'codeBlock',
+                props: { language: 'typescript' },
+                content: [{ type: 'text', text: 'const x = 1', styles: {} }],
+                children: [],
+            },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        const code = await screen.findByText((text) => text.includes('const x = 1'), { selector: 'code' })
+        expect(code.closest('pre')).toBeInTheDocument()
+        // シンタックスハイライトはShikiの非同期・WASM読み込みに依存するため、
+        // 実際の色付けの検証はPlaywright（実ブラウザ）での手動確認で担保している
+    })
 })

@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react'
 
-import { BlockNoteSchema, defaultBlockSpecs, filterSuggestionItems } from '@blocknote/core'
+import { BlockNoteSchema, defaultBlockSpecs, filterSuggestionItems, SyntaxHighlightingExtension } from '@blocknote/core'
 import { ja } from '@blocknote/core/locales'
 import {
     BlockNoteViewRaw,
@@ -13,6 +13,7 @@ import {
 } from '@blocknote/react'
 import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultComponents } from '@blocknote/shadcn'
 import '@blocknote/shadcn/style.css'
+import { createHighlighter } from 'shiki'
 
 import type { ArticleDocument } from '@fesp/schema'
 
@@ -30,6 +31,19 @@ const editorComponents = {
     SuggestionMenu: { ...shadcnComponents.SuggestionMenu, Root: SlashMenuRoot, Item: SlashMenuItem },
     GridSuggestionMenu: { ...shadcnComponents.GridSuggestionMenu, Root: EmojiGridRoot },
 }
+
+/**
+ * VSCodeのようなシンタックスハイライト（Shiki）。対応言語はこの7つに絞る。
+ * コードブロックの背景がBlockNote標準でダーク固定のため、テーマもダーク系にする
+ * （ライト系テーマだと一部の文字色が背景に対して読みにくくなるため）
+ */
+const syntaxHighlighting = SyntaxHighlightingExtension({
+    createHighlighter: () =>
+        createHighlighter({
+            themes: ['github-dark'],
+            langs: ['html', 'css', 'javascript', 'typescript', 'json', 'yaml', 'markdown'],
+        }),
+})
 
 export const articleSchema = BlockNoteSchema.create({
     blockSpecs: {
@@ -59,6 +73,9 @@ export type ArticleEditorProps = {
  * ツールバーはBlockNote標準のもの（テキスト選択時のフローティングツールバー・
  * `/` のスラッシュメニュー）をそのまま使う。コードブロックは``` で作れる裏機能として
  * スキーマ上は許可するが、スラッシュメニューには出さない（getSlashMenuItems参照）。
+ * コードブロックの中身はShiki（VSCode等と同じハイライトエンジン）で色分けする。
+ * 対応言語はhtml/css/javascript/typescript/json/yaml/markdownの7つに絞っている
+ * （バンドルサイズの都合。増やす場合はsyntaxHighlightingのlangsに足す）。
  * 独自コンポーネントブロックの挿入・テンプレートによるロックは #24 で対応する。
  * 共同編集（Yjs）はこの版では繋がない（同期編集は `collaborative-editor.tsx` の役割）。
  */
@@ -66,6 +83,7 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
     const editor = useCreateBlockNote({
         schema: articleSchema,
         dictionary: ja,
+        extensions: [syntaxHighlighting],
         initialContent: content && content.length > 0 ? content : undefined,
     })
 
