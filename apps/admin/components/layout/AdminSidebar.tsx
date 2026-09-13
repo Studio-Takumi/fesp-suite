@@ -24,12 +24,7 @@ export function AdminSidebar() {
                 isOpen ? 'w-64' : 'w-16',
             )}
         >
-            <div
-                className={cn(
-                    'flex items-center gap-2.5 border-b border-border p-3.5',
-                    !isOpen && 'justify-center px-2',
-                )}
-            >
+            <div className={cn('flex items-center gap-2 border-b border-border p-3', !isOpen && 'justify-center')}>
                 <div className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-sky-500'>
                     <span className='text-base font-bold text-white'>F</span>
                 </div>
@@ -44,17 +39,18 @@ export function AdminSidebar() {
                 ) : null}
             </div>
 
-            <nav aria-label='管理者メニュー' className='flex-1 space-y-0.5 overflow-y-auto p-2.5'>
+            <nav aria-label='管理者メニュー' className='flex-1 space-y-1 overflow-y-auto p-3'>
                 {navGroups.map((group, index) => (
                     <div key={group.heading ?? index}>
                         {group.heading && isOpen ? (
-                            <p className='px-2.5 pt-3.5 pb-1.5 text-xs font-semibold tracking-wide text-slate-400'>
+                            <p className='px-3 pt-4 pb-2 text-xs font-semibold tracking-wide text-slate-400'>
                                 {group.heading}
                             </p>
                         ) : null}
                         {group.items.map((item) => {
                             const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
                             const Icon = item.icon
+                            const itemLayout = isOpen ? 'gap-2 px-3 py-2' : 'mx-auto size-10 justify-center'
 
                             if (!item.implemented) {
                                 return (
@@ -63,15 +59,15 @@ export function AdminSidebar() {
                                         aria-disabled='true'
                                         title={!isOpen ? item.label : undefined}
                                         className={cn(
-                                            'flex cursor-not-allowed items-center gap-2.5 rounded-lg px-2.5 py-2 text-slate-300',
-                                            !isOpen && 'justify-center px-2',
+                                            'flex cursor-not-allowed items-center rounded-lg text-slate-300',
+                                            itemLayout,
                                         )}
                                     >
                                         <Icon size={ICON_SIZE} className='shrink-0' />
                                         {isOpen ? (
                                             <>
                                                 <span className='flex-1 truncate text-sm'>{item.label}</span>
-                                                <span className='shrink-0 rounded-full bg-slate-100 px-1.5 py-px text-xs text-slate-400'>
+                                                <span className='shrink-0 rounded-full bg-slate-100 px-2 py-px text-xs text-slate-400'>
                                                     準備中
                                                 </span>
                                             </>
@@ -87,9 +83,9 @@ export function AdminSidebar() {
                                     aria-current={isActive ? 'page' : undefined}
                                     title={!isOpen ? item.label : undefined}
                                     className={cn(
-                                        'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-slate-700 hover:bg-slate-100',
+                                        'flex items-center rounded-lg text-slate-700 hover:bg-slate-100',
+                                        itemLayout,
                                         isActive && 'bg-sky-100 font-semibold text-sky-500 hover:bg-sky-100',
-                                        !isOpen && 'justify-center px-2',
                                     )}
                                 >
                                     <Icon
@@ -104,14 +100,14 @@ export function AdminSidebar() {
                 ))}
             </nav>
 
-            <div className='border-t border-border p-2.5'>
+            <div className='border-t border-border p-3'>
                 <button
                     type='button'
                     onClick={toggleSidebar}
                     aria-label={isOpen ? 'サイドメニューを閉じる' : 'サイドメニューを開く'}
                     className={cn(
-                        'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-slate-500 hover:bg-slate-100',
-                        !isOpen && 'justify-center px-2',
+                        'flex items-center rounded-lg text-slate-500 hover:bg-slate-100',
+                        isOpen ? 'w-full gap-2 px-3 py-2' : 'mx-auto size-10 justify-center',
                     )}
                 >
                     {isOpen ? <PanelLeftClose size={ICON_SIZE} /> : <PanelLeft size={ICON_SIZE} />}
@@ -119,9 +115,7 @@ export function AdminSidebar() {
                 </button>
             </div>
 
-            <div
-                className={cn('flex items-center gap-2.5 border-t border-border p-3', !isOpen && 'justify-center px-2')}
-            >
+            <div className={cn('flex items-center gap-2 border-t border-border p-3', !isOpen && 'justify-center')}>
                 <div className='flex size-8 shrink-0 items-center justify-center rounded-full bg-sky-100'>
                     <span className='text-sm font-semibold text-sky-500'>T</span>
                 </div>
