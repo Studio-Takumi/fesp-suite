@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { AdminSidebar } from '~/components/layout/admin-sidebar'
+import { AdminSidebar } from '~/components/layout/AdminSidebar'
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
     return (

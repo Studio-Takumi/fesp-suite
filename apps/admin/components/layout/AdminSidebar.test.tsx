@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useAdminUiStore } from '~/stores/ui'
 
-import { AdminSidebar } from './admin-sidebar'
+import { AdminSidebar } from './AdminSidebar'
 
 let pathname = '/'
 vi.mock('next/navigation', () => ({
