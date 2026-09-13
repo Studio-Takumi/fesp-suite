@@ -3,6 +3,9 @@
 @source '../../../packages/ui/src';
 @source '../app';
 @source '../components';
+/* BlockNoteのshadcnテーマは自前のTailwindユーティリティクラス（bg-popover等）を前提にしている。
+   node_modules配下はデフォルトでスキャン対象外のため、明示的にsourceへ加える */
+@source '../../../node_modules/@blocknote/shadcn';
 
 /* TipTap エディタ内の最低限の体裁（本文は prose クラスで包む） */
 @layer components {
@@ -32,6 +35,15 @@
     border-inline-start: 3px solid var(--color-border);
     padding-inline-start: 1rem;
     color: var(--color-muted-foreground);
+  }
+
+  /* BlockNote（ArticleEditor）のインラインコード。標準はmonospace指定だけで
+     背景が無く目立たないため、独自に背景・角丸を足す */
+  .bn-inline-content code {
+    background-color: var(--color-muted);
+    border-radius: 0.25rem;
+    padding-inline: 0.3em;
+    font-size: 0.875em;
   }
 
   /* 他ユーザーのカーソル（CollaborationCaret） */

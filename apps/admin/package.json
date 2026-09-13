@@ -18,6 +18,9 @@
     "clean": "rm -rf .turbo .next .open-next coverage playwright-report test-results"
   },
   "dependencies": {
+    "@blocknote/core": "^0.54.2",
+    "@blocknote/react": "^0.54.2",
+    "@blocknote/shadcn": "^0.54.2",
     "@fesp/schema": "workspace:*",
     "@fesp/types": "workspace:*",
     "@fesp/ui": "workspace:*",
@@ -36,6 +39,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-hook-form": "^7.88.0",
+    "shiki": "^4.4.3",
     "tailwind-merge": "^3.6.0",
     "y-partykit": "^0.0.33",
     "yjs": "^13.6.32",
