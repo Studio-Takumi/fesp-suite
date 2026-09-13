@@ -6,7 +6,7 @@ import { useState } from 'react'
 import type { ArticleDocument } from '@fesp/schema'
 
 // BlockNoteのエディタ生成はブラウザAPI（window）に依存するためSSR不可
-const ArticleEditor = dynamic(() => import('~/components/editor/article-editor').then((mod) => mod.ArticleEditor), {
+const ArticleEditor = dynamic(() => import('~/components/editor/ArticleEditor').then((mod) => mod.ArticleEditor), {
     ssr: false,
 })
 

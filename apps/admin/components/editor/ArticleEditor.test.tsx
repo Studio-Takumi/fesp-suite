@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { ArticleDocument } from '@fesp/schema'
 
-import { ArticleEditor, articleSchema } from './article-editor'
+import { ArticleEditor, articleSchema } from './ArticleEditor'
 
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
 
