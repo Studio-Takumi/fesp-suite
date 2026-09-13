@@ -40,7 +40,8 @@ PC（1440×900）前提。スマホ・タブレット幅への対応はしない
 
 ### 記事エディタ（`/edit`）
 
-BlockNote（[`docs/article-system.md`](./article-system.md)）でテキスト・見出し・リストを編集する画面。
+BlockNote（[`docs/article-system.md`](./article-system.md)）でテキスト・見出し・リスト・
+チェックリスト・トグルリスト・引用・区切り線・表を編集する画面。
 `#5` の時点では以下の暫定状態。
 
 - 各一覧からの導線がまだないため、`/edit` に直接アクセスして確認する

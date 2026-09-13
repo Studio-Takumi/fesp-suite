@@ -131,4 +131,87 @@ describe('articleDocumentSchema', () => {
 
         expect(result.success).toBe(false)
     })
+
+    it('チェックリスト・トグルリスト・引用・区切り線・表を受理する', () => {
+        const result = articleDocumentSchema.safeParse([
+            {
+                id: '1',
+                type: 'checkListItem',
+                props: { ...defaultBlockProps, checked: true },
+                content: [{ type: 'text', text: '設営完了', styles: {} }],
+                children: [],
+            },
+            {
+                id: '2',
+                type: 'toggleListItem',
+                props: defaultBlockProps,
+                content: [{ type: 'text', text: '詳細', styles: {} }],
+                children: [
+                    {
+                        id: '2-1',
+                        type: 'paragraph',
+                        props: defaultBlockProps,
+                        content: [{ type: 'text', text: '中身', styles: {} }],
+                        children: [],
+                    },
+                ],
+            },
+            {
+                id: '3',
+                type: 'quote',
+                props: { backgroundColor: 'default', textColor: 'default' },
+                content: [{ type: 'text', text: '雨天でも開催します', styles: {} }],
+                children: [],
+            },
+            {
+                id: '4',
+                type: 'divider',
+                props: {},
+                content: undefined,
+                children: [],
+            },
+            {
+                id: '5',
+                type: 'table',
+                props: { textColor: 'default' },
+                content: {
+                    type: 'tableContent',
+                    columnWidths: [undefined, undefined],
+                    rows: [
+                        {
+                            cells: [
+                                {
+                                    type: 'tableCell',
+                                    props: { ...defaultBlockProps },
+                                    content: [{ type: 'text', text: '模擬店', styles: {} }],
+                                },
+                                {
+                                    type: 'tableCell',
+                                    props: { ...defaultBlockProps },
+                                    content: [{ type: 'text', text: '会場', styles: {} }],
+                                },
+                            ],
+                        },
+                    ],
+                },
+                children: [],
+            },
+        ])
+
+        expect(result.success).toBe(true)
+    })
+
+    it('quoteにtextAlignmentを渡すと拒否する（quoteはtextAlignmentを持たない）', () => {
+        const result = articleDocumentSchema.safeParse([
+            {
+                id: '1',
+                type: 'quote',
+                props: { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' },
+                content: [{ type: 'text', text: '引用', styles: {} }],
+                children: [],
+            },
+        ])
+
+        expect(result.success).toBe(false)
+    })
 })
