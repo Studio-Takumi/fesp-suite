@@ -13,7 +13,7 @@ fesp-suite/
 ├─ apps/
 │  ├─ lp/         LPサイト        Next.js 16 + Framer Motion       :3000
 │  ├─ web/        ウェブアプリ    Vite + React SPA                 :5173
-│  ├─ admin/      管理者サイト    Next.js 16 + shadcn/ui + TipTap  :3001
+│  ├─ admin/      管理者サイト    Next.js 16 + shadcn/ui + BlockNote :3001
 │  ├─ api/        統合API         Hono on Cloudflare Workers       :8787
 │  └─ realtime/   Yjs同期         PartyKit + y-partykit            :1999
 ├─ packages/
