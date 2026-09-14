@@ -61,6 +61,7 @@ const content = [
 const article = {
     id: ARTICLE_ID,
     event_id: EVENT_ID,
+    title: '模擬店のお知らせ',
     content,
     created_at: '2026-09-14T10:00:00+00:00',
     updated_at: '2026-09-14T12:30:00+00:00',
@@ -93,7 +94,7 @@ describe('GET /api/articles', () => {
         expect(res.status).toBe(200)
         await expect(res.json()).resolves.toEqual({ items: [listItem], limit: 20, offset: 0 })
         expect(argsOf('from')).toEqual([['articles']])
-        expect(argsOf('select')).toEqual([['id, event_id, created_at, updated_at']])
+        expect(argsOf('select')).toEqual([['id, event_id, title, created_at, updated_at']])
         expect(argsOf('eq')).toEqual([['event_id', EVENT_ID]])
         expect(argsOf('order')).toEqual([['updated_at', { ascending: false }]])
         expect(argsOf('range')).toEqual([[0, 19]])
@@ -162,23 +163,42 @@ describe('POST /api/articles', () => {
     it('クエリのイベントに記事を作成して 201', async () => {
         result = { data: article, error: null }
 
-        const res = await sendJson(`/api/articles?event_id=${EVENT_ID}`, 'POST', { content })
+        const res = await sendJson(`/api/articles?event_id=${EVENT_ID}`, 'POST', { title: '模擬店のお知らせ', content })
 
         expect(res.status).toBe(201)
         await expect(res.json()).resolves.toEqual(article)
-        expect(argsOf('insert')).toEqual([[{ event_id: EVENT_ID, content }]])
+        expect(argsOf('insert')).toEqual([[{ event_id: EVENT_ID, title: '模擬店のお知らせ', content }]])
     })
 
-    it('空の本文でも作成できる', async () => {
-        result = { data: { ...article, content: [] }, error: null }
+    it('タイトル・本文とも空でも作成できる', async () => {
+        result = { data: { ...article, title: '', content: [] }, error: null }
 
-        const res = await sendJson(`/api/articles?event_id=${EVENT_ID}`, 'POST', { content: [] })
+        const res = await sendJson(`/api/articles?event_id=${EVENT_ID}`, 'POST', { title: '', content: [] })
 
         expect(res.status).toBe(201)
+        expect(argsOf('insert')).toEqual([[{ event_id: EVENT_ID, title: '', content: [] }]])
+    })
+
+    it('タイトルの前後の空白は取り除いて保存する', async () => {
+        result = { data: article, error: null }
+
+        await sendJson(`/api/articles?event_id=${EVENT_ID}`, 'POST', { title: '  模擬店のお知らせ  ', content })
+
+        expect(argsOf('insert')).toEqual([[{ event_id: EVENT_ID, title: '模擬店のお知らせ', content }]])
+    })
+
+    it('タイトルが100文字を超えると 400', async () => {
+        const res = await sendJson(`/api/articles?event_id=${EVENT_ID}`, 'POST', { title: 'あ'.repeat(101), content })
+
+        expect(res.status).toBe(400)
+        const body = (await res.json()) as { error: { details?: Record<string, string[]> } }
+        expect(body.error.details?.title).toContain('タイトルは100文字以内で入力してください')
+        expect(calls).toHaveLength(0)
     })
 
     it('content が記事ドキュメントの形でないと 400', async () => {
         const res = await sendJson(`/api/articles?event_id=${EVENT_ID}`, 'POST', {
+            title: '',
             content: [{ id: 'a1', type: 'image', props: {}, children: [] }],
         })
 
@@ -189,7 +209,7 @@ describe('POST /api/articles', () => {
     it('イベントが存在しない（外部キー違反）と 404', async () => {
         result = { data: null, error: dbError('23503', 'violates foreign key constraint') }
 
-        const res = await sendJson(`/api/articles?event_id=${EVENT_ID}`, 'POST', { content })
+        const res = await sendJson(`/api/articles?event_id=${EVENT_ID}`, 'POST', { title: '', content })
 
         expect(res.status).toBe(404)
         const body = (await res.json()) as { error: { code: string } }
@@ -198,14 +218,17 @@ describe('POST /api/articles', () => {
 })
 
 describe('PUT /api/articles/:id', () => {
-    it('記事IDとイベントで絞り込んで本文を置き換える', async () => {
+    it('記事IDとイベントで絞り込んでタイトルと本文を置き換える', async () => {
         result = { data: article, error: null }
 
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}?event_id=${EVENT_ID}`, 'PUT', { content })
+        const res = await sendJson(`/api/articles/${ARTICLE_ID}?event_id=${EVENT_ID}`, 'PUT', {
+            title: '模擬店のお知らせ',
+            content,
+        })
 
         expect(res.status).toBe(200)
         await expect(res.json()).resolves.toEqual(article)
-        expect(argsOf('update')).toEqual([[{ content }]])
+        expect(argsOf('update')).toEqual([[{ title: '模擬店のお知らせ', content }]])
         expect(argsOf('eq')).toEqual([
             ['id', ARTICLE_ID],
             ['event_id', EVENT_ID],
@@ -213,13 +236,13 @@ describe('PUT /api/articles/:id', () => {
     })
 
     it('記事が無い（別イベントの記事を含む）と 404', async () => {
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}?event_id=${EVENT_ID}`, 'PUT', { content })
+        const res = await sendJson(`/api/articles/${ARTICLE_ID}?event_id=${EVENT_ID}`, 'PUT', { title: '', content })
 
         expect(res.status).toBe(404)
     })
 
-    it('content が無いと 400', async () => {
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}?event_id=${EVENT_ID}`, 'PUT', {})
+    it('title が無いと 400', async () => {
+        const res = await sendJson(`/api/articles/${ARTICLE_ID}?event_id=${EVENT_ID}`, 'PUT', { content })
 
         expect(res.status).toBe(400)
         expect(calls).toHaveLength(0)

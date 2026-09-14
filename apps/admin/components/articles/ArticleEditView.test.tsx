@@ -26,6 +26,7 @@ function renderWithQueryClient(ui: ReactNode) {
 const article: ArticleResponse = {
     id: ARTICLE_ID,
     event_id: EVENT_ID,
+    title: '模擬店のお知らせ',
     content: [
         {
             id: '1',
@@ -39,24 +40,27 @@ const article: ArticleResponse = {
     updated_at: '2026-09-14T03:30:00+00:00',
 }
 
+const articlePath = `/api/articles/${ARTICLE_ID}?event_id=${EVENT_ID}`
+
 type FetchOptions = { method?: string; body?: unknown }
+
+function putCalls() {
+    return adminFetch.mock.calls.filter(([, , options]) => (options as FetchOptions | undefined)?.method === 'PUT')
+}
 
 describe('ArticleEditView', () => {
     beforeEach(() => {
         adminFetch.mockReset()
     })
 
-    it('記事を読み込んでエディタの初期値にする', async () => {
+    it('記事を読み込んでタイトルの入力欄とエディタの初期値にする', async () => {
         adminFetch.mockResolvedValue(article)
 
         renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
 
         expect(await screen.findByText('現金のみです。')).toBeInTheDocument()
-        expect(adminFetch).toHaveBeenCalledWith(
-            `/api/articles/${ARTICLE_ID}?event_id=${EVENT_ID}`,
-            expect.anything(),
-            expect.anything(),
-        )
+        expect(screen.getByRole('textbox', { name: 'タイトル' })).toHaveValue('模擬店のお知らせ')
+        expect(adminFetch).toHaveBeenCalledWith(articlePath, expect.anything(), expect.anything())
     })
 
     it('記事が見つからないと、エディタの代わりに一覧へのリンクを出す', async () => {
@@ -69,7 +73,7 @@ describe('ArticleEditView', () => {
         expect(screen.queryByLabelText('本文エディタ')).not.toBeInTheDocument()
     })
 
-    it('保存ボタンで本文を PUT し、成功したら「保存しました」と出す', async () => {
+    it('保存ボタンでタイトルと本文を PUT し、成功したら「保存しました」と出す', async () => {
         adminFetch.mockResolvedValue(article)
 
         renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
@@ -78,10 +82,61 @@ describe('ArticleEditView', () => {
         await userEvent.click(screen.getByRole('button', { name: '保存' }))
 
         expect(await screen.findByText('保存しました')).toBeInTheDocument()
-        expect(adminFetch).toHaveBeenCalledWith(`/api/articles/${ARTICLE_ID}?event_id=${EVENT_ID}`, expect.anything(), {
+        expect(adminFetch).toHaveBeenCalledWith(articlePath, expect.anything(), {
             method: 'PUT',
-            body: { content: article.content },
+            body: { title: '模擬店のお知らせ', content: article.content },
         })
+    })
+
+    it('書き換えたタイトルを前後の空白を除いて保存する。空のタイトルでも保存できる', async () => {
+        adminFetch.mockResolvedValue(article)
+
+        renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+        await screen.findByText('現金のみです。')
+        const titleInput = screen.getByRole('textbox', { name: 'タイトル' })
+
+        await userEvent.clear(titleInput)
+        await userEvent.type(titleInput, '  2日目のお知らせ ')
+        await userEvent.click(screen.getByRole('button', { name: '保存' }))
+        await screen.findByText('保存しました')
+
+        await userEvent.clear(titleInput)
+        await userEvent.click(screen.getByRole('button', { name: '保存' }))
+        await screen.findByText('保存しました')
+
+        expect(putCalls().map(([, , options]) => (options as { body: { title: string } }).body.title)).toEqual([
+            '2日目のお知らせ',
+            '',
+        ])
+    })
+
+    it('タイトルを編集すると「保存しました」を消す', async () => {
+        adminFetch.mockResolvedValue(article)
+
+        renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+        await screen.findByText('現金のみです。')
+        await userEvent.click(screen.getByRole('button', { name: '保存' }))
+        await screen.findByText('保存しました')
+
+        await userEvent.type(screen.getByRole('textbox', { name: 'タイトル' }), '！')
+
+        expect(screen.queryByText('保存しました')).not.toBeInTheDocument()
+    })
+
+    it('タイトルが100文字を超えるとエラーを出し、保存しない', async () => {
+        adminFetch.mockResolvedValue(article)
+
+        renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+        await screen.findByText('現金のみです。')
+        const titleInput = screen.getByRole('textbox', { name: 'タイトル' })
+
+        await userEvent.clear(titleInput)
+        await userEvent.click(titleInput)
+        await userEvent.paste('あ'.repeat(101))
+        await userEvent.click(screen.getByRole('button', { name: '保存' }))
+
+        expect(await screen.findByRole('alert')).toHaveTextContent('タイトルは100文字以内で入力してください')
+        expect(putCalls()).toHaveLength(0)
     })
 
     it('保存に失敗したらエラーメッセージを出す', async () => {

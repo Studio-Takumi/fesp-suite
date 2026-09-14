@@ -247,16 +247,30 @@ describe('articleDocumentSchema', () => {
 const EVENT_ID = '0b7e6d5c-4a3b-4c2d-9e1f-a2b3c4d5e6f7'
 
 describe('articleInputSchema', () => {
-    it('空の本文を受理する', () => {
-        expect(articleInputSchema.safeParse({ content: [] }).success).toBe(true)
+    it('タイトル・本文とも空でも受理する', () => {
+        expect(articleInputSchema.safeParse({ title: '', content: [] }).success).toBe(true)
     })
 
-    it('content が無ければ拒否する', () => {
-        expect(articleInputSchema.safeParse({}).success).toBe(false)
+    it('タイトルの前後の空白を取り除く', () => {
+        expect(articleInputSchema.parse({ title: '  模擬店のお知らせ  ', content: [] }).title).toBe('模擬店のお知らせ')
+    })
+
+    it('タイトルは100文字まで受理し、101文字は拒否する', () => {
+        expect(articleInputSchema.safeParse({ title: 'あ'.repeat(100), content: [] }).success).toBe(true)
+
+        const result = articleInputSchema.safeParse({ title: 'あ'.repeat(101), content: [] })
+        expect(result.success).toBe(false)
+        expect(result.error?.issues[0]?.message).toBe('タイトルは100文字以内で入力してください')
+    })
+
+    it('title / content が無ければ拒否する', () => {
+        expect(articleInputSchema.safeParse({ content: [] }).success).toBe(false)
+        expect(articleInputSchema.safeParse({ title: '' }).success).toBe(false)
     })
 
     it('content が記事ドキュメントの形でなければ拒否する', () => {
         const result = articleInputSchema.safeParse({
+            title: '',
             content: [{ id: '1', type: 'image', props: {}, children: [] }],
         })
 
@@ -284,6 +298,7 @@ describe('articleResponseSchema', () => {
         const result = articleResponseSchema.safeParse({
             id: '7f1c2a9e-3b4d-4e5f-8a6b-1c2d3e4f5a6b',
             event_id: EVENT_ID,
+            title: '',
             content: [],
             created_at: '2026-09-14T01:00:00.123456+00:00',
             updated_at: '2026-09-14T03:30:00.654321+00:00',

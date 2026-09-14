@@ -17,7 +17,10 @@ export function ArticleList() {
     const createArticle = useCreateArticle()
 
     const handleCreate = () => {
-        createArticle.mutate({ content: [] }, { onSuccess: (article) => router.push(`/articles/${article.id}`) })
+        createArticle.mutate(
+            { title: '', content: [] },
+            { onSuccess: (article) => router.push(`/articles/${article.id}`) },
+        )
     }
 
     return (
@@ -47,7 +50,7 @@ export function ArticleList() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>記事ID</TableHead>
+                            <TableHead>タイトル</TableHead>
                             <TableHead>更新日時</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -55,8 +58,8 @@ export function ArticleList() {
                         {articles.data.items.map((article) => (
                             <TableRow key={article.id}>
                                 <TableCell>
-                                    <Link href={`/articles/${article.id}`} className='font-mono underline'>
-                                        {article.id}
+                                    <Link href={`/articles/${article.id}`} className='underline'>
+                                        {article.title || '（無題）'}
                                     </Link>
                                 </TableCell>
                                 <TableCell>{dateFormatter(article.updated_at, 'YYYY/MM/DD HH:mm')}</TableCell>

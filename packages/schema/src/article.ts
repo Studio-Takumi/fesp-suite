@@ -224,10 +224,14 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
 export const articleDocumentSchema = z.array(articleBlockSchema)
 export type ArticleDocument = z.infer<typeof articleDocumentSchema>
 
+/** 記事のタイトル。空文字も許す */
+export const articleTitleSchema = z.string().trim().max(100, 'タイトルは100文字以内で入力してください')
+
 /** 記事オブジェクト（GET /api/articles/:id などのレスポンス） */
 export const articleResponseSchema = z.object({
     id: uuidSchema,
     event_id: uuidSchema,
+    title: z.string(),
     content: articleDocumentSchema,
     created_at: timestampSchema,
     updated_at: timestampSchema,
@@ -263,6 +267,7 @@ export const articleIdParamSchema = z.object({
 
 /** POST /api/articles・PUT /api/articles/:id のリクエストボディ */
 export const articleInputSchema = z.object({
+    title: articleTitleSchema,
     content: articleDocumentSchema,
 })
 export type ArticleInput = z.infer<typeof articleInputSchema>
