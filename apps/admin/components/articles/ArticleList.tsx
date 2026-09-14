@@ -5,15 +5,11 @@ import { useRouter } from 'next/navigation'
 
 import { useQuery } from '@tanstack/react-query'
 
+import { dateFormatter } from '@fesp/ui'
+
 import { Button } from '~/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table'
 import { articlesQuery, useCreateArticle } from '~/lib/queries'
-
-const dateTimeFormat = new Intl.DateTimeFormat('ja-JP', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Tokyo',
-})
 
 export function ArticleList() {
     const router = useRouter()
@@ -63,7 +59,7 @@ export function ArticleList() {
                                         {article.id}
                                     </Link>
                                 </TableCell>
-                                <TableCell>{dateTimeFormat.format(new Date(article.updated_at))}</TableCell>
+                                <TableCell>{dateFormatter(article.updated_at, 'YYYY/MM/DD HH:mm')}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

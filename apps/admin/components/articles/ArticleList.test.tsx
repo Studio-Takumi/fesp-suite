@@ -35,6 +35,14 @@ describe('ArticleList', () => {
         push.mockReset()
     })
 
+    it('更新日時を日本時間の YYYY/MM/DD HH:mm で出す', async () => {
+        adminFetch.mockResolvedValue({ items: [listItem], limit: 100, offset: 0 })
+
+        renderWithQueryClient(<ArticleList />)
+
+        expect(await screen.findByText('2026/09/14 12:30')).toBeInTheDocument()
+    })
+
     it('env のイベントの記事を先頭100件取得し、各行を編集画面へのリンクにする', async () => {
         adminFetch.mockResolvedValue({ items: [listItem], limit: 100, offset: 0 })
 
