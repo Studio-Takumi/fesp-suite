@@ -1271,7 +1271,7 @@
     {
       "type": "frame",
       "id": "SGJcx",
-      "x": 510,
+      "x": 1020,
       "y": 975,
       "name": "web / Home / iPhone",
       "clip": true,
@@ -2125,7 +2125,7 @@
     {
       "type": "frame",
       "id": "X7yw01",
-      "x": 1314,
+      "x": 2628,
       "y": 2643,
       "name": "web / Home / iPad",
       "clip": true,
@@ -3381,7 +3381,7 @@
     {
       "type": "frame",
       "id": "DgVCs",
-      "x": 1020,
+      "x": 1530,
       "y": 975,
       "name": "web / News一覧 / iPhone",
       "clip": true,
@@ -3784,7 +3784,7 @@
     {
       "type": "frame",
       "id": "e6EQt",
-      "x": 1530,
+      "x": 2040,
       "y": 975,
       "name": "web / News個別 / iPhone",
       "clip": true,
@@ -4468,7 +4468,7 @@
     {
       "type": "frame",
       "id": "GNvku",
-      "x": 2628,
+      "x": 3942,
       "y": 2643,
       "name": "web / News一覧+個別 / iPad",
       "clip": true,
@@ -5427,7 +5427,7 @@
     {
       "type": "frame",
       "id": "V3JtTu",
-      "x": 2040,
+      "x": 2550,
       "y": 975,
       "name": "web / Blog一覧 / iPhone",
       "clip": true,
@@ -5746,7 +5746,7 @@
     {
       "type": "frame",
       "id": "gfIbs",
-      "x": 2550,
+      "x": 3060,
       "y": 975,
       "name": "web / Blog個別 / iPhone",
       "clip": true,
@@ -6241,7 +6241,7 @@
     {
       "type": "frame",
       "id": "Tpb3L",
-      "x": 3942,
+      "x": 5256,
       "y": 2643,
       "name": "web / Blog一覧+個別 / iPad",
       "clip": true,
@@ -6940,7 +6940,7 @@
     {
       "type": "frame",
       "id": "ifaH0",
-      "x": 3060,
+      "x": 3570,
       "y": 975,
       "name": "web / Schedule / iPhone",
       "clip": true,
@@ -7931,7 +7931,7 @@
     {
       "type": "frame",
       "id": "aUScV",
-      "x": 3570,
+      "x": 4080,
       "y": 975,
       "name": "web / Schedule モーダル / iPhone",
       "clip": true,
@@ -9299,7 +9299,7 @@
     {
       "type": "frame",
       "id": "Y9fjMS",
-      "x": 4080,
+      "x": 4590,
       "y": 975,
       "name": "web / Map / iPhone",
       "clip": true,
@@ -10596,7 +10596,7 @@
     {
       "type": "frame",
       "id": "daqmS",
-      "x": 4590,
+      "x": 5100,
       "y": 975,
       "name": "web / Weather / iPhone",
       "clip": true,
@@ -11752,7 +11752,7 @@
     {
       "type": "frame",
       "id": "f3FarI",
-      "x": 7884,
+      "x": 9198,
       "y": 2643,
       "name": "web / Weather / iPad",
       "clip": true,
@@ -13081,7 +13081,7 @@
     {
       "type": "frame",
       "id": "PkB4i",
-      "x": 5100,
+      "x": 5610,
       "y": 975,
       "name": "web / Shop一覧 / iPhone",
       "clip": true,
@@ -13722,7 +13722,7 @@
     {
       "type": "frame",
       "id": "NYQ35",
-      "x": 5610,
+      "x": 6120,
       "y": 975,
       "name": "web / Shop個別 / iPhone",
       "clip": true,
@@ -14725,7 +14725,7 @@
     {
       "type": "frame",
       "id": "OQcwX",
-      "x": 9198,
+      "x": 10512,
       "y": 2643,
       "name": "web / Shop一覧+個別 / iPad",
       "clip": true,
@@ -17175,7 +17175,7 @@
     {
       "type": "frame",
       "id": "APlsB",
-      "x": 6120,
+      "x": 6630,
       "y": 975,
       "name": "web / Artist一覧 / iPhone",
       "clip": true,
@@ -17756,7 +17756,7 @@
     {
       "type": "frame",
       "id": "TMKfZ",
-      "x": 6630,
+      "x": 7140,
       "y": 975,
       "name": "web / Artist個別 / iPhone",
       "clip": true,
@@ -18575,7 +18575,7 @@
     {
       "type": "frame",
       "id": "sOIM8",
-      "x": 10512,
+      "x": 11826,
       "y": 2643,
       "name": "web / Artist一覧+個別 / iPad",
       "clip": true,
@@ -20643,7 +20643,7 @@
     {
       "type": "frame",
       "id": "ymNUb",
-      "x": 7140,
+      "x": 7650,
       "y": 975,
       "name": "web / 状態: 空 / iPhone",
       "clip": true,
@@ -20942,7 +20942,7 @@
     {
       "type": "frame",
       "id": "f4zpX",
-      "x": 2008,
+      "x": 3568,
       "y": 4485,
       "name": "admin / ダッシュボード",
       "clip": true,
@@ -23073,7 +23073,7 @@
     {
       "type": "frame",
       "id": "mXgX5",
-      "x": 8248,
+      "x": 9808,
       "y": 4485,
       "name": "admin / ニュース一覧",
       "clip": true,
@@ -26443,7 +26443,7 @@
     {
       "type": "frame",
       "id": "hptdL",
-      "x": 3568,
+      "x": 5128,
       "y": 4485,
       "name": "admin / 基本設定",
       "clip": true,
@@ -27446,7 +27446,7 @@
     {
       "type": "frame",
       "id": "S0O9g",
-      "x": 5128,
+      "x": 6688,
       "y": 4485,
       "name": "admin / 機能オン・オフ",
       "clip": true,
@@ -29294,7 +29294,7 @@
     {
       "type": "frame",
       "id": "gJW2x",
-      "x": 6688,
+      "x": 8248,
       "y": 4485,
       "name": "admin / ホーム編集",
       "clip": true,
@@ -44077,7 +44077,7 @@
     {
       "type": "frame",
       "id": "CwpAx",
-      "x": 9808,
+      "x": 11368,
       "y": 4485,
       "name": "admin / ブログ一覧",
       "clip": true,
@@ -46041,16 +46041,6 @@
                               "fontFamily": "$font-jp",
                               "fontSize": 12,
                               "fontWeight": "500"
-                            },
-                            {
-                              "type": "text",
-                              "id": "iYFsH",
-                              "name": "忘れた",
-                              "fill": "$sky-500",
-                              "content": "パスワードを忘れた",
-                              "fontFamily": "$font-jp",
-                              "fontSize": 11,
-                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -46111,51 +46101,6 @@
                 },
                 {
                   "type": "frame",
-                  "id": "aQZWh",
-                  "name": "ログイン状態",
-                  "width": "fill_container",
-                  "gap": 9,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "eiFZB",
-                      "name": "チェック",
-                      "width": 16,
-                      "height": 16,
-                      "fill": "$sky-500",
-                      "cornerRadius": 4,
-                      "stroke": "$sky-500",
-                      "strokeWidth": 1,
-                      "justifyContent": "center",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "DRXQd",
-                          "name": "チェック",
-                          "width": 11,
-                          "height": 11,
-                          "icon": "check",
-                          "library": "lucide",
-                          "fill": "$white"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "hrj9K",
-                      "name": "ラベル",
-                      "fill": "$slate-700",
-                      "content": "ログイン状態を保持する",
-                      "fontFamily": "$font-jp",
-                      "fontSize": 12,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
                   "id": "kI08H",
                   "name": "ログイン",
                   "width": "fill_container",
@@ -46179,39 +46124,38 @@
                 },
                 {
                   "type": "frame",
-                  "id": "Wf30L",
-                  "name": "注記",
+                  "id": "KNbMY",
+                  "name": "新規登録へ",
                   "width": "fill_container",
-                  "fill": "$slate-50",
-                  "cornerRadius": 10,
-                  "gap": 8,
+                  "gap": 4,
                   "padding": [
-                    12,
-                    14
+                    4,
+                    0,
+                    0,
+                    0
                   ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
                   "children": [
                     {
-                      "type": "icon",
-                      "id": "yKHLJ",
-                      "name": "アイコン",
-                      "width": 14,
-                      "height": 14,
-                      "icon": "info",
-                      "library": "lucide",
-                      "fill": "$slate-400"
+                      "type": "text",
+                      "id": "A5cAs3",
+                      "name": "文",
+                      "fill": "$slate-500",
+                      "content": "アカウントをお持ちでない方は",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "text",
-                      "id": "kX9uz",
-                      "name": "文",
-                      "fill": "$slate-500",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "アカウントがない場合は、実行委員会の管理者に招待してもらってください。",
-                      "lineHeight": 1.7,
+                      "id": "vlR1T",
+                      "name": "リンク",
+                      "fill": "$sky-500",
+                      "content": "新規登録",
                       "fontFamily": "$font-jp",
-                      "fontSize": 11,
-                      "fontWeight": "normal"
+                      "fontSize": 12,
+                      "fontWeight": "600"
                     }
                   ]
                 }
@@ -46224,7 +46168,7 @@
     {
       "type": "frame",
       "id": "HYssI",
-      "x": 5256,
+      "x": 6570,
       "y": 2643,
       "name": "web / Schedule / iPad",
       "clip": true,
@@ -47423,7 +47367,7 @@
     {
       "type": "frame",
       "id": "T76eF",
-      "x": 6570,
+      "x": 7884,
       "y": 2643,
       "name": "web / Map / iPad",
       "clip": true,
@@ -50092,51 +50036,6 @@
                 },
                 {
                   "type": "frame",
-                  "id": "bVrqL",
-                  "name": "ログイン状態",
-                  "width": "fill_container",
-                  "gap": 9,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "XMFnM",
-                      "name": "チェック",
-                      "width": 16,
-                      "height": 16,
-                      "fill": "$sky-500",
-                      "cornerRadius": 4,
-                      "stroke": "$sky-500",
-                      "strokeWidth": 1,
-                      "justifyContent": "center",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "E6L3j",
-                          "name": "チェック",
-                          "width": 11,
-                          "height": 11,
-                          "icon": "check",
-                          "library": "lucide",
-                          "fill": "$white"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "sYzPU",
-                      "name": "ラベル",
-                      "fill": "$slate-700",
-                      "content": "ログイン状態を保持する",
-                      "fontFamily": "$font-jp",
-                      "fontSize": 12,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
                   "id": "STYLB",
                   "name": "ログイン",
                   "width": "fill_container",
@@ -50549,51 +50448,6 @@
                 },
                 {
                   "type": "frame",
-                  "id": "gCMHv",
-                  "name": "ログイン状態",
-                  "width": "fill_container",
-                  "gap": 9,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "H7PVs",
-                      "name": "チェック",
-                      "width": 16,
-                      "height": 16,
-                      "fill": "$sky-500",
-                      "cornerRadius": 4,
-                      "stroke": "$sky-500",
-                      "strokeWidth": 1,
-                      "justifyContent": "center",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "v9QQB",
-                          "name": "チェック",
-                          "width": 11,
-                          "height": 11,
-                          "icon": "check",
-                          "library": "lucide",
-                          "fill": "$white"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "NfJdF",
-                      "name": "ラベル",
-                      "fill": "$slate-700",
-                      "content": "ログイン状態を保持する",
-                      "fontFamily": "$font-jp",
-                      "fontSize": 12,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
                   "id": "D0uDLp",
                   "name": "ログイン",
                   "width": "fill_container",
@@ -50646,6 +50500,1268 @@
                       "name": "リンク",
                       "fill": "$sky-500",
                       "content": "新規登録",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "D7Ivq",
+      "x": 2008,
+      "y": 4485,
+      "name": "admin / 新規登録",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$white",
+      "children": [
+        {
+          "type": "frame",
+          "id": "s3Ye5D",
+          "name": "フォーム面",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$slate-50",
+          "padding": 56,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Uuml6",
+              "name": "カード",
+              "width": 400,
+              "fill": "$white",
+              "cornerRadius": 16,
+              "stroke": "$slate-200",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 20,
+              "padding": 36,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "C9xNLM",
+                  "name": "ロゴ",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Mn3GC",
+                      "name": "マーク",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$sky-500",
+                      "cornerRadius": 10,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "X1ln7z",
+                          "name": "文字",
+                          "fill": "$white",
+                          "content": "F",
+                          "fontFamily": "$font-en",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "Kct9d",
+                      "name": "名前",
+                      "fill": "$slate-900",
+                      "content": "fesp",
+                      "fontFamily": "$font-en",
+                      "fontSize": 18,
+                      "fontWeight": "600",
+                      "letterSpacing": 0.5
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "agbo7",
+                  "name": "見出し",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "CDwW1",
+                      "name": "タイトル",
+                      "fill": "$slate-900",
+                      "content": "新規登録",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 24,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "PSzPE",
+                      "name": "説明",
+                      "fill": "$slate-500",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "メールアドレスとパスワードを入力して、アカウントを作成してください。",
+                      "lineHeight": 1.8,
+                      "fontFamily": "$font-jp",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "lCZqh",
+                  "name": "Googleで登録",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "$white",
+                  "cornerRadius": 10,
+                  "stroke": "$slate-200",
+                  "strokeWidth": 1,
+                  "gap": 9,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "UdErj",
+                      "name": "アイコン",
+                      "width": 17,
+                      "height": 17,
+                      "icon": "globe",
+                      "library": "lucide",
+                      "fill": "$slate-700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "HixQp",
+                      "name": "ラベル",
+                      "fill": "$slate-700",
+                      "content": "Google で登録",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DTYTh",
+                  "name": "区切り",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "id": "GOvPW",
+                      "name": "線左",
+                      "fill": "$slate-200",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "IHnOD",
+                      "name": "または",
+                      "fill": "$slate-400",
+                      "content": "または",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "RNt5x",
+                      "name": "線右",
+                      "fill": "$slate-200",
+                      "width": "fill_container",
+                      "height": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "sFIFI",
+                  "name": "入力欄",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "zidzh",
+                      "name": "メールアドレス",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "JmHBx",
+                          "name": "ラベル行",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "md1Mz",
+                              "name": "ラベル",
+                              "fill": "$slate-700",
+                              "content": "メールアドレス",
+                              "fontFamily": "$font-jp",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "MsgOb",
+                          "name": "入力",
+                          "width": "fill_container",
+                          "height": 42,
+                          "fill": "$white",
+                          "cornerRadius": 10,
+                          "stroke": "$slate-200",
+                          "strokeWidth": 1,
+                          "gap": 9,
+                          "padding": [
+                            0,
+                            13
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "F4mP4",
+                              "name": "アイコン",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "mail",
+                              "library": "lucide",
+                              "fill": "$slate-400"
+                            },
+                            {
+                              "type": "text",
+                              "id": "V2RuO",
+                              "name": "値",
+                              "fill": "$slate-900",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "iwataku@example.com",
+                              "fontFamily": "$font-en",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "UJr0A",
+                      "name": "パスワード",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "l1UXK4",
+                          "name": "ラベル行",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ypfPN",
+                              "name": "ラベル",
+                              "fill": "$slate-700",
+                              "content": "パスワード",
+                              "fontFamily": "$font-jp",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "H2Gre0",
+                          "name": "入力",
+                          "width": "fill_container",
+                          "height": 42,
+                          "fill": "$white",
+                          "cornerRadius": 10,
+                          "stroke": "$slate-200",
+                          "strokeWidth": 1,
+                          "gap": 9,
+                          "padding": [
+                            0,
+                            13
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "BJtc5",
+                              "name": "アイコン",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "lock",
+                              "library": "lucide",
+                              "fill": "$slate-400"
+                            },
+                            {
+                              "type": "text",
+                              "id": "LKOQB",
+                              "name": "値",
+                              "fill": "$slate-900",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "••••••••••",
+                              "fontFamily": "$font-en",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "OM2Rq",
+                              "name": "表示",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "eye",
+                              "library": "lucide",
+                              "fill": "$slate-400"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "bl5di",
+                          "name": "補足",
+                          "fill": "$slate-400",
+                          "content": "8文字以上で入力してください",
+                          "fontFamily": "$font-jp",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "vUb23",
+                  "name": "登録する",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "$sky-500",
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "s3wTP",
+                      "name": "ラベル",
+                      "fill": "$white",
+                      "content": "登録する",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "d90FQR",
+                  "name": "ログインへ",
+                  "width": "fill_container",
+                  "gap": 4,
+                  "padding": [
+                    4,
+                    0,
+                    0,
+                    0
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "joKY0",
+                      "name": "文",
+                      "fill": "$slate-500",
+                      "content": "アカウントをお持ちの方は",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Ns3iL",
+                      "name": "リンク",
+                      "fill": "$sky-500",
+                      "content": "ログイン",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "hV7cW",
+      "x": 510,
+      "y": 975,
+      "name": "web / 新規登録 / iPhone",
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "$white",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "Ck3ii",
+          "name": "フォーム",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "padding": [
+            32,
+            24
+          ],
+          "justifyContent": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "ybpv6",
+              "name": "フォーム本体",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "JuRnP",
+                  "name": "ロゴ",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "IUjPh",
+                      "name": "マーク",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$sky-500",
+                      "cornerRadius": 10,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fIDzl",
+                          "name": "文字",
+                          "fill": "$white",
+                          "content": "F",
+                          "fontFamily": "$font-en",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "G2O6Mr",
+                      "name": "名前",
+                      "fill": "$slate-900",
+                      "content": "fesp",
+                      "fontFamily": "$font-en",
+                      "fontSize": 18,
+                      "fontWeight": "600",
+                      "letterSpacing": 0.5
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "chxHE",
+                  "name": "見出し",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "N554zH",
+                      "name": "タイトル",
+                      "fill": "$slate-900",
+                      "content": "新規登録",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 24,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "w7P1D",
+                      "name": "説明",
+                      "fill": "$slate-500",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "メールアドレスとパスワードを入力して、アカウントを作成してください。",
+                      "lineHeight": 1.8,
+                      "fontFamily": "$font-jp",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DKad1",
+                  "name": "Googleで登録",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "$white",
+                  "cornerRadius": 10,
+                  "stroke": "$slate-200",
+                  "strokeWidth": 1,
+                  "gap": 9,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "gyht4",
+                      "name": "アイコン",
+                      "width": 17,
+                      "height": 17,
+                      "icon": "globe",
+                      "library": "lucide",
+                      "fill": "$slate-700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "qiMaH",
+                      "name": "ラベル",
+                      "fill": "$slate-700",
+                      "content": "Google で登録",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "K5Sf1y",
+                  "name": "区切り",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "id": "ThHDQ",
+                      "name": "線左",
+                      "fill": "$slate-200",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "PBOUO",
+                      "name": "または",
+                      "fill": "$slate-400",
+                      "content": "または",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "J5b4ff",
+                      "name": "線右",
+                      "fill": "$slate-200",
+                      "width": "fill_container",
+                      "height": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "lt1cr",
+                  "name": "入力欄",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "lIqd1",
+                      "name": "メールアドレス",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "uZduU",
+                          "name": "ラベル行",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "YthlC",
+                              "name": "ラベル",
+                              "fill": "$slate-700",
+                              "content": "メールアドレス",
+                              "fontFamily": "$font-jp",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "KbLgJ",
+                          "name": "入力",
+                          "width": "fill_container",
+                          "height": 42,
+                          "fill": "$white",
+                          "cornerRadius": 10,
+                          "stroke": "$slate-200",
+                          "strokeWidth": 1,
+                          "gap": 9,
+                          "padding": [
+                            0,
+                            13
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "fFDfn",
+                              "name": "アイコン",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "mail",
+                              "library": "lucide",
+                              "fill": "$slate-400"
+                            },
+                            {
+                              "type": "text",
+                              "id": "cV6DD",
+                              "name": "値",
+                              "fill": "$slate-900",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "iwataku@example.com",
+                              "fontFamily": "$font-en",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "gwgnl",
+                      "name": "パスワード",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "a5Qb6i",
+                          "name": "ラベル行",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "aUp7x",
+                              "name": "ラベル",
+                              "fill": "$slate-700",
+                              "content": "パスワード",
+                              "fontFamily": "$font-jp",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "i8pj1r",
+                          "name": "入力",
+                          "width": "fill_container",
+                          "height": 42,
+                          "fill": "$white",
+                          "cornerRadius": 10,
+                          "stroke": "$slate-200",
+                          "strokeWidth": 1,
+                          "gap": 9,
+                          "padding": [
+                            0,
+                            13
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "NWaIi",
+                              "name": "アイコン",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "lock",
+                              "library": "lucide",
+                              "fill": "$slate-400"
+                            },
+                            {
+                              "type": "text",
+                              "id": "jMniL",
+                              "name": "値",
+                              "fill": "$slate-900",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "••••••••••",
+                              "fontFamily": "$font-en",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "NEltH",
+                              "name": "表示",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "eye",
+                              "library": "lucide",
+                              "fill": "$slate-400"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "z5Z82w",
+                          "name": "補足",
+                          "fill": "$slate-400",
+                          "content": "8文字以上で入力してください",
+                          "fontFamily": "$font-jp",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "bUP5o",
+                  "name": "登録する",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "$sky-500",
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Hdgld",
+                      "name": "ラベル",
+                      "fill": "$white",
+                      "content": "登録する",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "AcVVP",
+                  "name": "ログインへ",
+                  "width": "fill_container",
+                  "gap": 4,
+                  "padding": [
+                    4,
+                    0,
+                    0,
+                    0
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "hNKcS",
+                      "name": "文",
+                      "fill": "$slate-500",
+                      "content": "アカウントをお持ちの方は",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "RyGsv",
+                      "name": "リンク",
+                      "fill": "$sky-500",
+                      "content": "ログイン",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Nrrpk",
+      "x": 1314,
+      "y": 2643,
+      "name": "web / 新規登録 / iPad",
+      "clip": true,
+      "width": 1194,
+      "height": 834,
+      "fill": "$white",
+      "children": [
+        {
+          "type": "frame",
+          "id": "j6xUtS",
+          "name": "フォーム",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$slate-50",
+          "layout": "vertical",
+          "padding": 56,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "HK1lb",
+              "name": "フォーム本体",
+              "width": 400,
+              "fill": "$white",
+              "cornerRadius": 16,
+              "stroke": "$slate-200",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 20,
+              "padding": 36,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Wv1qY",
+                  "name": "ロゴ",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "y3TOb",
+                      "name": "マーク",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$sky-500",
+                      "cornerRadius": 10,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "VY1yo",
+                          "name": "文字",
+                          "fill": "$white",
+                          "content": "F",
+                          "fontFamily": "$font-en",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "KT4r6",
+                      "name": "名前",
+                      "fill": "$slate-900",
+                      "content": "fesp",
+                      "fontFamily": "$font-en",
+                      "fontSize": 18,
+                      "fontWeight": "600",
+                      "letterSpacing": 0.5
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "t5svF",
+                  "name": "見出し",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "DRAcb",
+                      "name": "タイトル",
+                      "fill": "$slate-900",
+                      "content": "新規登録",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 24,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "NqcG4",
+                      "name": "説明",
+                      "fill": "$slate-500",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "メールアドレスとパスワードを入力して、アカウントを作成してください。",
+                      "lineHeight": 1.8,
+                      "fontFamily": "$font-jp",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "faIq7",
+                  "name": "Googleで登録",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "$white",
+                  "cornerRadius": 10,
+                  "stroke": "$slate-200",
+                  "strokeWidth": 1,
+                  "gap": 9,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "RQR8I",
+                      "name": "アイコン",
+                      "width": 17,
+                      "height": 17,
+                      "icon": "globe",
+                      "library": "lucide",
+                      "fill": "$slate-700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Tsgs8",
+                      "name": "ラベル",
+                      "fill": "$slate-700",
+                      "content": "Google で登録",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "U4reA",
+                  "name": "区切り",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "id": "obSS4",
+                      "name": "線左",
+                      "fill": "$slate-200",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "gsyRH",
+                      "name": "または",
+                      "fill": "$slate-400",
+                      "content": "または",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "rohl5",
+                      "name": "線右",
+                      "fill": "$slate-200",
+                      "width": "fill_container",
+                      "height": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "lbnEQ",
+                  "name": "入力欄",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "vIdYp",
+                      "name": "メールアドレス",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "q4Nn5",
+                          "name": "ラベル行",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "tbF4W",
+                              "name": "ラベル",
+                              "fill": "$slate-700",
+                              "content": "メールアドレス",
+                              "fontFamily": "$font-jp",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "NWHDs",
+                          "name": "入力",
+                          "width": "fill_container",
+                          "height": 42,
+                          "fill": "$white",
+                          "cornerRadius": 10,
+                          "stroke": "$slate-200",
+                          "strokeWidth": 1,
+                          "gap": 9,
+                          "padding": [
+                            0,
+                            13
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "VBKrS",
+                              "name": "アイコン",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "mail",
+                              "library": "lucide",
+                              "fill": "$slate-400"
+                            },
+                            {
+                              "type": "text",
+                              "id": "EUEdW",
+                              "name": "値",
+                              "fill": "$slate-900",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "iwataku@example.com",
+                              "fontFamily": "$font-en",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "BkLcn",
+                      "name": "パスワード",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "X3zHhh",
+                          "name": "ラベル行",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "O3GjO",
+                              "name": "ラベル",
+                              "fill": "$slate-700",
+                              "content": "パスワード",
+                              "fontFamily": "$font-jp",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "sA7i4",
+                          "name": "入力",
+                          "width": "fill_container",
+                          "height": 42,
+                          "fill": "$white",
+                          "cornerRadius": 10,
+                          "stroke": "$slate-200",
+                          "strokeWidth": 1,
+                          "gap": 9,
+                          "padding": [
+                            0,
+                            13
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "f539Lw",
+                              "name": "アイコン",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "lock",
+                              "library": "lucide",
+                              "fill": "$slate-400"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Q8IGsE",
+                              "name": "値",
+                              "fill": "$slate-900",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "••••••••••",
+                              "fontFamily": "$font-en",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "XbpDv",
+                              "name": "表示",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "eye",
+                              "library": "lucide",
+                              "fill": "$slate-400"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "UsftQ",
+                          "name": "補足",
+                          "fill": "$slate-400",
+                          "content": "8文字以上で入力してください",
+                          "fontFamily": "$font-jp",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "OVRPu",
+                  "name": "登録する",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "$sky-500",
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "P8mSv",
+                      "name": "ラベル",
+                      "fill": "$white",
+                      "content": "登録する",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "f0SM6",
+                  "name": "ログインへ",
+                  "width": "fill_container",
+                  "gap": 4,
+                  "padding": [
+                    4,
+                    0,
+                    0,
+                    0
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "B6npvo",
+                      "name": "文",
+                      "fill": "$slate-500",
+                      "content": "アカウントをお持ちの方は",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "pqJi3",
+                      "name": "リンク",
+                      "fill": "$sky-500",
+                      "content": "ログイン",
                       "fontFamily": "$font-jp",
                       "fontSize": 12,
                       "fontWeight": "600"
