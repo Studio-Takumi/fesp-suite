@@ -60,6 +60,20 @@ date: 2026-09-14
   service_role で PostgREST に insert した。ローカルの `apps/admin/.env` にこの id を設定済み
 - 型は `bunx supabase gen types typescript --linked --schema public` で生成した
 
+### レビュー対応: 日時表示の共通関数（`dateFormatter`）
+
+発注者が書いた `dateFormatter`（`YYYY/MM/DD HH:mm` のようなトークン置換）を、日時表示の共通関数として
+`packages/ui/src/lib/date-formatter.ts` に切り出し、`@fesp/ui` から export した。記事一覧の更新日時もこれで出す。
+「日時を画面に出すときはこれを使う」ルールは `docs/conventions.md` に追記した。
+
+- **置き場所は `@fesp/ui`。** LP・ウェブアプリ・管理者サイトの3つとも依存しており、ウェブアプリのニュース・ブログでも使うため
+- **常に日本時間で出す**（`Intl.DateTimeFormat` の `formatToParts` を `Asia/Tokyo` 固定で使う）。`getHours()` などは
+  閲覧端末のタイムゾーンに依存し、海外の端末や UTC で動くサーバー側で時刻がずれるため
+- **曜日トークン `EEE`（日〜土）を足した。** `dd` が日の意味で使われているので、Unicode の日付パターンに合わせて `E` にした
+- **トークンは正規表現1回で置き換える。** 元の `.replace('HH', …)` は最初の1つしか置き換えず、`HH:mm〜HH:mm` の2つ目が残るため
+- **ISO 文字列もそのまま受け取る。** API の日時は文字列で返るので、呼び出し側で `new Date()` しなくて済むようにした
+- JSX を返す版は、使う画面が出てきたら足す
+
 ## テスト
 
 | テスト                                                    | 検証内容                                                                                                    |
@@ -68,6 +82,7 @@ date: 2026-09-14
 | `apps/api/src/routes/articles.test.ts`                    | 各エンドポイントのクエリ組み立て（`event_id` の絞り込み・並び順・範囲）、400 / 404 / 500 の分岐             |
 | `apps/admin/components/articles/ArticleList.test.tsx`     | env のイベントで先頭100件を取得・行のリンク・0件表示・新規作成→遷移                                         |
 | `apps/admin/components/articles/ArticleEditView.test.tsx` | 記事の読み込み・404 のときの表示・保存成功/失敗の表示                                                       |
+| `packages/ui/src/lib/date-formatter.test.ts`              | 各トークン・曜日・日本時間への変換（日付またぎ）・0時表記・同じトークンの複数回置換・トークン以外の文字     |
 
 API のテストは supabase-js のクエリビルダーを Proxy の偽物に差し替え、呼ばれたメソッドと引数を検証している。
 
