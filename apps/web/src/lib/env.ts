@@ -6,6 +6,8 @@ const envSchema = z.object({
     VITE_SUPABASE_URL: z.url(),
     VITE_SUPABASE_ANON_KEY: z.string().min(1),
     VITE_PARTYKIT_HOST: z.string().min(1).optional(),
+    /** 表示するイベントの ID（events.id） */
+    VITE_EVENT_ID: z.uuid(),
 })
 
 export const env = envSchema.parse({
@@ -13,4 +15,5 @@ export const env = envSchema.parse({
     VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
     VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
     VITE_PARTYKIT_HOST: import.meta.env.VITE_PARTYKIT_HOST,
+    VITE_EVENT_ID: import.meta.env.VITE_EVENT_ID,
 })

@@ -1,8 +1,9 @@
 import { queryOptions } from '@tanstack/react-query'
 
-import { exampleResponseSchema } from '@fesp/schema'
+import { articleViewResponseSchema, exampleResponseSchema } from '@fesp/schema'
 
 import { apiFetch } from './api'
+import { env } from './env'
 
 /**
  * サーバー状態は必ずここ（TanStack Query）で扱う。
@@ -12,10 +13,18 @@ import { apiFetch } from './api'
  */
 export const queryKeys = {
     example: ['example'] as const,
+    article: (id: string) => ['articles', id] as const,
 }
 
 export const exampleQuery = () =>
     queryOptions({
         queryKey: queryKeys.example,
         queryFn: ({ signal }) => apiFetch('/api/example', exampleResponseSchema, { signal }),
+    })
+
+export const articleQuery = (id: string) =>
+    queryOptions({
+        queryKey: queryKeys.article(id),
+        queryFn: ({ signal }) =>
+            apiFetch(`/api/articles/${id}?event_id=${env.VITE_EVENT_ID}`, articleViewResponseSchema, { signal }),
     })

@@ -248,6 +248,31 @@ export const articleResponseSchema = z.object({
 })
 export type ArticleResponse = z.infer<typeof articleResponseSchema>
 
+/**
+ * 表示用に記事ドキュメントを読む。ブロックを1つずつ検証し、形の合わないブロック（知らない `type` を含む）は
+ * 子ブロックごと取り除く。子ブロックは親とは別に検証するので、壊れた子だけが抜ける。
+ * 新しいブロックを含む記事を古いクライアントが開いても、残りを描画できるようにするため（前方互換）
+ */
+export function parseArticleDocument(blocks: unknown[]): ArticleDocument {
+    return blocks.flatMap((block) => {
+        if (typeof block !== 'object' || block === null) return []
+
+        const { children, ...rest } = block as Record<string, unknown>
+        if (!Array.isArray(children)) return []
+
+        const result = articleBlockSchema.safeParse({ ...rest, children: [] })
+        if (!result.success) return []
+
+        return [{ ...result.data, children: parseArticleDocument(children) }]
+    })
+}
+
+/** ウェブアプリで表示するときの記事オブジェクト。本文は `parseArticleDocument` で描画できるブロックだけにする */
+export const articleViewResponseSchema = articleResponseSchema.extend({
+    content: z.array(z.unknown()).transform(parseArticleDocument),
+})
+export type ArticleViewResponse = z.infer<typeof articleViewResponseSchema>
+
 /** 一覧の1行。本文（content）は返さない */
 export const articleListItemSchema = articleResponseSchema.omit({ content: true })
 export type ArticleListItem = z.infer<typeof articleListItemSchema>

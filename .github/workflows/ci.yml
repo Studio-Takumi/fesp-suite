@@ -28,6 +28,7 @@ jobs:
             VITE_SUPABASE_URL: http://localhost:54321
             VITE_SUPABASE_ANON_KEY: ci-dummy-anon-key
             VITE_PARTYKIT_HOST: 127.0.0.1:1999
+            VITE_EVENT_ID: 00000000-0000-4000-8000-000000000000
 
         steps:
             - uses: actions/checkout@v5
@@ -63,6 +64,7 @@ jobs:
             VITE_SUPABASE_URL: http://localhost:54321
             VITE_SUPABASE_ANON_KEY: ci-dummy-anon-key
             VITE_PARTYKIT_HOST: 127.0.0.1:1999
+            VITE_EVENT_ID: 00000000-0000-4000-8000-000000000000
 
         steps:
             - uses: actions/checkout@v5
