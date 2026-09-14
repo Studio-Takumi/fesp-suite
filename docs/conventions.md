@@ -19,6 +19,20 @@
   適用前に作られたもの。見つけたら直すが、直すこと自体を目的にした変更はしない
   （やっている作業のついでで直す）
 
+## 日時の表示
+
+日時を画面に出すときは `@fesp/ui` の `dateFormatter` を使う。`toLocaleString` や `Intl.DateTimeFormat` をその場で書かない
+（書式とタイムゾーンを揃えるため。`dateFormatter` は閲覧端末の設定に関係なく日本時間で出す）。
+
+```ts
+import { dateFormatter } from '@fesp/ui'
+
+dateFormatter(article.updated_at, 'YYYY/MM/DD HH:mm') // '2026/09/14 12:30'
+dateFormatter(article.updated_at, 'MM/DD(EEE)') // '09/14(月)'
+```
+
+使えるトークンや曜日の出し方を足したいときは、`packages/ui/src/lib/date-formatter.ts` を直す。
+
 ## Tailwind
 
 `text-[17px]` のような任意値（arbitrary value）は使わず、Tailwind のデフォルトスケール

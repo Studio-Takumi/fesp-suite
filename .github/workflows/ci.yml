@@ -23,6 +23,7 @@ jobs:
             NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy-anon-key
             NEXT_PUBLIC_PARTYKIT_HOST: 127.0.0.1:1999
             NEXT_PUBLIC_SITE_URL: http://localhost:3000
+            NEXT_PUBLIC_EVENT_ID: 00000000-0000-4000-8000-000000000000
             VITE_API_URL: http://localhost:8787
             VITE_SUPABASE_URL: http://localhost:54321
             VITE_SUPABASE_ANON_KEY: ci-dummy-anon-key
@@ -57,6 +58,7 @@ jobs:
             NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy-anon-key
             NEXT_PUBLIC_PARTYKIT_HOST: 127.0.0.1:1999
             NEXT_PUBLIC_SITE_URL: http://localhost:3000
+            NEXT_PUBLIC_EVENT_ID: 00000000-0000-4000-8000-000000000000
             VITE_API_URL: http://localhost:8787
             VITE_SUPABASE_URL: http://localhost:54321
             VITE_SUPABASE_ANON_KEY: ci-dummy-anon-key

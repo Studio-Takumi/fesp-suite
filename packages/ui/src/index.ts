@@ -1,4 +1,5 @@
 export { cn } from './lib/cn'
+export { type DateInput, dateFormatter } from './lib/date-formatter'
 export { Button, buttonVariants, type ButtonProps } from './components/button'
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './components/card'
 export { Spinner, type SpinnerProps } from './components/spinner'
