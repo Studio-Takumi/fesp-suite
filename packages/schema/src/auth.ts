@@ -37,3 +37,17 @@ export const signInSchema = z.object({
     password: z.string().min(8, 'パスワードは8文字以上で入力してください'),
 })
 export type SignInInput = z.infer<typeof signInSchema>
+
+/** 新規登録フォーム。入力はログインと同じ */
+export const signUpSchema = signInSchema
+export type SignUpInput = z.infer<typeof signUpSchema>
+
+/**
+ * ログイン後に戻るパス（`/login?redirect=<パス>`）。
+ * 別サイトへ飛ばされないよう、`/` で始まるサイト内のパスだけを通す（`//evil.example` のような
+ * プロトコル相対 URL や `/\evil.example` も弾く）。通らないものは `/` にする。
+ */
+export const redirectPathSchema = z
+    .string()
+    .regex(/^\/(?![/\\])/)
+    .catch('/')

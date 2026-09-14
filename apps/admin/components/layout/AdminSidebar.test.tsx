@@ -1,11 +1,13 @@
 import { act } from 'react'
 
+import type { Session } from '@supabase/supabase-js'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useAdminUiStore } from '~/stores/ui'
 
+import { SessionContext } from '../auth/session-context'
 import { AdminSidebar } from './AdminSidebar'
 
 let pathname = '/'
@@ -13,12 +15,53 @@ vi.mock('next/navigation', () => ({
     usePathname: () => pathname,
 }))
 
+const auth = vi.hoisted(() => ({ signOut: vi.fn() }))
+vi.mock('~/lib/supabase', () => ({ supabase: { auth } }))
+
+const session = { access_token: 'token', user: { id: 'user-id', email: 'takumi@example.com' } } as Session
+
+function renderSignedIn() {
+    return render(
+        <SessionContext.Provider value={session}>
+            <AdminSidebar />
+        </SessionContext.Provider>,
+    )
+}
+
 describe('AdminSidebar', () => {
     beforeEach(() => {
         pathname = '/'
+        vi.clearAllMocks()
+        auth.signOut.mockResolvedValue({ error: null })
         act(() => {
             useAdminUiStore.setState({ isSidebarOpen: true })
         })
+    })
+
+    it('ユーザー欄にログイン中のメールアドレスと、その先頭1文字を大文字で出す', () => {
+        renderSignedIn()
+
+        expect(screen.getByText('takumi@example.com')).toBeInTheDocument()
+        expect(screen.getByText('T')).toBeInTheDocument()
+    })
+
+    it('ログアウトボタンで、この端末のセッションを終える', async () => {
+        const user = userEvent.setup()
+        renderSignedIn()
+
+        await user.click(screen.getByRole('button', { name: 'ログアウト' }))
+
+        expect(auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
+    })
+
+    it('閉じているときはログアウトボタンだけを出す', () => {
+        act(() => {
+            useAdminUiStore.setState({ isSidebarOpen: false })
+        })
+        renderSignedIn()
+
+        expect(screen.queryByText('takumi@example.com')).not.toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'ログアウト' })).toBeInTheDocument()
     })
 
     it('メニュー項目をすべて表示する', () => {

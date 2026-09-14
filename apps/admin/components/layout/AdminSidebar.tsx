@@ -3,11 +3,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import { ChevronsUpDown, Ellipsis, PanelLeft, PanelLeftClose } from 'lucide-react'
+import { ChevronsUpDown, LogOut, PanelLeft, PanelLeftClose } from 'lucide-react'
 
+import { supabase } from '~/lib/supabase'
 import { cn } from '~/lib/utils'
 import { useAdminUiStore } from '~/stores/ui'
 
+import { useSession } from '../auth/session-context'
 import { navGroups } from './admin-nav-items'
 
 const ICON_SIZE = 20
@@ -16,6 +18,11 @@ export function AdminSidebar() {
     const pathname = usePathname()
     const isOpen = useAdminUiStore((state) => state.isSidebarOpen)
     const toggleSidebar = useAdminUiStore((state) => state.toggleSidebar)
+    const email = useSession()?.user.email ?? ''
+
+    // 移動とキャッシュの破棄は AuthGuard が SIGNED_OUT を受けて行う。
+    // global にすると他の端末・ウェブアプリのログインまで切れるので、この端末のセッションだけ終える
+    const signOut = () => void supabase.auth.signOut({ scope: 'local' })
 
     return (
         <aside
@@ -120,18 +127,23 @@ export function AdminSidebar() {
             <div
                 className={cn('flex h-16 items-center gap-2 border-t border-border px-3', !isOpen && 'justify-center')}
             >
-                <div className='flex size-8 shrink-0 items-center justify-center rounded-full bg-sky-100'>
-                    <span className='text-sm font-semibold text-sky-500'>T</span>
-                </div>
                 {isOpen ? (
                     <>
-                        <div className='min-w-0 flex-1'>
-                            <p className='truncate text-xs font-medium text-slate-900'>岩崎 拓海</p>
-                            <p className='truncate text-xs text-slate-400'>管理者</p>
+                        <div className='flex size-8 shrink-0 items-center justify-center rounded-full bg-sky-100'>
+                            <span className='text-sm font-semibold text-sky-500'>{email.charAt(0).toUpperCase()}</span>
                         </div>
-                        <Ellipsis size={ICON_SIZE} className='shrink-0 text-slate-400' />
+                        <p className='min-w-0 flex-1 truncate text-xs font-medium text-slate-900'>{email}</p>
                     </>
                 ) : null}
+                <button
+                    type='button'
+                    onClick={signOut}
+                    aria-label='ログアウト'
+                    title='ログアウト'
+                    className='flex size-8 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700'
+                >
+                    <LogOut size={ICON_SIZE} />
+                </button>
             </div>
         </aside>
     )

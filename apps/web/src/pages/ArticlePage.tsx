@@ -7,7 +7,7 @@ import { articleQuery } from '~/lib/queries'
 
 /** 記事1件のタイトルと本文を表示する */
 export function ArticlePage() {
-    const { articleId } = useParams({ from: '/articles/$articleId' })
+    const { articleId } = useParams({ from: '/_authenticated/articles/$articleId' })
     const article = useQuery(articleQuery(articleId))
 
     return (
