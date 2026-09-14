@@ -1,5 +1,16 @@
 @import '@fesp/config/tailwind/preset.css';
 
+/* 管理者サイトのテーマカラーは水色（サイドメニューの sky と揃える）。共通プリセットの primary は赤なので上書きする */
+:root {
+  --primary: oklch(68.5% 0.169 237.323); /* sky-500 */
+  --ring: oklch(68.5% 0.169 237.323);
+}
+
+.dark {
+  --primary: oklch(74.6% 0.16 232.661); /* sky-400 */
+  --ring: oklch(74.6% 0.16 232.661);
+}
+
 @source '../../../packages/ui/src';
 @source '../app';
 @source '../components';

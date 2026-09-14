@@ -111,7 +111,6 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
                         {...register('title', { onChange: clearSavedStatus })}
                         aria-invalid={Boolean(errors.title)}
                         aria-describedby={errors.title ? 'title-error' : undefined}
-                        className='h-auto border-0 px-0 text-3xl font-bold shadow-none focus-visible:ring-0'
                     />
                     {errors.title ? (
                         <p id='title-error' role='alert' className='text-sm text-destructive'>
