@@ -30,6 +30,7 @@ jobs:
             VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
             VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
             VITE_PARTYKIT_HOST: ${{ vars.VITE_PARTYKIT_HOST }}
+            VITE_EVENT_ID: ${{ vars.VITE_EVENT_ID }}
 
             # PartyKit（apps/realtime）。未設定なら realtime のデプロイだけ失敗する
             PARTYKIT_LOGIN: ${{ vars.PARTYKIT_LOGIN }}

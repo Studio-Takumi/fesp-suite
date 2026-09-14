@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { articleDocumentSchema, articleInputSchema, articleListQuerySchema, articleResponseSchema } from './article'
+import {
+    articleDocumentSchema,
+    articleInputSchema,
+    articleListQuerySchema,
+    articleResponseSchema,
+    articleViewResponseSchema,
+    parseArticleDocument,
+} from './article'
 
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
 
@@ -363,5 +370,84 @@ describe('articleResponseSchema', () => {
         })
 
         expect(result.success).toBe(true)
+    })
+})
+
+const paragraph = (id: string, text: string, children: unknown[] = []) => ({
+    id,
+    type: 'paragraph',
+    props: defaultBlockProps,
+    content: [{ type: 'text', text, styles: {} }],
+    children,
+})
+
+describe('parseArticleDocument', () => {
+    it('知らない type・props の形が合わないブロックだけ子ブロックごと取り除き、残りを返す', () => {
+        const result = parseArticleDocument([
+            paragraph('1', '先頭'),
+            { id: '2', type: 'shopList', props: { day: 1 }, children: [paragraph('2-1', '模擬店の子')] },
+            { ...paragraph('3', '色が不正'), props: { ...defaultBlockProps, textColor: 'rainbow' } },
+            paragraph('4', '末尾'),
+        ])
+
+        expect(result.map((block) => block.id)).toEqual(['1', '4'])
+    })
+
+    it('形の合わない子ブロックだけ取り除き、親と残りの子は残す', () => {
+        const result = parseArticleDocument([
+            paragraph('1', '親', [{ id: '1-1', type: 'shopList', props: {}, children: [] }, paragraph('1-2', '子')]),
+        ])
+
+        expect(result).toHaveLength(1)
+        expect(result[0]?.children.map((block) => block.id)).toEqual(['1-2'])
+    })
+
+    it('オブジェクトでない要素・children が配列でないブロックは取り除く', () => {
+        const result = parseArticleDocument([null, 'text', { ...paragraph('1', '子が無い'), children: undefined }])
+
+        expect(result).toEqual([])
+    })
+
+    it('JSONを経由した区切り線・表を受理する', () => {
+        const document = [
+            { id: '1', type: 'divider', props: {}, content: undefined, children: [] },
+            {
+                id: '2',
+                type: 'table',
+                props: { textColor: 'default' },
+                content: { type: 'tableContent', columnWidths: [undefined], rows: [] },
+                children: [],
+            },
+        ]
+
+        const result = parseArticleDocument(JSON.parse(JSON.stringify(document)))
+
+        expect(result.map((block) => block.type)).toEqual(['divider', 'table'])
+    })
+})
+
+describe('articleViewResponseSchema', () => {
+    const article = {
+        id: '7f1c2a9e-3b4d-4e5f-8a6b-1c2d3e4f5a6b',
+        event_id: EVENT_ID,
+        title: '模擬店のお知らせ',
+        created_at: '2026-09-14T01:00:00.123456+00:00',
+        updated_at: '2026-09-14T03:30:00.654321+00:00',
+    }
+
+    it('本文に描画できないブロックがあっても記事は受理し、そのブロックだけ取り除く', () => {
+        const result = articleViewResponseSchema.safeParse({
+            ...article,
+            content: [{ id: '1', type: 'shopList', props: { day: 1 }, children: [] }, paragraph('2', '現金のみです。')],
+        })
+
+        expect(result.success).toBe(true)
+        expect(result.data?.content.map((block) => block.id)).toEqual(['2'])
+    })
+
+    it('本文が配列でなければ拒否する', () => {
+        const result = articleViewResponseSchema.safeParse({ ...article, content: { type: 'doc', content: [] } })
+
+        expect(result.success).toBe(false)
     })
 })

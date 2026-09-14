@@ -1,6 +1,7 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 
 import { AppShell } from './components/app-shell'
+import { ArticlePage } from './pages/ArticlePage'
 import { HomePage } from './pages/home'
 
 /**
@@ -18,7 +19,13 @@ const indexRoute = createRoute({
     component: HomePage,
 })
 
-export const routeTree = rootRoute.addChildren([indexRoute])
+const articleRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/articles/$articleId',
+    component: ArticlePage,
+})
+
+export const routeTree = rootRoute.addChildren([indexRoute, articleRoute])
 
 export function createAppRouter() {
     return createRouter({ routeTree, defaultPreload: 'intent' })
