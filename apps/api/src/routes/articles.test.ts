@@ -241,6 +241,54 @@ describe('PUT /api/articles/:id', () => {
         expect(res.status).toBe(404)
     })
 
+    it('区切り線・表を含む本文（エディタの出力をそのまま JSON で送ったもの）を保存できる', async () => {
+        result = { data: article, error: null }
+        const cellProps = {
+            backgroundColor: 'default',
+            textColor: 'default',
+            textAlignment: 'left',
+            colspan: 1,
+            rowspan: 1,
+        }
+        const blockContent = [
+            { id: 'd1', type: 'divider', props: {}, content: undefined, children: [] },
+            {
+                id: 't1',
+                type: 'table',
+                props: { textColor: 'default' },
+                content: {
+                    type: 'tableContent',
+                    columnWidths: [undefined, undefined],
+                    rows: [
+                        {
+                            cells: [
+                                {
+                                    type: 'tableCell',
+                                    props: cellProps,
+                                    content: [{ type: 'text', text: '模擬店', styles: {} }],
+                                },
+                                {
+                                    type: 'tableCell',
+                                    props: cellProps,
+                                    content: [],
+                                },
+                            ],
+                        },
+                    ],
+                },
+                children: [],
+            },
+        ]
+
+        const res = await sendJson(`/api/articles/${ARTICLE_ID}?event_id=${EVENT_ID}`, 'PUT', {
+            title: '',
+            content: blockContent,
+        })
+
+        expect(res.status).toBe(200)
+        expect(argsOf('update')).toEqual([[{ title: '', content: blockContent }]])
+    })
+
     it('title が無いと 400', async () => {
         const res = await sendJson(`/api/articles/${ARTICLE_ID}?event_id=${EVENT_ID}`, 'PUT', { content })
 
