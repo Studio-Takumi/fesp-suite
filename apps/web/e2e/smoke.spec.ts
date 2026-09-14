@@ -1,10 +1,13 @@
 import { expect, test } from '@playwright/test'
 
+import { signIn } from './support/session'
+
 /**
  * 配線確認のスモークテスト。
  * API はまだ立てずに済むよう、レスポンスをルートでスタブしている。
  */
 test.beforeEach(async ({ page }) => {
+    await signIn(page)
     await page.route('**/api/example*', (route) =>
         route.fulfill({
             json: { message: 'APIの配線確認用エンドポイントです', now: '2026-09-01T10:00:00Z' },

@@ -7,8 +7,8 @@ import { logger } from 'hono/logger'
 import { type ErrorResponse, exampleInputSchema, type ExampleResponse, paginationQuerySchema } from '@fesp/schema'
 
 import { validationHook } from './lib/validator'
-import { requireAuth } from './middleware/auth'
 import { articlesRoute } from './routes/articles'
+import { meRoute } from './routes/me'
 import type { AppEnv } from './types'
 
 const app = new Hono<AppEnv>()
@@ -53,9 +53,7 @@ export const routes = app
         return c.json({ received: c.req.valid('json') }, 201)
     })
 
-    // JWT検証の例（Authorization: Bearer <supabaseのaccess_token>）
-    .get('/api/me', requireAuth, (c) => c.json({ user: c.get('user') }))
-
+    .route('/api/me', meRoute)
     .route('/api/articles', articlesRoute)
 
 app.notFound((c) => {

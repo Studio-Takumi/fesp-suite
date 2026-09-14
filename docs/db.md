@@ -20,6 +20,13 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
+
+    users {
+        uuid id PK "auth.users.id"
+        timestamptz created_at
+        timestamptz updated_at
+        timestamptz deleted_at
+    }
 ```
 
 ## events
@@ -69,3 +76,29 @@ erDiagram
 | 操作                                      | 許可する条件                                |
 | ----------------------------------------- | ------------------------------------------- |
 | `select` / `insert` / `update` / `delete` | `event_id` = JWT の `app_metadata.event_id` |
+
+## users
+
+ログインできる人1人 = 1行。Supabase Auth の `auth.users` と 1:1 で、ウェブアプリ・管理者サイトで共通。
+
+| 列           | 型            | NULL | 既定値  | 説明                                                         |
+| ------------ | ------------- | ---- | ------- | ------------------------------------------------------------ |
+| `id`         | `uuid`        | NO   |         | 主キー。`auth.users.id`。Auth のユーザーを消すと一緒に消える |
+| `created_at` | `timestamptz` | NO   | `now()` |                                                              |
+| `updated_at` | `timestamptz` | NO   | `now()` | 更新時にトリガーで `now()` にする                            |
+| `deleted_at` | `timestamptz` | YES  |         | 論理削除した日時。削除していなければ `NULL`                  |
+
+### 行の作成
+
+- `auth.users` に行が入ったとき（メールアドレスでの新規登録・Google での初回ログイン）に、トリガーで1行作る
+
+### 制約・インデックス
+
+- `foreign key (id) references auth.users (id) on delete cascade`
+
+### RLS
+
+| 操作                           | 許可する条件                           |
+| ------------------------------ | -------------------------------------- |
+| `select`                       | `id` = `auth.uid()`                    |
+| `insert` / `update` / `delete` | なし（トリガーと `service_role` のみ） |

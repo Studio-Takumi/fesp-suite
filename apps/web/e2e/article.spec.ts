@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
 
+import { signIn } from './support/session'
+
 /**
  * 記事ページの通しテスト。
  * API はまだ立てずに済むよう、レスポンスをルートでスタブしている。
@@ -9,6 +11,7 @@ const ARTICLE_ID = '7f1c2a9e-3b4d-4e5f-8a6b-1c2d3e4f5a6b'
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' }
 
 test.beforeEach(async ({ page }) => {
+    await signIn(page)
     await page.route('**/api/articles/**', (route) =>
         route.fulfill({
             json: {

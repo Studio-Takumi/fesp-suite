@@ -7,9 +7,24 @@ vi.mock('jose', () => ({
     jwtVerify: (...args: unknown[]) => jwtVerify(...args),
 }))
 
-const { default: app } = await import('./index')
-
 const USER_ID = '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d'
+
+/** supabase-js のクエリビルダーの代わり。どのメソッドを呼んでも自分を返し、await すると自分のユーザーの行を返す */
+vi.mock('./lib/supabase', () => {
+    const row = { id: USER_ID, created_at: '2026-09-15T10:00:00+09:00', updated_at: '2026-09-15T10:00:00+09:00' }
+    const builder: unknown = new Proxy(
+        {},
+        {
+            get: (_target, method: string) =>
+                method === 'then'
+                    ? (resolve: (value: unknown) => void) => resolve({ data: row, error: null })
+                    : () => builder,
+        },
+    )
+    return { createUserClient: () => builder }
+})
+
+const { default: app } = await import('./index')
 
 /** テスト用の env（wrangler の Bindings 相当） */
 const testEnv = {
@@ -110,14 +125,13 @@ describe('JWT検証', () => {
         expect(res.status).toBe(401)
     })
 
-    it('検証が通れば user を返す', async () => {
+    it('検証が通れば認証が要るルートに届く', async () => {
         jwtVerify.mockResolvedValueOnce(claims())
         const res = await app.request('/api/me', { headers: { Authorization: 'Bearer valid' } }, testEnv)
         expect(res.status).toBe(200)
 
-        const body = (await res.json()) as { user: { userId: string; role: string } }
-        expect(body.user.userId).toBe(USER_ID)
-        expect(body.user.role).toBe('authenticated')
+        const body = (await res.json()) as { id: string }
+        expect(body.id).toBe(USER_ID)
     })
 
     it('JWKS と issuer の検証オプションを渡している', async () => {
