@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { articleDocumentSchema } from './article'
+import { articleDocumentSchema, articleInputSchema, articleListQuerySchema, articleResponseSchema } from './article'
 
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
 
@@ -241,5 +241,54 @@ describe('articleDocumentSchema', () => {
         ])
 
         expect(result.success).toBe(false)
+    })
+})
+
+const EVENT_ID = '0b7e6d5c-4a3b-4c2d-9e1f-a2b3c4d5e6f7'
+
+describe('articleInputSchema', () => {
+    it('空の本文を受理する', () => {
+        expect(articleInputSchema.safeParse({ content: [] }).success).toBe(true)
+    })
+
+    it('content が無ければ拒否する', () => {
+        expect(articleInputSchema.safeParse({}).success).toBe(false)
+    })
+
+    it('content が記事ドキュメントの形でなければ拒否する', () => {
+        const result = articleInputSchema.safeParse({
+            content: [{ id: '1', type: 'image', props: {}, children: [] }],
+        })
+
+        expect(result.success).toBe(false)
+    })
+})
+
+describe('articleListQuerySchema', () => {
+    it('limit / offset の既定値が入る', () => {
+        expect(articleListQuerySchema.parse({ event_id: EVENT_ID })).toEqual({
+            event_id: EVENT_ID,
+            limit: 20,
+            offset: 0,
+        })
+    })
+
+    it('event_id が無い・UUID でなければ拒否する', () => {
+        expect(articleListQuerySchema.safeParse({}).success).toBe(false)
+        expect(articleListQuerySchema.safeParse({ event_id: 'dev' }).success).toBe(false)
+    })
+})
+
+describe('articleResponseSchema', () => {
+    it('Supabase が返す形（マイクロ秒・オフセット付きの日時）を受理する', () => {
+        const result = articleResponseSchema.safeParse({
+            id: '7f1c2a9e-3b4d-4e5f-8a6b-1c2d3e4f5a6b',
+            event_id: EVENT_ID,
+            content: [],
+            created_at: '2026-09-14T01:00:00.123456+00:00',
+            updated_at: '2026-09-14T03:30:00.654321+00:00',
+        })
+
+        expect(result.success).toBe(true)
     })
 })

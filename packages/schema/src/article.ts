@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { paginationQuerySchema, timestampSchema, uuidSchema } from './common'
+
 /**
  * 記事ドキュメント（BlockNoteのブロック配列JSON）のzodスキーマ。
  *
@@ -221,3 +223,46 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
 /** 記事ドキュメント全体の形。BlockNoteの `Block[]`（トップレベルは配列で、`doc` のようなルートノードは無い） */
 export const articleDocumentSchema = z.array(articleBlockSchema)
 export type ArticleDocument = z.infer<typeof articleDocumentSchema>
+
+/** 記事オブジェクト（GET /api/articles/:id などのレスポンス） */
+export const articleResponseSchema = z.object({
+    id: uuidSchema,
+    event_id: uuidSchema,
+    content: articleDocumentSchema,
+    created_at: timestampSchema,
+    updated_at: timestampSchema,
+})
+export type ArticleResponse = z.infer<typeof articleResponseSchema>
+
+/** 一覧の1行。本文（content）は返さない */
+export const articleListItemSchema = articleResponseSchema.omit({ content: true })
+export type ArticleListItem = z.infer<typeof articleListItemSchema>
+
+/** GET /api/articles のレスポンス */
+export const articleListResponseSchema = z.object({
+    items: z.array(articleListItemSchema),
+    limit: z.number().int(),
+    offset: z.number().int(),
+})
+export type ArticleListResponse = z.infer<typeof articleListResponseSchema>
+
+/** 対象イベントを指定するクエリ */
+export const articleEventQuerySchema = z.object({
+    event_id: uuidSchema,
+})
+export type ArticleEventQuery = z.infer<typeof articleEventQuerySchema>
+
+/** GET /api/articles のクエリ */
+export const articleListQuerySchema = paginationQuerySchema.extend(articleEventQuerySchema.shape)
+export type ArticleListQuery = z.infer<typeof articleListQuerySchema>
+
+/** 記事IDのパスパラメータ */
+export const articleIdParamSchema = z.object({
+    id: uuidSchema,
+})
+
+/** POST /api/articles・PUT /api/articles/:id のリクエストボディ */
+export const articleInputSchema = z.object({
+    content: articleDocumentSchema,
+})
+export type ArticleInput = z.infer<typeof articleInputSchema>

@@ -3,7 +3,7 @@
 3フロント（LP / ウェブアプリ / 管理者サイト）共通のバックエンド。
 **Hono on Cloudflare Workers**。DBは Supabase（Postgres）。
 
-> 現状は配線確認用のサンプルエンドポイントのみ。ドメインのルートは未実装。
+> エンドポイントの仕様は [`docs/api.md`](../../docs/api.md)。
 
 ## 立ち上げ方
 
@@ -30,7 +30,7 @@ curl -X POST http://localhost:8787/api/example \
 
 Supabase 未接続でも上記は動く（DBを叩いていないため）。
 
-## 既存のエンドポイント（すべてサンプル）
+## サンプルのエンドポイント
 
 | メソッド | パス           | 何の確認用か                                    |
 | -------- | -------------- | ----------------------------------------------- |
@@ -39,7 +39,7 @@ Supabase 未接続でも上記は動く（DBを叩いていないため）。
 | POST     | `/api/example` | 共有zodスキーマでのボディ検証                   |
 | GET      | `/api/me`      | JWT検証（`Authorization: Bearer <token>` 必須） |
 
-実装を始めるときは `src/routes/` を作り、`index.ts` から `app.route()` で束ねる。
+ドメインのルートは `src/routes/` に置き、`index.ts` から `app.route()` で束ねる。
 
 ## 環境変数（`.dev.vars`）
 
@@ -59,6 +59,7 @@ src/
 ├─ index.ts              ルーティング / CORS / エラーハンドラ
 ├─ types.ts              Bindings（env）と Variables（c.set する値）
 ├─ middleware/auth.ts    JWT検証 → c.set("user"|"accessToken")
+├─ routes/               ドメインのルート（articles.ts など）
 └─ lib/
    ├─ jwt.ts             jose + JWKS。鍵はグローバルにキャッシュ
    ├─ supabase.ts        user / anon / service_role の3クライアント

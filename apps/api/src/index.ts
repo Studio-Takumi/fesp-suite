@@ -8,6 +8,7 @@ import { type ErrorResponse, exampleInputSchema, type ExampleResponse, paginatio
 
 import { validationHook } from './lib/validator'
 import { requireAuth } from './middleware/auth'
+import { articlesRoute } from './routes/articles'
 import type { AppEnv } from './types'
 
 const app = new Hono<AppEnv>()
@@ -54,6 +55,8 @@ export const routes = app
 
     // JWT検証の例（Authorization: Bearer <supabaseのaccess_token>）
     .get('/api/me', requireAuth, (c) => c.json({ user: c.get('user') }))
+
+    .route('/api/articles', articlesRoute)
 
 app.notFound((c) => {
     const body: ErrorResponse = {
