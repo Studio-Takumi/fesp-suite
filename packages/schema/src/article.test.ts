@@ -201,6 +201,64 @@ describe('articleDocumentSchema', () => {
         expect(result.success).toBe(true)
     })
 
+    it('JSONを経由した区切り線（contentキーが消える）・表（列幅がnullになる）を受理する', () => {
+        const document = [
+            {
+                id: '1',
+                type: 'divider',
+                props: {},
+                content: undefined,
+                children: [],
+            },
+            {
+                id: '2',
+                type: 'table',
+                props: { textColor: 'default' },
+                content: {
+                    type: 'tableContent',
+                    columnWidths: [120, undefined],
+                    rows: [
+                        {
+                            cells: [
+                                {
+                                    type: 'tableCell',
+                                    props: { ...defaultBlockProps, colspan: 1, rowspan: 1 },
+                                    content: [{ type: 'text', text: '模擬店', styles: {} }],
+                                },
+                                {
+                                    type: 'tableCell',
+                                    props: { ...defaultBlockProps, colspan: 1, rowspan: 1 },
+                                    content: [],
+                                },
+                            ],
+                        },
+                    ],
+                },
+                children: [],
+            },
+        ]
+
+        const result = articleDocumentSchema.safeParse(JSON.parse(JSON.stringify(document)))
+
+        expect(result.success).toBe(true)
+        // BlockNoteに戻せるよう、列幅のnullはundefinedに戻す
+        expect(result.data?.[1]?.content).toMatchObject({ columnWidths: [120, undefined] })
+    })
+
+    it('表の列幅に数値・null以外が入っていたら拒否する', () => {
+        const result = articleDocumentSchema.safeParse([
+            {
+                id: '1',
+                type: 'table',
+                props: { textColor: 'default' },
+                content: { type: 'tableContent', columnWidths: ['120px'], rows: [] },
+                children: [],
+            },
+        ])
+
+        expect(result.success).toBe(false)
+    })
+
     it('quoteにtextAlignmentを渡すと拒否する（quoteはtextAlignmentを持たない）', () => {
         const result = articleDocumentSchema.safeParse([
             {

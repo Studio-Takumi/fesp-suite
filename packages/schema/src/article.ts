@@ -120,7 +120,16 @@ export type ArticleTableCell = z.infer<typeof tableCellSchema>
 
 const tableContentSchema = z.object({
     type: z.literal('tableContent'),
-    columnWidths: z.array(z.number().optional()),
+    /**
+     * 列幅を変えていない列はBlockNoteが`undefined`を入れ、JSONを経由すると`null`になる。
+     * BlockNoteの型は`null`を許さないため、`undefined`に戻す
+     */
+    columnWidths: z.array(
+        z
+            .number()
+            .nullish()
+            .transform((width) => width ?? undefined),
+    ),
     headerRows: z.number().int().min(0).optional(),
     headerCols: z.number().int().min(0).optional(),
     rows: z.array(z.object({ cells: z.array(tableCellSchema) })),
@@ -141,7 +150,7 @@ export type ArticleBlock = {
         | 'table'
         | 'codeBlock'
     props: Record<string, unknown>
-    content: (ArticleStyledText | ArticleLink)[] | ArticleTableContent | undefined
+    content?: (ArticleStyledText | ArticleLink)[] | ArticleTableContent
     children: ArticleBlock[]
 }
 
@@ -200,7 +209,8 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             id: z.string().min(1),
             type: z.literal('divider'),
             props: dividerPropsSchema,
-            content: z.undefined(),
+            /** BlockNoteは`content: undefined`を入れるが、JSONを経由するとキーごと消える */
+            content: z.undefined().optional(),
             children: z.array(articleBlockSchema),
         }),
         z.object({
