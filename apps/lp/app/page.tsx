@@ -1,5 +1,5 @@
-import { Hero } from '~/components/hero'
-import { ScrollSection } from '~/components/scroll-section'
+import { Hero } from '~/components/Hero'
+import { ScrollSection } from '~/components/ScrollSection'
 
 export default function LandingPage() {
     return (
