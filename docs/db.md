@@ -21,10 +21,9 @@ erDiagram
         uuid id PK
         uuid event_id FK
         uuid created_by FK
-        text title
-        jsonb content
-        article_status status
+        integer latest_version FK
         integer published_version FK
+        article_status status
         timestamptz published_at
         timestamptz created_at
         timestamptz updated_at
@@ -83,42 +82,53 @@ erDiagram
 
 ## articles
 
-記事のタイトルと本文。1行 = 1記事。
+記事。1行 = 1記事。タイトル・本文は持たず、`article_histories` の版を番号で指す。
 
-| 列                  | 型               | NULL | 既定値              | 説明                                                                                                                                                                       |
-| ------------------- | ---------------- | ---- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`                | `uuid`           | NO   | `gen_random_uuid()` | 主キー                                                                                                                                                                     |
-| `event_id`          | `uuid`           | NO   |                     | `events.id`。イベントを消すと一緒に消える                                                                                                                                  |
-| `created_by`        | `uuid`           | NO   |                     | `users.id`。記事を作成したユーザー。更新時はトリガーで元の値に戻す（変えられない）                                                                                         |
-| `title`             | `text`           | NO   | `''`                | 記事のタイトル。100文字まで。空文字可。公開中なら公開している版の、下書きなら最新の版のタイトル                                                                            |
-| `content`           | `jsonb`          | NO   | `'[]'`              | BlockNoteのブロック配列。形は `articleDocumentSchema`（`packages/schema/src/article.ts`）で検証する。公開中なら公開している版の、下書きなら最新の版の本文                  |
-| `status`            | `article_status` | NO   | `'draft'`           | 公開状態。`draft`（下書き）/ `published`（公開）                                                                                                                           |
-| `published_version` | `integer`        | YES  |                     | 公開中の版（`article_histories.version`）。下書きなら `NULL`。作成時のトリガーと `save_article` で決める                                                                   |
-| `published_at`      | `timestamptz`    | YES  |                     | 初めて公開した日時。一度も公開していなければ `NULL`。作成・更新時にトリガーで決める（初めて `published` になったときに `now()`、以降は元の値に戻す。渡された値は使わない） |
-| `created_at`        | `timestamptz`    | NO   | `now()`             |                                                                                                                                                                            |
-| `updated_at`        | `timestamptz`    | NO   | `now()`             | 更新時にトリガーで `now()` にする                                                                                                                                          |
+| 列                  | 型               | NULL | 既定値              | 説明                                                                                                                                                                              |
+| ------------------- | ---------------- | ---- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                | `uuid`           | NO   | `gen_random_uuid()` | 主キー                                                                                                                                                                            |
+| `event_id`          | `uuid`           | NO   |                     | `events.id`。イベントを消すと一緒に消える                                                                                                                                         |
+| `created_by`        | `uuid`           | NO   |                     | `users.id`。記事を作成したユーザー。更新時はトリガーで元の値に戻す（変えられない）                                                                                                |
+| `latest_version`    | `integer`        | NO   |                     | 最新の版（`article_histories.version`）。`create_article` と `save_article` で決める                                                                                              |
+| `published_version` | `integer`        | YES  |                     | 公開中の版（`article_histories.version`）。下書きなら `NULL`。`save_article` で決める                                                                                             |
+| `status`            | `article_status` | NO   |                     | 公開状態。`published_version` から決まる生成列で、`NULL` なら `draft`（下書き）、それ以外は `published`（公開）。書き込めない                                                     |
+| `published_at`      | `timestamptz`    | YES  |                     | 初めて公開した日時。一度も公開していなければ `NULL`。作成・更新時にトリガーで決める（`published_version` が初めて入ったときに `now()`、以降は元の値に戻す。渡された値は使わない） |
+| `created_at`        | `timestamptz`    | NO   | `now()`             |                                                                                                                                                                                   |
+| `updated_at`        | `timestamptz`    | NO   | `now()`             | 更新時にトリガーで `now()` にする                                                                                                                                                 |
+
+公開中の記事のタイトル・本文は `published_version` の版、下書きの記事のタイトル・本文は `latest_version` の版のもの。
 
 ### 制約・インデックス
 
 - `foreign key (event_id) references events (id) on delete cascade`
 - `foreign key (created_by) references users (id)` … ユーザーは論理削除するので、記事を持つユーザーの行は消せない
+- `foreign key (id, latest_version) references article_histories (article_id, version) deferrable initially deferred` … 存在しない版を最新にできない。記事と版1を同じトランザクションで作るので、確かめるのはコミット時
 - `foreign key (id, published_version) references article_histories (article_id, version)` … 存在しない版を公開中にできない
-- `check (char_length(title) <= 100)`
 - `index (event_id, updated_at desc)` … 一覧（イベント内で更新日時の新しい順）用
 - `index (created_by)` … `users` の RLS で作成者を引く用
 
 ### RLS
 
-| 操作     | 許可する条件                                                                                       |
-| -------- | -------------------------------------------------------------------------------------------------- |
-| `select` | `event_id` のイベントの `staff`。または `event_id` のイベントのメンバーで、`status` が `published` |
-| `insert` | `event_id` のイベントの `staff` で、`created_by` が `auth.uid()`                                   |
-| `update` | `event_id` のイベントの `staff`（更新後の `event_id` でも判定）                                    |
-| `delete` | なし（`service_role` のみ）                                                                        |
+| 操作     | 許可する条件                                                                                                    |
+| -------- | --------------------------------------------------------------------------------------------------------------- |
+| `select` | `event_id` のイベントの `staff`。または `event_id` のイベントのメンバーで、`published_version` が `NULL` でない |
+| `insert` | `event_id` のイベントの `staff` で、`created_by` が `auth.uid()`                                                |
+| `update` | `event_id` のイベントの `staff`（更新後の `event_id` でも判定）                                                 |
+| `delete` | なし（`service_role` のみ）                                                                                     |
+
+### 作成（`create_article`）
+
+`public.create_article(target_event_id, new_title, new_content)` で、記事と版1を1トランザクションで作り、作った記事の `id` を返す。
+呼び出したユーザーの権限で動くので、`articles` / `article_histories` の RLS がそのまま効く（`staff` でなければ `42501` で失敗する）。
+
+- 記事は `created_by` を `auth.uid()`、`latest_version` を `1`、`published_version` を `NULL`（下書き）で作る
+- 版1はタイトル・本文を引数の値、`created_by` を `auth.uid()` で作る
+
+`anon` からは呼べない。
 
 ### 保存（`save_article`）
 
-`public.save_article(target_article_id, new_title, new_content, new_status)` で、版の追加と記事の更新を1トランザクションで行う。
+`public.save_article(target_article_id, new_title, new_content, new_status)` で、版の追加・上書きと記事の更新を1トランザクションで行う。
 呼び出したユーザーの権限で動くので、`articles` / `article_histories` の RLS がそのまま効く。
 記事の行をロックしてから処理するので、同時に保存しても版の番号はずれない。
 
@@ -130,52 +140,52 @@ erDiagram
         - 最新の版を作ってから30分以内（`created_at` で判定）
         - 最新の版が公開中の版（`published_version`）ではない
     - それ以外は、新しい版（最新の版の番号 + 1）を足す
-3. `new_status` で記事を更新し、`true` を返す
+3. `latest_version` を今回の版にし、`new_status` で `published_version` を決めて、`true` を返す。記事の行は毎回更新するので、`updated_at` は保存のたびに進む
 
-| `new_status`   | 今が `draft`                                                                  | 今が `published`                                                                    |
-| -------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `NULL`（省略） | `title` / `content` を今回の中身にする                                        | 変えない（一時保存）                                                                |
-| `published`    | `title` / `content` を今回の中身にし、`published`・今回の版を公開中の版にする | `title` / `content` を今回の中身にし、今回の版を公開中の版にする                    |
-| `draft`        | `title` / `content` を今回の中身にする                                        | `title` / `content` を今回の中身にし、`draft` に戻す。`published_version` は `NULL` |
+| `new_status`   | `published_version`                                              |
+| -------------- | ---------------------------------------------------------------- |
+| `NULL`（省略） | 変えない（下書きは下書きのまま。公開中の記事なら一時保存になる） |
+| `published`    | 今回の版                                                         |
+| `draft`        | `NULL`                                                           |
 
 `anon` からは呼べない。
 
 ## article_histories
 
-記事の編集履歴。1行 = 1記事の1版。版は一直線に増え、枝分かれしない。
+記事のタイトル・本文の版。1行 = 1記事の1版。版は一直線に増え、枝分かれしない。
 
-| 列           | 型            | NULL | 既定値              | 説明                                                                           |
-| ------------ | ------------- | ---- | ------------------- | ------------------------------------------------------------------------------ |
-| `id`         | `uuid`        | NO   | `gen_random_uuid()` | 主キー                                                                         |
-| `article_id` | `uuid`        | NO   |                     | `articles.id`。記事を消すと一緒に消える                                        |
-| `version`    | `integer`     | NO   |                     | 版の番号。記事ごとに 1 から1ずつ増える                                         |
-| `created_by` | `uuid`        | YES  |                     | `users.id`。その版を保存したユーザー。`service_role` から保存したときは `NULL` |
-| `title`      | `text`        | NO   |                     | その版のタイトル                                                               |
-| `content`    | `jsonb`       | NO   |                     | その版の本文。形は `articles.content` と同じ                                   |
-| `created_at` | `timestamptz` | NO   | `now()`             | 版を作った日時                                                                 |
-| `updated_at` | `timestamptz` | NO   | `now()`             | 版を上書きしたときにトリガーで `now()` にする                                  |
+| 列           | 型            | NULL | 既定値              | 説明                                                                                                              |
+| ------------ | ------------- | ---- | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `id`         | `uuid`        | NO   | `gen_random_uuid()` | 主キー                                                                                                            |
+| `article_id` | `uuid`        | NO   |                     | `articles.id`。記事を消すと一緒に消える                                                                           |
+| `version`    | `integer`     | NO   |                     | 版の番号。記事ごとに 1 から1ずつ増える                                                                            |
+| `created_by` | `uuid`        | YES  |                     | `users.id`。その版を保存したユーザー。`service_role` から保存したときは `NULL`                                    |
+| `title`      | `text`        | NO   |                     | その版のタイトル。100文字まで。空文字可                                                                           |
+| `content`    | `jsonb`       | NO   |                     | その版の本文。BlockNoteのブロック配列。形は `articleDocumentSchema`（`packages/schema/src/article.ts`）で検証する |
+| `created_at` | `timestamptz` | NO   | `now()`             | 版を作った日時                                                                                                    |
+| `updated_at` | `timestamptz` | NO   | `now()`             | 版を上書きしたときにトリガーで `now()` にする                                                                     |
 
 ### 行の作成
 
-- 記事を作ったときに、トリガーで版1を作る（タイトル・本文は作った記事と同じ、`created_by` は記事の作成者）。記事を `published` で作ったときは、`articles.published_version` を `1` にする
+- 記事を作るときに、`create_article`（`articles` の「作成」）で版1を作る
 - 以降は `save_article`（`articles` の「保存」）で作る・上書きする
 - 保持期間・件数の上限はない
 
 ### 制約・インデックス
 
-- `unique (article_id, version)` … 記事の最新の版を引く用も兼ねる
+- `unique (article_id, version)` … 記事の版を番号で引く用も兼ねる
 - `check (char_length(title) <= 100)`
 - `foreign key (article_id) references articles (id) on delete cascade`
 - `foreign key (created_by) references users (id)`
 
 ### RLS
 
-| 操作     | 許可する条件                                                                                            |
-| -------- | ------------------------------------------------------------------------------------------------------- |
-| `select` | `article_id` の記事のイベントの `staff`                                                                 |
-| `insert` | `article_id` の記事のイベントの `staff` で、`created_by` が `auth.uid()`                                |
-| `update` | `article_id` の記事のイベントの `staff`（更新後の行では `created_by` が `auth.uid()` であることも判定） |
-| `delete` | なし（`service_role` のみ）                                                                             |
+| 操作     | 許可する条件                                                                                                                                                             |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `select` | `article_id` の記事のイベントの `staff`。または `article_id` の記事のイベントのメンバーで、その版が記事の公開中の版（`published_version`）                               |
+| `insert` | `article_id` の記事のイベントの `staff` で、`created_by` が `auth.uid()`                                                                                                 |
+| `update` | `article_id` の記事のイベントの `staff` で、その版が記事の公開中の版ではない（公開中の版は上書きできない。更新後の行では `created_by` が `auth.uid()` であることも判定） |
+| `delete` | なし（`service_role` のみ）                                                                                                                                              |
 
 ## users
 
