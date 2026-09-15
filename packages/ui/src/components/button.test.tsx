@@ -5,11 +5,19 @@ import { describe, expect, it, vi } from 'vitest'
 import { Button } from './button'
 
 describe('Button', () => {
-    it('子要素を描画し、既定で type=button になる', () => {
+    it('子要素を描画する', () => {
         render(<Button>保存する</Button>)
-        const button = screen.getByRole('button', { name: '保存する' })
-        expect(button).toBeInTheDocument()
-        expect(button).toHaveAttribute('type', 'button')
+        expect(screen.getByRole('button', { name: '保存する' })).toBeInTheDocument()
+    })
+
+    it('asChild のときは子要素にボタンの見た目を渡す', () => {
+        render(
+            <Button asChild>
+                <a href='/articles'>記事一覧</a>
+            </Button>,
+        )
+        expect(screen.queryByRole('button')).not.toBeInTheDocument()
+        expect(screen.getByRole('link', { name: '記事一覧' })).toHaveClass('bg-primary')
     })
 
     it('クリックで onClick が呼ばれる', async () => {

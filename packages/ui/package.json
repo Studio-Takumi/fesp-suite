@@ -6,6 +6,11 @@
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
+  "imports": {
+    "#components/*": "./src/components/*.tsx",
+    "#lib/*": "./src/lib/*.ts",
+    "#hooks/*": "./src/hooks/*.ts"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./components/*": "./src/components/*.tsx",
@@ -21,6 +26,8 @@
   "dependencies": {
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cn": "^0.3.0",
+    "radix-ui": "^1.6.7",
     "tailwind-merge": "^3.6.0"
   },
   "peerDependencies": {
