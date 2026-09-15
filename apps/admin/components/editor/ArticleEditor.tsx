@@ -77,7 +77,7 @@ export type ArticleEditorProps = {
  * 対応言語はhtml/css/javascript/typescript/json/yaml/markdownの7つに絞っている
  * （バンドルサイズの都合。増やす場合はsyntaxHighlightingのlangsに足す）。
  * 独自コンポーネントブロックの挿入・テンプレートによるロックは #24 で対応する。
- * 共同編集（Yjs）はこの版では繋がない（同期編集は `collaborative-editor.tsx` の役割）。
+ * 共同編集（Yjs）はこの版では繋がない（同期編集は `CollaborativeEditor.tsx` の役割）。
  */
 export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
     const editor = useCreateBlockNote({

@@ -40,11 +40,11 @@ src/
 ├─ main.tsx                エントリ（QueryClientProvider / RouterProvider）
 ├─ index.css               Tailwind プリセットの読み込み
 ├─ pages/
-│  ├─ home.tsx             配線確認用のトップページ（実装時に置き換える）
+│  ├─ HomePage.tsx         配線確認用のトップページ（実装時に置き換える）
 │  └─ ArticlePage.tsx      記事ページ（/articles/:articleId）
 ├─ components/
-│  ├─ app-shell.tsx        共通レイアウト
-│  ├─ query-boundary.tsx   読み込み中 / エラー / 表示の分岐
+│  ├─ AppShell.tsx         共通レイアウト
+│  ├─ QueryBoundary.tsx    読み込み中 / エラー / 表示の分岐
 │  └─ article/             記事本文のレンダラ（ArticleRenderer・レジストリ・ブロックごとの部品）
 ├─ lib/
 │  ├─ queries.ts           TanStack Query の queryOptions（サーバー状態）

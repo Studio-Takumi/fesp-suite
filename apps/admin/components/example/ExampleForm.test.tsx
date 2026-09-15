@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import { ExampleForm } from './example-form'
+import { ExampleForm } from './ExampleForm'
 
 describe('ExampleForm（共有zod + React Hook Form）', () => {
     it('未入力なら送信されず、エラーメッセージが出る', async () => {
