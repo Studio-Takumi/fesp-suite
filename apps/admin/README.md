@@ -39,15 +39,15 @@ bun run build && bun run start   # 本番ビルドの確認（:3001）
 
 ```
 app/
-├─ layout.tsx / providers.tsx   QueryClientProvider
+├─ layout.tsx / Providers.tsx   QueryClientProvider
 └─ page.tsx                     配線確認用ページ（実装時に置き換える）
 components/
 ├─ ui/                          shadcn/ui 相当のプリミティブ（button/input/label/table）
 ├─ example/
-│  ├─ data-table.tsx            TanStack Table の汎用テーブル（ソート・フィルタ）
-│  └─ example-form.tsx          React Hook Form + 共有zod のフォーム
+│  ├─ DataTable.tsx             TanStack Table の汎用テーブル（ソート・フィルタ）
+│  └─ ExampleForm.tsx           React Hook Form + 共有zod のフォーム
 └─ editor/
-   ├─ collaborative-editor.tsx  TipTap + Collaboration + 保存ボタン
+   ├─ CollaborativeEditor.tsx   TipTap + Collaboration + 保存ボタン
    └─ use-collaboration.ts      Yjs Doc と PartyKit プロバイダ
 lib/    api.ts（APIクライアント）/ queries.ts / supabase.ts / env.ts / utils.ts
 stores/ ui.ts（Zustand。UI状態のみ）

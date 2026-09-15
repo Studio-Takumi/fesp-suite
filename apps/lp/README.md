@@ -23,8 +23,8 @@ app/
 ├─ page.tsx            ページ本体
 └─ globals.css         Tailwind プリセットの読み込み
 components/
-├─ hero.tsx            ファーストビュー（`animate` でのフェードイン）
-└─ scroll-section.tsx  スクロール連動（`whileInView`）の書き方の見本
+├─ Hero.tsx            ファーストビュー（`animate` でのフェードイン）
+└─ ScrollSection.tsx   スクロール連動（`whileInView`）の書き方の見本
 ```
 
 アニメーションは `useReducedMotion()` でOSのモーション低減設定を尊重している。

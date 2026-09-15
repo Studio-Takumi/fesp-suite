@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
 import './globals.css'
-import { Providers } from './providers'
+import { Providers } from './Providers'
 
 export const metadata: Metadata = {
     title: {

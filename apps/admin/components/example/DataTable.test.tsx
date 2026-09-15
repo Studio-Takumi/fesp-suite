@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import { DataTable } from './data-table'
+import { DataTable } from './DataTable'
 
 type Row = { id: string; name: string; status: string }
 

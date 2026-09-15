@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 
 import { ArticleRenderer } from '~/components/article/ArticleRenderer'
-import { QueryBoundary } from '~/components/query-boundary'
+import { QueryBoundary } from '~/components/QueryBoundary'
 import { articleQuery } from '~/lib/queries'
 
 /** 記事1件のタイトルと本文を表示する */

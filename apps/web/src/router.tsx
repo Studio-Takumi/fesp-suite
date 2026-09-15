@@ -2,10 +2,10 @@ import { createRootRoute, createRoute, createRouter, Outlet, redirect } from '@t
 
 import { redirectPathSchema } from '@fesp/schema'
 
-import { AppShell } from './components/app-shell'
+import { AppShell } from './components/AppShell'
 import { supabase } from './lib/supabase'
 import { ArticlePage } from './pages/ArticlePage'
-import { HomePage } from './pages/home'
+import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { SignupPage } from './pages/SignupPage'
