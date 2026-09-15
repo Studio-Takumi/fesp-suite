@@ -31,6 +31,7 @@ const listItem = {
     created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
     creator: { display_name: '山田太郎' },
     status: 'published',
+    published_version: 1,
     published_at: '2026-09-14T12:00:00+09:00',
     title: '模擬店のお知らせ',
     created_at: '2026-09-14T01:00:00+00:00',
@@ -79,7 +80,14 @@ describe('ArticleList', () => {
     it('公開状態を、下書きなら「下書き」、公開なら「公開中」と出す', async () => {
         adminFetch.mockResolvedValue({
             items: [
-                { ...listItem, id: DRAFT_ARTICLE_ID, title: '書きかけの記事', status: 'draft', published_at: null },
+                {
+                    ...listItem,
+                    id: DRAFT_ARTICLE_ID,
+                    title: '書きかけの記事',
+                    status: 'draft',
+                    published_version: null,
+                    published_at: null,
+                },
                 listItem,
             ],
             limit: 100,

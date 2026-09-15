@@ -12,6 +12,16 @@ import { type ArticleDocument, articleInputSchema, type ArticleResponse } from '
 import { ApiError } from '@fesp/types'
 
 import { ArticleEditor } from '~/components/editor/ArticleEditor'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '~/components/ui/alert-dialog'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
@@ -19,7 +29,7 @@ import { Switch } from '~/components/ui/switch'
 import { articleQuery, useUpdateArticle } from '~/lib/queries'
 
 /** 本文は BlockNote の変更を state で持つので、フォームで扱うのはタイトルと公開状態 */
-const articleFormSchema = articleInputSchema.pick({ title: true, status: true })
+const articleFormSchema = articleInputSchema.pick({ title: true, status: true }).required()
 
 /** zod の .trim() があるため、フォームの入力型（input）と送信型（output）は別物になる */
 type ArticleFormValues = z.input<typeof articleFormSchema>
@@ -62,7 +72,11 @@ export function ArticleEditView({ id }: ArticleEditViewProps) {
 }
 
 function ArticleForm({ article }: { article: ArticleResponse }) {
-    const [articleDocument, setArticleDocument] = useState<ArticleDocument>(article.content)
+    // 公開中の記事を一時保存した変更は最新の版にだけ入るので、最新の版から編集を始める
+    const initial = article.latest_history ?? article
+    const [articleDocument, setArticleDocument] = useState<ArticleDocument>(initial.content)
+    /** 公開中の記事を公開のまま保存しようとしたときのタイトル。ダイアログを開いている間だけ入る */
+    const [pendingTitle, setPendingTitle] = useState<string | null>(null)
     const updateArticle = useUpdateArticle(article.id)
     const {
         register,
@@ -71,8 +85,13 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
         formState: { errors },
     } = useForm<ArticleFormValues, unknown, ArticleFormOutput>({
         resolver: zodResolver(articleFormSchema),
-        defaultValues: { title: article.title, status: article.status },
+        defaultValues: { title: initial.title, status: article.status },
     })
+
+    const hasUnpublishedChanges =
+        article.status === 'published' &&
+        article.latest_history !== null &&
+        article.latest_history.version !== article.published_version
 
     const clearSavedStatus = () => {
         if (updateArticle.isSuccess) updateArticle.reset()
@@ -83,9 +102,24 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
         clearSavedStatus()
     }
 
-    const handleSave = handleSubmit(({ title, status }) =>
-        updateArticle.mutate({ title, content: articleDocument, status }),
-    )
+    const handleSave = handleSubmit(({ title, status }) => {
+        // 公開中の記事を公開のまま保存するときは、公開に反映するか一時保存にするかを選んでもらう
+        if (article.status === 'published' && status === 'published') {
+            setPendingTitle(title)
+            return
+        }
+        updateArticle.mutate({ title, content: articleDocument, status })
+    })
+
+    /** ダイアログの選択で保存する。status を送らなければ一時保存（公開中の記事は変えない） */
+    const saveWhilePublished = (status?: 'published') => () => {
+        if (pendingTitle === null) return
+        updateArticle.mutate(
+            status
+                ? { title: pendingTitle, content: articleDocument, status }
+                : { title: pendingTitle, content: articleDocument },
+        )
+    }
 
     return (
         <div className='space-y-6 p-8'>
@@ -97,6 +131,9 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
                         <p className='text-sm text-muted-foreground'>
                             {`作成者: ${article.creator.display_name ?? '（名前未設定）'}`}
                         </p>
+                        {hasUnpublishedChanges ? (
+                            <p className='text-sm text-muted-foreground'>公開していない変更があります</p>
+                        ) : null}
                     </div>
                     <div className='flex items-center gap-3'>
                         {updateArticle.isSuccess ? (
@@ -148,7 +185,30 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
                 </div>
             </form>
 
-            <ArticleEditor content={article.content} onChange={handleDocumentChange} />
+            <AlertDialog
+                open={pendingTitle !== null}
+                onOpenChange={(open) => {
+                    if (!open) setPendingTitle(null)
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>公開中の記事です</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            一時保存すると、公開中の記事はそのままで変更だけを保存します。
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                        <AlertDialogAction variant='outline' onClick={saveWhilePublished()}>
+                            一時保存する
+                        </AlertDialogAction>
+                        <AlertDialogAction onClick={saveWhilePublished('published')}>公開に反映する</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <ArticleEditor content={initial.content} onChange={handleDocumentChange} />
 
             <details className='rounded-md border border-border p-4 text-sm'>
                 <summary className='cursor-pointer font-medium'>JSON（確認用）</summary>
