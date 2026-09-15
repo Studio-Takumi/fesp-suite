@@ -40,9 +40,19 @@ bunx supabase gen types typescript --project-id <ref> > packages/types/src/datab
 ## 設計するときの前提
 
 - **RLS を有効にする前提で設計する**（テーブルを作ったら必ずポリシーも書く）
-- 認可に使う情報（所属など）は **Auth Hook で JWT の `app_metadata` に埋める**。
-  API（Hono）と PartyKit はこのクレームを見て判断する
+- イベントへの所属は JWT に埋めず、**RLS で `auth.uid()` から `event_members` を引いて判定する**
+  （`private.is_event_member` / `private.is_event_staff`。[`docs/db.md`](../docs/db.md)）
 - API は原則ユーザーのJWTを引き継いだクライアントで読み書きし、RLS を効かせる
   （`apps/api/src/lib/supabase.ts` の `createUserClient`）
 - `service_role` を使う場合は **Hono 側で認可を自前実装する**
 - テストは「他人の行が見えない・触れない」を重点的に検証する
+
+## RLS のテスト
+
+`apps/api/rls/` にある。fesp-dev に一時的なユーザー・イベントを作り、ユーザーのトークンで PostgREST を叩いて確かめ、
+終わったら消す。`apps/api/.dev.vars` の `SUPABASE_SERVICE_ROLE_KEY` を使うため CI では動かさない。
+**マイグレーションで RLS を触ったら、`db push` のあとに手元で回す。**
+
+```bash
+bun run --filter @fesp/api test:rls
+```

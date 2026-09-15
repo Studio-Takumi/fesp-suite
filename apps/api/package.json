@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:rls": "vitest run --config vitest.rls.config.ts",
     "cf-typegen": "wrangler types",
     "clean": "rm -rf .turbo .wrangler dist coverage"
   },

@@ -17,7 +17,7 @@ export const jwtClaimsSchema = z.object({
     exp: z.number(),
     iat: z.number().optional(),
     session_id: z.string().optional(),
-    /** 認可に使う独自クレームを足す場合はここ（Auth Hook で埋める） */
+    /** イベントへの所属はクレームに持たせず、RLS が auth.uid() から event_members を引いて判定する */
     app_metadata: z.looseObject({}).optional(),
     user_metadata: z.record(z.string(), z.unknown()).optional(),
 })

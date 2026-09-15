@@ -3,6 +3,8 @@
 ```mermaid
 erDiagram
     events ||--o{ articles : "event_id"
+    events ||--o{ event_members : "event_id"
+    users ||--o{ event_members : "user_id"
 
     events {
         uuid id PK
@@ -27,6 +29,14 @@ erDiagram
         timestamptz updated_at
         timestamptz deleted_at
     }
+
+    event_members {
+        uuid user_id PK,FK
+        uuid event_id PK,FK
+        event_member_role role
+        timestamptz created_at
+        timestamptz updated_at
+    }
 ```
 
 ## events
@@ -47,10 +57,10 @@ erDiagram
 
 ### RLS
 
-| 操作                           | 許可する条件                          |
-| ------------------------------ | ------------------------------------- |
-| `select`                       | `id` = JWT の `app_metadata.event_id` |
-| `insert` / `update` / `delete` | なし（`service_role` のみ）           |
+| 操作                           | 許可する条件                |
+| ------------------------------ | --------------------------- |
+| `select`                       | そのイベントのメンバー      |
+| `insert` / `update` / `delete` | なし（`service_role` のみ） |
 
 ## articles
 
@@ -73,9 +83,11 @@ erDiagram
 
 ### RLS
 
-| 操作                                      | 許可する条件                                |
-| ----------------------------------------- | ------------------------------------------- |
-| `select` / `insert` / `update` / `delete` | `event_id` = JWT の `app_metadata.event_id` |
+| 操作                | 許可する条件                                                    |
+| ------------------- | --------------------------------------------------------------- |
+| `select`            | `event_id` のイベントのメンバー                                 |
+| `insert` / `update` | `event_id` のイベントの `staff`（更新後の `event_id` でも判定） |
+| `delete`            | なし（`service_role` のみ）                                     |
 
 ## users
 
@@ -102,3 +114,42 @@ erDiagram
 | ------------------------------ | -------------------------------------- |
 | `select`                       | `id` = `auth.uid()`                    |
 | `insert` / `update` / `delete` | なし（トリガーと `service_role` のみ） |
+
+## event_members
+
+ユーザーがどのイベントに、どの役割で所属しているか。1行 = 1人の1イベントへの所属。
+年度をまたいで複数のイベントに所属でき、イベントごとに役割が違ってよい。
+
+| 列           | 型                  | NULL | 既定値  | 説明                                      |
+| ------------ | ------------------- | ---- | ------- | ----------------------------------------- |
+| `user_id`    | `uuid`              | NO   |         | `users.id`。ユーザーを消すと一緒に消える  |
+| `event_id`   | `uuid`              | NO   |         | `events.id`。イベントを消すと一緒に消える |
+| `role`       | `event_member_role` | NO   |         | `staff`（運営）/ `visitor`（来場者）      |
+| `created_at` | `timestamptz`       | NO   | `now()` |                                           |
+| `updated_at` | `timestamptz`       | NO   | `now()` | 更新時にトリガーで `now()` にする         |
+
+脱退は行を消す（論理削除しない）。
+
+### 制約・インデックス
+
+- `primary key (user_id, event_id)`
+- `foreign key (user_id) references users (id) on delete cascade`
+- `foreign key (event_id) references events (id) on delete cascade`
+- `index (event_id)` … イベントのメンバーを引く用
+
+### 所属の判定
+
+RLS から次の関数を呼んで判定する。`private` スキーマに置き、API（PostgREST）からは呼べない。
+`security definer` で、`event_members` 自身の RLS を通さずに引く。
+
+| 関数                                | `true` を返す条件                                                          |
+| ----------------------------------- | -------------------------------------------------------------------------- |
+| `private.is_event_member(event_id)` | `auth.uid()` の `event_members` の行があり、`users` が論理削除されていない |
+| `private.is_event_staff(event_id)`  | 上に加えて、`role` が `staff`                                              |
+
+### RLS
+
+| 操作                           | 許可する条件                |
+| ------------------------------ | --------------------------- |
+| `select`                       | `user_id` = `auth.uid()`    |
+| `insert` / `update` / `delete` | なし（`service_role` のみ） |

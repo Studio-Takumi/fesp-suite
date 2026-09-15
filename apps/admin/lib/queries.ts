@@ -43,19 +43,22 @@ export function useCreateExample() {
     })
 }
 
-const eventQuery = () => `event_id=${env.NEXT_PUBLIC_EVENT_ID}`
-
+// 対象のイベントは、イベントを切り替えられるようになるまで env で固定する
 export const articlesQuery = () =>
     queryOptions({
         queryKey: queryKeys.articles,
         queryFn: ({ signal }) =>
-            adminFetch(`/api/articles?${eventQuery()}&limit=100`, articleListResponseSchema, { signal }),
+            adminFetch(`/api/articles?event_id=${env.NEXT_PUBLIC_EVENT_ID}&limit=100`, articleListResponseSchema, {
+                signal,
+                authenticated: true,
+            }),
     })
 
 export const articleQuery = (id: string) =>
     queryOptions({
         queryKey: queryKeys.article(id),
-        queryFn: ({ signal }) => adminFetch(`/api/articles/${id}?${eventQuery()}`, articleResponseSchema, { signal }),
+        queryFn: ({ signal }) =>
+            adminFetch(`/api/articles/${id}`, articleResponseSchema, { signal, authenticated: true }),
     })
 
 export function useCreateArticle() {
@@ -63,7 +66,11 @@ export function useCreateArticle() {
 
     return useMutation({
         mutationFn: (input: ArticleInput) =>
-            adminFetch(`/api/articles?${eventQuery()}`, articleResponseSchema, { method: 'POST', body: input }),
+            adminFetch('/api/articles', articleResponseSchema, {
+                method: 'POST',
+                body: { ...input, event_id: env.NEXT_PUBLIC_EVENT_ID },
+                authenticated: true,
+            }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.articles, exact: true }),
     })
 }
@@ -73,7 +80,11 @@ export function useUpdateArticle(id: string) {
 
     return useMutation({
         mutationFn: (input: ArticleInput) =>
-            adminFetch(`/api/articles/${id}?${eventQuery()}`, articleResponseSchema, { method: 'PUT', body: input }),
+            adminFetch(`/api/articles/${id}`, articleResponseSchema, {
+                method: 'PUT',
+                body: input,
+                authenticated: true,
+            }),
         onSuccess: (article) => {
             queryClient.setQueryData(queryKeys.article(id), article)
             return queryClient.invalidateQueries({ queryKey: queryKeys.articles, exact: true })

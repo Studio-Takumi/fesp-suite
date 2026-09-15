@@ -3,7 +3,6 @@ import { queryOptions } from '@tanstack/react-query'
 import { articleViewResponseSchema, exampleResponseSchema } from '@fesp/schema'
 
 import { apiFetch } from './api'
-import { env } from './env'
 
 /**
  * サーバー状態は必ずここ（TanStack Query）で扱う。
@@ -26,5 +25,5 @@ export const articleQuery = (id: string) =>
     queryOptions({
         queryKey: queryKeys.article(id),
         queryFn: ({ signal }) =>
-            apiFetch(`/api/articles/${id}?event_id=${env.VITE_EVENT_ID}`, articleViewResponseSchema, { signal }),
+            apiFetch(`/api/articles/${id}`, articleViewResponseSchema, { signal, authenticated: true }),
     })

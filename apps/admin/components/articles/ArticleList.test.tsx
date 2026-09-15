@@ -5,6 +5,8 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { ApiError } from '@fesp/types'
+
 import { ArticleList } from './ArticleList'
 
 const EVENT_ID = '0b7e6d5c-4a3b-4c2d-9e1f-a2b3c4d5e6f7'
@@ -36,7 +38,7 @@ describe('ArticleList', () => {
         push.mockReset()
     })
 
-    it('env のイベントの記事を先頭100件取得し、タイトルを編集画面へのリンクにする', async () => {
+    it('env のイベントの記事をログインユーザーとして先頭100件取得し、タイトルを編集画面へのリンクにする', async () => {
         adminFetch.mockResolvedValue({ items: [listItem], limit: 100, offset: 0 })
 
         renderWithQueryClient(<ArticleList />)
@@ -49,7 +51,7 @@ describe('ArticleList', () => {
         expect(adminFetch).toHaveBeenCalledWith(
             `/api/articles?event_id=${EVENT_ID}&limit=100`,
             expect.anything(),
-            expect.anything(),
+            expect.objectContaining({ authenticated: true }),
         )
     })
 
@@ -77,7 +79,7 @@ describe('ArticleList', () => {
         expect(await screen.findByText('記事がありません')).toBeInTheDocument()
     })
 
-    it('新規作成でタイトル・本文とも空の記事を作り、その編集画面へ移動する', async () => {
+    it('新規作成で env のイベントにタイトル・本文とも空の記事を作り、その編集画面へ移動する', async () => {
         adminFetch.mockImplementation(async (_path: string, _schema: unknown, options?: { method?: string }) =>
             options?.method === 'POST' ? { ...listItem, title: '', content: [] } : { items: [], limit: 100, offset: 0 },
         )
@@ -88,9 +90,27 @@ describe('ArticleList', () => {
         await userEvent.click(screen.getByRole('button', { name: '新規作成' }))
 
         await waitFor(() => expect(push).toHaveBeenCalledWith(`/articles/${ARTICLE_ID}`))
-        expect(adminFetch).toHaveBeenCalledWith(`/api/articles?event_id=${EVENT_ID}`, expect.anything(), {
+        expect(adminFetch).toHaveBeenCalledWith('/api/articles', expect.anything(), {
             method: 'POST',
-            body: { title: '', content: [] },
+            body: { event_id: EVENT_ID, title: '', content: [] },
+            authenticated: true,
         })
+    })
+
+    it('記事を作成する権限が無い（403）ときはエラーメッセージを出し、移動しない', async () => {
+        adminFetch.mockImplementation(async (_path: string, _schema: unknown, options?: { method?: string }) => {
+            if (options?.method === 'POST') {
+                throw new ApiError(403, 'forbidden', 'このイベントに記事を作成する権限がありません')
+            }
+            return { items: [], limit: 100, offset: 0 }
+        })
+
+        renderWithQueryClient(<ArticleList />)
+        await screen.findByText('記事がありません')
+
+        await userEvent.click(screen.getByRole('button', { name: '新規作成' }))
+
+        expect(await screen.findByRole('alert')).toHaveTextContent('このイベントに記事を作成する権限がありません')
+        expect(push).not.toHaveBeenCalled()
     })
 })

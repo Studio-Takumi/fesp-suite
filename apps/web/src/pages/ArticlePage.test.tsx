@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import { server } from '~/test/msw/server'
 import { renderApp } from '~/test/render'
+import { testSession } from '~/test/supabase'
 
 const API = 'http://localhost:8787'
 const EVENT_ID = '00000000-0000-4000-8000-000000000000'
@@ -27,11 +28,13 @@ const articleFixture = {
 }
 
 describe('記事ページ', () => {
-    it('env のイベントを付けて記事を取得し、タイトルと本文を表示する', async () => {
-        let requestedEventId: string | null = null
+    it('ログインユーザーのトークンを付けて記事を取得し、タイトルと本文を表示する', async () => {
+        let requestUrl: URL | null = null
+        let requestAuthorization: string | null = null
         server.use(
             http.get(`${API}/api/articles/:id`, ({ request, params }) => {
-                requestedEventId = new URL(request.url).searchParams.get('event_id')
+                requestUrl = new URL(request.url)
+                requestAuthorization = request.headers.get('Authorization')
                 return params.id === ARTICLE_ID
                     ? HttpResponse.json(articleFixture)
                     : HttpResponse.json(
@@ -45,7 +48,8 @@ describe('記事ページ', () => {
 
         expect(await screen.findByRole('heading', { level: 1, name: '模擬店のお知らせ' })).toBeInTheDocument()
         expect(screen.getByText('現金のみです。')).toBeInTheDocument()
-        expect(requestedEventId).toBe(EVENT_ID)
+        expect(requestAuthorization).toBe(`Bearer ${testSession.access_token}`)
+        expect(requestUrl!.search).toBe('')
     })
 
     it('タイトルが空なら「（無題）」と出す', async () => {

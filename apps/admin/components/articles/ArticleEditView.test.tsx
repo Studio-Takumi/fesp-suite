@@ -40,7 +40,7 @@ const article: ArticleResponse = {
     updated_at: '2026-09-14T03:30:00+00:00',
 }
 
-const articlePath = `/api/articles/${ARTICLE_ID}?event_id=${EVENT_ID}`
+const articlePath = `/api/articles/${ARTICLE_ID}`
 
 type FetchOptions = { method?: string; body?: unknown }
 
@@ -60,7 +60,11 @@ describe('ArticleEditView', () => {
 
         expect(await screen.findByText('現金のみです。')).toBeInTheDocument()
         expect(screen.getByRole('textbox', { name: 'タイトル' })).toHaveValue('模擬店のお知らせ')
-        expect(adminFetch).toHaveBeenCalledWith(articlePath, expect.anything(), expect.anything())
+        expect(adminFetch).toHaveBeenCalledWith(
+            articlePath,
+            expect.anything(),
+            expect.objectContaining({ authenticated: true }),
+        )
     })
 
     it('記事が見つからないと、エディタの代わりに一覧へのリンクを出す', async () => {
@@ -85,6 +89,7 @@ describe('ArticleEditView', () => {
         expect(adminFetch).toHaveBeenCalledWith(articlePath, expect.anything(), {
             method: 'PUT',
             body: { title: '模擬店のお知らせ', content: article.content },
+            authenticated: true,
         })
     })
 
@@ -139,10 +144,13 @@ describe('ArticleEditView', () => {
         expect(putCalls()).toHaveLength(0)
     })
 
-    it('保存に失敗したらエラーメッセージを出す', async () => {
+    it.each([
+        [500, 'internal_error', 'サーバー内部エラーが発生しました'],
+        [403, 'forbidden', 'この記事を更新する権限がありません'],
+    ])('保存に失敗（%i）したらエラーメッセージを出す', async (status, code, message) => {
         adminFetch.mockImplementation(async (_path: string, _schema: unknown, options?: FetchOptions) => {
             if (options?.method === 'PUT') {
-                throw new ApiError(500, 'internal_error', 'サーバー内部エラーが発生しました')
+                throw new ApiError(status, code, message)
             }
             return article
         })
@@ -152,6 +160,6 @@ describe('ArticleEditView', () => {
 
         await userEvent.click(screen.getByRole('button', { name: '保存' }))
 
-        expect(await screen.findByRole('alert')).toHaveTextContent('サーバー内部エラーが発生しました')
+        expect(await screen.findByRole('alert')).toHaveTextContent(message)
     })
 })
