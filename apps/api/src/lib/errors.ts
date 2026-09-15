@@ -22,5 +22,7 @@ export const forbidden = (message = 'この操作を行う権限がありませ�
 
 export const notFound = (message = '対象が見つかりません') => apiError(404, 'not_found', message)
 
+export const conflict = (message: string) => apiError(409, 'conflict', message)
+
 export const badRequest = (message: string, details?: Record<string, string[]>) =>
     apiError(400, 'bad_request', message, details)

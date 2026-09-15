@@ -6,6 +6,7 @@ import {
     articleInputSchema,
     articleListQuerySchema,
     articleResponseSchema,
+    articleScheduleInputSchema,
     articleViewResponseSchema,
     parseArticleDocument,
 } from './article'
@@ -384,6 +385,35 @@ describe('articleCreateInputSchema の公開状態', () => {
     })
 })
 
+describe('articleScheduleInputSchema', () => {
+    const input = {
+        version: 2,
+        version_updated_at: '2026-09-14T04:10:00.654321+00:00',
+        publish_at: '2099-09-20T09:00:00+09:00',
+    }
+
+    it('版の番号・版の更新日時（マイクロ秒）・現在より後の公開日時を受理する', () => {
+        expect(articleScheduleInputSchema.parse(input)).toEqual(input)
+    })
+
+    it('公開日時が現在以前なら拒否する', () => {
+        const result = articleScheduleInputSchema.safeParse({ ...input, publish_at: '2000-01-01T00:00:00+09:00' })
+
+        expect(result.success).toBe(false)
+        expect(result.error?.issues[0]?.message).toBe('現在より後の日時を指定してください')
+    })
+
+    it('公開日時・版の更新日時がオフセット付きの日時でなければ拒否する', () => {
+        expect(articleScheduleInputSchema.safeParse({ ...input, publish_at: '2099-09-20T09:00' }).success).toBe(false)
+        expect(articleScheduleInputSchema.safeParse({ ...input, version_updated_at: '' }).success).toBe(false)
+    })
+
+    it('版の番号が1以上の整数でなければ拒否する', () => {
+        expect(articleScheduleInputSchema.safeParse({ ...input, version: 0 }).success).toBe(false)
+        expect(articleScheduleInputSchema.safeParse({ ...input, version: 1.5 }).success).toBe(false)
+    })
+})
+
 describe('articleListQuerySchema', () => {
     it('limit / offset の既定値が入る', () => {
         expect(articleListQuerySchema.parse({ event_id: EVENT_ID })).toEqual({
@@ -420,10 +450,35 @@ describe('articleResponseSchema', () => {
             created_at: '2026-09-14T04:00:00.123456+00:00',
             updated_at: '2026-09-14T04:10:00.654321+00:00',
         },
+        schedule: null,
+    }
+
+    const schedule = {
+        version: 2,
+        publish_at: '2026-09-20T00:00:00+00:00',
+        created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
+        created_at: '2026-09-14T05:00:00.123456+00:00',
+        updated_at: '2026-09-14T05:00:00.123456+00:00',
     }
 
     it('Supabase が返す形（マイクロ秒・オフセット付きの日時）を受理する', () => {
         expect(articleResponseSchema.safeParse(article).success).toBe(true)
+    })
+
+    it('予約のある記事を受理する（予約した人が null でもよい）', () => {
+        expect(articleResponseSchema.safeParse({ ...article, schedule }).success).toBe(true)
+        expect(
+            articleResponseSchema.safeParse({ ...article, schedule: { ...schedule, created_by: null } }).success,
+        ).toBe(true)
+    })
+
+    it('予約が無い（キーが無い）・予約の版の番号が不正なら拒否する', () => {
+        const { schedule: _schedule, ...withoutSchedule } = article
+
+        expect(articleResponseSchema.safeParse(withoutSchedule).success).toBe(false)
+        expect(articleResponseSchema.safeParse({ ...article, schedule: { ...schedule, version: 0 } }).success).toBe(
+            false,
+        )
     })
 
     it('最新の版が読めない（latest_history が null の）記事を受理する', () => {
@@ -570,6 +625,13 @@ describe('articleViewResponseSchema', () => {
 
         expect(result.success).toBe(true)
         expect(result.data).not.toHaveProperty('latest_history')
+    })
+
+    it('予約は持たない（表示に使わない）', () => {
+        const result = articleViewResponseSchema.safeParse({ ...article, content: [], schedule: { version: 0 } })
+
+        expect(result.success).toBe(true)
+        expect(result.data).not.toHaveProperty('schedule')
     })
 
     it('本文に描画できないブロックがあっても記事は受理し、そのブロックだけ取り除く', () => {

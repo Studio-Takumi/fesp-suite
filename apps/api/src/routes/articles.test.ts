@@ -94,6 +94,7 @@ const article = {
     created_at: '2026-09-14T10:00:00+00:00',
     updated_at: '2026-09-14T12:30:00+00:00',
     latest_history: latestHistory,
+    schedule: null,
 }
 
 const { title: _title, content: _content, ...articleWithoutBody } = article
@@ -106,7 +107,7 @@ const articleRow = {
 }
 
 const BASE_COLUMNS =
-    'id, event_id, created_by, creator:users!created_by(display_name), status, published_version, published_at, created_at, updated_at'
+    'id, event_id, created_by, creator:users!created_by(display_name), status, published_version, published_at, created_at, updated_at, schedule:article_schedules!article_schedules_article_id_fkey(version, publish_at, created_by, created_at, updated_at)'
 const ARTICLE_COLUMNS = `${BASE_COLUMNS}, published_history:article_histories!articles_published_version_fkey(title, content), latest_history:article_histories!articles_latest_version_fkey(version, title, content, created_by, created_at, updated_at)`
 const OTHER_USER_ID = '1d2e3f4a-5b6c-4d7e-8f9a-0b1c2d3e4f5a'
 
@@ -131,6 +132,10 @@ function sendJson(
         { method, headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
         testEnv,
     )
+}
+
+function remove(path: string, headers: Record<string, string> = authorization) {
+    return app.request(path, { method: 'DELETE', headers }, testEnv)
 }
 
 async function errorCodeOf(res: Response): Promise<string> {
@@ -160,11 +165,15 @@ describe('認証', () => {
         ['GET', `/api/articles/${ARTICLE_ID}`],
         ['POST', '/api/articles'],
         ['PUT', `/api/articles/${ARTICLE_ID}`],
+        ['PUT', `/api/articles/${ARTICLE_ID}/schedule`],
+        ['DELETE', `/api/articles/${ARTICLE_ID}/schedule`],
     ] as const)('%s %s は Authorization が無いと 401 で、DB を読まない', async (method, path) => {
         const res =
             method === 'GET'
                 ? await get(path, {})
-                : await sendJson(path, method, { event_id: EVENT_ID, title: '', content }, {})
+                : method === 'DELETE'
+                  ? await remove(path, {})
+                  : await sendJson(path, method, { event_id: EVENT_ID, title: '', content }, {})
 
         expect(res.status).toBe(401)
         expect(await errorCodeOf(res)).toBe('unauthorized')
@@ -606,6 +615,159 @@ describe('PUT /api/articles/:id', () => {
 
     it('status が draft / published でないと 400', async () => {
         const res = await sendJson(path, 'PUT', { title: '', content, status: 'archived' })
+
+        expect(res.status).toBe(400)
+        expect(calls).toHaveLength(0)
+    })
+})
+
+/** 予約。版2を 2099/09/20 09:00（日本時間）に公開する */
+const schedule = {
+    version: 2,
+    publish_at: '2099-09-20T00:00:00+00:00',
+    created_by: USER_ID,
+    created_at: '2026-09-14T14:00:00+00:00',
+    updated_at: '2026-09-14T14:00:00+00:00',
+}
+
+describe('PUT /api/articles/:id/schedule', () => {
+    const path = `/api/articles/${ARTICLE_ID}/schedule`
+    const input = {
+        version: 2,
+        version_updated_at: '2026-09-14T13:10:00.123456+00:00',
+        publish_at: '2099-09-20T09:00:00+09:00',
+    }
+
+    it('予約の関数に版・版の更新日時・公開日時を渡し、予約後の記事を予約つきで返す', async () => {
+        queuedResults.push({ data: true, error: null }, { data: { ...articleRow, schedule }, error: null })
+
+        const res = await sendJson(path, 'PUT', input)
+
+        expect(res.status).toBe(200)
+        await expect(res.json()).resolves.toEqual({ ...article, schedule })
+        expect(argsOf('rpc')).toEqual([
+            [
+                'schedule_article',
+                {
+                    target_article_id: ARTICLE_ID,
+                    target_version: 2,
+                    version_updated_at: input.version_updated_at,
+                    new_publish_at: input.publish_at,
+                },
+            ],
+        ])
+        expect(argsOf('select')).toEqual([[ARTICLE_COLUMNS]])
+        expect(argsOf('eq')).toEqual([['id', ARTICLE_ID]])
+    })
+
+    it('予約しようとした版が無い・上書きされていた（PT409）と 409 で、読み直さない', async () => {
+        queuedResults.push({
+            data: null,
+            error: dbError('PT409', '予約しようとした版が見つからないか、更新されています'),
+        })
+
+        const res = await sendJson(path, 'PUT', input)
+
+        expect(res.status).toBe(409)
+        expect(await errorCodeOf(res)).toBe('conflict')
+        expect(argsOf('select')).toEqual([])
+    })
+
+    it('予約できず（関数が false）、記事は読める（メンバーだが staff でない）と 403', async () => {
+        queuedResults.push({ data: false, error: null }, { data: { id: ARTICLE_ID }, error: null })
+
+        const res = await sendJson(path, 'PUT', input)
+
+        expect(res.status).toBe(403)
+        expect(await errorCodeOf(res)).toBe('forbidden')
+    })
+
+    it('予約できず、記事も読めない（存在しない・所属していないイベントの記事）と 404', async () => {
+        queuedResults.push({ data: false, error: null }, { data: null, error: null })
+
+        const res = await sendJson(path, 'PUT', input)
+
+        expect(res.status).toBe(404)
+        expect(await errorCodeOf(res)).toBe('not_found')
+    })
+
+    it('それ以外の DB のエラーは 500', async () => {
+        vi.spyOn(console, 'error').mockImplementation(() => {})
+        queuedResults.push({ data: null, error: dbError('XX000', 'boom') })
+
+        const res = await sendJson(path, 'PUT', input)
+
+        expect(res.status).toBe(500)
+    })
+
+    it('公開日時が現在以前だと 400 で、DB を呼ばない', async () => {
+        const res = await sendJson(path, 'PUT', { ...input, publish_at: '2000-01-01T09:00:00+09:00' })
+
+        expect(res.status).toBe(400)
+        const body = (await res.json()) as { error: { details?: Record<string, string[]> } }
+        expect(body.error.details?.publish_at).toContain('現在より後の日時を指定してください')
+        expect(calls).toHaveLength(0)
+    })
+
+    it('版の番号・版の更新日時が無いと 400', async () => {
+        const { version: _version, ...withoutVersion } = input
+        const { version_updated_at: _versionUpdatedAt, ...withoutVersionUpdatedAt } = input
+
+        expect((await sendJson(path, 'PUT', withoutVersion)).status).toBe(400)
+        expect((await sendJson(path, 'PUT', withoutVersionUpdatedAt)).status).toBe(400)
+        expect(calls).toHaveLength(0)
+    })
+
+    it('id が UUID でないと 400', async () => {
+        const res = await sendJson('/api/articles/not-a-uuid/schedule', 'PUT', input)
+
+        expect(res.status).toBe(400)
+        expect(calls).toHaveLength(0)
+    })
+})
+
+describe('DELETE /api/articles/:id/schedule', () => {
+    const path = `/api/articles/${ARTICLE_ID}/schedule`
+
+    it('予約を取り消す関数を呼び、取り消し後の記事を返す', async () => {
+        queuedResults.push({ data: true, error: null }, { data: articleRow, error: null })
+
+        const res = await remove(path)
+
+        expect(res.status).toBe(200)
+        await expect(res.json()).resolves.toEqual(article)
+        expect(argsOf('rpc')).toEqual([['cancel_article_schedule', { target_article_id: ARTICLE_ID }]])
+        expect(argsOf('select')).toEqual([[ARTICLE_COLUMNS]])
+    })
+
+    it('取り消せず（関数が false）、記事は読める（メンバーだが staff でない）と 403', async () => {
+        queuedResults.push({ data: false, error: null }, { data: { id: ARTICLE_ID }, error: null })
+
+        const res = await remove(path)
+
+        expect(res.status).toBe(403)
+        expect(await errorCodeOf(res)).toBe('forbidden')
+    })
+
+    it('取り消せず、記事も読めないと 404', async () => {
+        queuedResults.push({ data: false, error: null }, { data: null, error: null })
+
+        const res = await remove(path)
+
+        expect(res.status).toBe(404)
+    })
+
+    it('DB のエラーは 500', async () => {
+        vi.spyOn(console, 'error').mockImplementation(() => {})
+        queuedResults.push({ data: null, error: dbError('XX000', 'boom') })
+
+        const res = await remove(path)
+
+        expect(res.status).toBe(500)
+    })
+
+    it('id が UUID でないと 400', async () => {
+        const res = await remove('/api/articles/not-a-uuid/schedule')
 
         expect(res.status).toBe(400)
         expect(calls).toHaveLength(0)

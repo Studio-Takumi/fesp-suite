@@ -8,6 +8,8 @@ erDiagram
     users ||--o{ articles : "created_by"
     articles ||--o{ article_histories : "article_id"
     users ||--o{ article_histories : "created_by"
+    articles ||--o| article_schedules : "article_id"
+    users ||--o{ article_schedules : "created_by"
 
     events {
         uuid id PK
@@ -36,6 +38,15 @@ erDiagram
         uuid created_by FK
         text title
         jsonb content
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    article_schedules {
+        uuid article_id PK,FK
+        integer version FK
+        timestamptz publish_at
+        uuid created_by FK
         timestamptz created_at
         timestamptz updated_at
     }
@@ -84,17 +95,17 @@ erDiagram
 
 記事。1行 = 1記事。タイトル・本文は持たず、`article_histories` の版を番号で指す。
 
-| 列                  | 型               | NULL | 既定値              | 説明                                                                                                                                                                              |
-| ------------------- | ---------------- | ---- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`                | `uuid`           | NO   | `gen_random_uuid()` | 主キー                                                                                                                                                                            |
-| `event_id`          | `uuid`           | NO   |                     | `events.id`。イベントを消すと一緒に消える                                                                                                                                         |
-| `created_by`        | `uuid`           | NO   |                     | `users.id`。記事を作成したユーザー。更新時はトリガーで元の値に戻す（変えられない）                                                                                                |
-| `latest_version`    | `integer`        | NO   |                     | 最新の版（`article_histories.version`）。`create_article` と `save_article` で決める                                                                                              |
-| `published_version` | `integer`        | YES  |                     | 公開中の版（`article_histories.version`）。下書きなら `NULL`。`save_article` で決める                                                                                             |
-| `status`            | `article_status` | NO   |                     | 公開状態。`published_version` から決まる生成列で、`NULL` なら `draft`（下書き）、それ以外は `published`（公開）。書き込めない                                                     |
-| `published_at`      | `timestamptz`    | YES  |                     | 初めて公開した日時。一度も公開していなければ `NULL`。作成・更新時にトリガーで決める（`published_version` が初めて入ったときに `now()`、以降は元の値に戻す。渡された値は使わない） |
-| `created_at`        | `timestamptz`    | NO   | `now()`             |                                                                                                                                                                                   |
-| `updated_at`        | `timestamptz`    | NO   | `now()`             | 更新時にトリガーで `now()` にする                                                                                                                                                 |
+| 列                  | 型               | NULL | 既定値              | 説明                                                                                                                                                                                                                                                                          |
+| ------------------- | ---------------- | ---- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                | `uuid`           | NO   | `gen_random_uuid()` | 主キー                                                                                                                                                                                                                                                                        |
+| `event_id`          | `uuid`           | NO   |                     | `events.id`。イベントを消すと一緒に消える                                                                                                                                                                                                                                     |
+| `created_by`        | `uuid`           | NO   |                     | `users.id`。記事を作成したユーザー。更新時はトリガーで元の値に戻す（変えられない）                                                                                                                                                                                            |
+| `latest_version`    | `integer`        | NO   |                     | 最新の版（`article_histories.version`）。`create_article` と `save_article` で決める                                                                                                                                                                                          |
+| `published_version` | `integer`        | YES  |                     | 公開中の版（`article_histories.version`）。下書きなら `NULL`。`save_article` と予約の公開（`publish_scheduled_articles`）で決める                                                                                                                                             |
+| `status`            | `article_status` | NO   |                     | 公開状態。`published_version` から決まる生成列で、`NULL` なら `draft`（下書き）、それ以外は `published`（公開）。書き込めない                                                                                                                                                 |
+| `published_at`      | `timestamptz`    | YES  |                     | 初めて公開した日時。一度も公開していなければ `NULL`。作成・更新時にトリガーで決める（`published_version` が初めて入ったときに `now()`。ただし、その版の予約（`article_schedules`）があり `publish_at` を過ぎていれば `publish_at`。以降は元の値に戻す。渡された値は使わない） |
+| `created_at`        | `timestamptz`    | NO   | `now()`             |                                                                                                                                                                                                                                                                               |
+| `updated_at`        | `timestamptz`    | NO   | `now()`             | 更新時にトリガーで `now()` にする                                                                                                                                                                                                                                             |
 
 公開中の記事のタイトル・本文は `published_version` の版、下書きの記事のタイトル・本文は `latest_version` の版のもの。
 
@@ -139,6 +150,7 @@ erDiagram
         - 最新の版の `created_by` が `auth.uid()`
         - 最新の版を作ってから30分以内（`created_at` で判定）
         - 最新の版が公開中の版（`published_version`）ではない
+        - 最新の版が予約中の版（`article_schedules.version`）ではない
     - それ以外は、新しい版（最新の版の番号 + 1）を足す
 3. `latest_version` を今回の版にし、`new_status` で `published_version` を決めて、`true` を返す。記事の行は毎回更新するので、`updated_at` は保存のたびに進む
 
@@ -180,12 +192,80 @@ erDiagram
 
 ### RLS
 
-| 操作     | 許可する条件                                                                                                                                                             |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `select` | `article_id` の記事のイベントの `staff`。または `article_id` の記事のイベントのメンバーで、その版が記事の公開中の版（`published_version`）                               |
-| `insert` | `article_id` の記事のイベントの `staff` で、`created_by` が `auth.uid()`                                                                                                 |
-| `update` | `article_id` の記事のイベントの `staff` で、その版が記事の公開中の版ではない（公開中の版は上書きできない。更新後の行では `created_by` が `auth.uid()` であることも判定） |
-| `delete` | なし（`service_role` のみ）                                                                                                                                              |
+| 操作     | 許可する条件                                                                                                                                                                                 |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `select` | `article_id` の記事のイベントの `staff`。または `article_id` の記事のイベントのメンバーで、その版が記事の公開中の版（`published_version`）                                                   |
+| `insert` | `article_id` の記事のイベントの `staff` で、`created_by` が `auth.uid()`                                                                                                                     |
+| `update` | `article_id` の記事のイベントの `staff` で、その版が記事の公開中の版・予約中の版ではない（公開中・予約中の版は上書きできない。更新後の行では `created_by` が `auth.uid()` であることも判定） |
+| `delete` | なし（`service_role` のみ）                                                                                                                                                                  |
+
+## article_schedules
+
+記事の予約投稿。1行 = 1記事の予約。時間が来たら、予約した版を記事の公開中の版にする。
+
+| 列           | 型            | NULL | 既定値  | 説明                                                                   |
+| ------------ | ------------- | ---- | ------- | ---------------------------------------------------------------------- |
+| `article_id` | `uuid`        | NO   |         | 主キー。`articles.id`。記事を消すと一緒に消える                        |
+| `version`    | `integer`     | NO   |         | 公開する版（`article_histories.version`）                              |
+| `publish_at` | `timestamptz` | NO   |         | 公開する日時                                                           |
+| `created_by` | `uuid`        | YES  |         | `users.id`。予約したユーザー。`service_role` から予約したときは `NULL` |
+| `created_at` | `timestamptz` | NO   | `now()` |                                                                        |
+| `updated_at` | `timestamptz` | NO   | `now()` | 更新時にトリガーで `now()` にする                                      |
+
+### 行の作成・削除
+
+- `schedule_article`（下記）で作る・上書きする。1記事に予約は1つ
+- `cancel_article_schedule`（下記）で消す
+- 時間が来て公開したら、`publish_scheduled_articles`（下記）で消す
+- `articles.published_version` が変わったら（公開する・公開に反映して版が変わる・下書きに戻す）、トリガーでその記事の予約を消す。値が変わらない更新（一時保存など）では消さない
+
+### 制約・インデックス
+
+- `primary key (article_id)`
+- `foreign key (article_id) references articles (id) on delete cascade`
+- `foreign key (article_id, version) references article_histories (article_id, version)` … 存在しない版を予約できない
+- `foreign key (created_by) references users (id)`
+- `index (publish_at)` … 時間が来た予約を引く用
+
+### RLS
+
+| 操作     | 許可する条件                                                                                            |
+| -------- | ------------------------------------------------------------------------------------------------------- |
+| `select` | `article_id` の記事のイベントの `staff`                                                                 |
+| `insert` | `article_id` の記事のイベントの `staff` で、`created_by` が `auth.uid()`                                |
+| `update` | `article_id` の記事のイベントの `staff`（更新後の行では `created_by` が `auth.uid()` であることも判定） |
+| `delete` | `article_id` の記事のイベントの `staff`                                                                 |
+
+### 予約（`schedule_article`）
+
+`public.schedule_article(target_article_id, target_version, version_updated_at, new_publish_at)` で、記事の版を予約する。すでに予約があれば、版・日時・予約した人を上書きする。
+呼び出したユーザーの権限で動くので、`articles` / `article_histories` / `article_schedules` の RLS がそのまま効く。
+記事の行をロックしてから処理するので、保存（`save_article`）と同時に動いても、確かめた版が途中で上書きされない。
+
+1. 記事の行を更新用に読む。読めない・更新できない（`articles` の RLS）ときは、何もせずに `false` を返す
+2. `target_version` の版が無い、または版の `updated_at` が `version_updated_at` と違うときは、SQLSTATE `PT409` で失敗する（上書きで中身が変わった版を予約しないため）
+3. 予約を作る・上書きし（`created_by` は `auth.uid()`）、`true` を返す
+
+日時が現在より後かどうかは確かめない（API で確かめる）。`anon` からは呼べない。
+
+### 予約の取り消し（`cancel_article_schedule`）
+
+`public.cancel_article_schedule(target_article_id)` で、記事の予約を消す。呼び出したユーザーの権限で動く。
+
+1. 記事の行を更新用に読む。読めない・更新できない（`articles` の RLS）ときは、何もせずに `false` を返す
+2. 予約を消し（無くてもよい）、`true` を返す
+
+`anon` からは呼べない。
+
+### 時間が来た予約の公開（`publish_scheduled_articles`）
+
+`public.publish_scheduled_articles()` を pg_cron で1分ごとに動かす（ジョブ名 `publish-scheduled-articles`）。
+`security definer` で、RLS を通さずに動く。`service_role` からだけ呼べる。
+
+1. `publish_at` が現在時刻以前の予約について、記事の `published_version` を予約の版にする
+2. `publish_at` が現在時刻以前の予約を消す
+
+止まっていた間の予約も、次に動いたときにまとめて公開する。予約した人が `staff` でなくなっていても公開する。
 
 ## users
 

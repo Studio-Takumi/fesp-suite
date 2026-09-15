@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 
 import { useQuery } from '@tanstack/react-query'
 
-import type { ArticleStatus } from '@fesp/schema'
+import type { ArticleListItem, ArticleStatus } from '@fesp/schema'
 import { dateFormatter } from '@fesp/ui'
 
 import { Button } from '~/components/ui/button'
@@ -15,6 +15,16 @@ import { articlesQuery, useCreateArticle } from '~/lib/queries'
 const articleStatusLabels: Record<ArticleStatus, string> = {
     draft: '下書き',
     published: '公開中',
+}
+
+/** 予約がある記事の公開状態の表示。下書きなら公開の予約、公開中なら中身を差し替える予約 */
+const scheduledArticleStatusLabels: Record<ArticleStatus, string> = {
+    draft: '予約中',
+    published: '公開中（更新予約あり）',
+}
+
+function statusLabelOf(article: ArticleListItem): string {
+    return (article.schedule ? scheduledArticleStatusLabels : articleStatusLabels)[article.status]
 }
 
 export function ArticleList() {
@@ -69,7 +79,7 @@ export function ArticleList() {
                                         {article.title || '（無題）'}
                                     </Link>
                                 </TableCell>
-                                <TableCell>{articleStatusLabels[article.status]}</TableCell>
+                                <TableCell>{statusLabelOf(article)}</TableCell>
                                 <TableCell>{dateFormatter(article.updated_at, 'YYYY/MM/DD HH:mm')}</TableCell>
                             </TableRow>
                         ))}
