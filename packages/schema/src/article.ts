@@ -244,6 +244,10 @@ export const articleCreatorSchema = z.object({
 })
 export type ArticleCreator = z.infer<typeof articleCreatorSchema>
 
+/** 記事の公開状態。`draft`（下書き）/ `published`（公開） */
+export const articleStatusSchema = z.enum(['draft', 'published'])
+export type ArticleStatus = z.infer<typeof articleStatusSchema>
+
 /** 記事オブジェクト（GET /api/articles/:id などのレスポンス） */
 export const articleResponseSchema = z.object({
     id: uuidSchema,
@@ -252,6 +256,9 @@ export const articleResponseSchema = z.object({
     creator: articleCreatorSchema,
     title: z.string(),
     content: articleDocumentSchema,
+    status: articleStatusSchema,
+    /** 初めて公開した日時。一度も公開していなければ `null` */
+    published_at: timestampSchema.nullable(),
     created_at: timestampSchema,
     updated_at: timestampSchema,
 })
@@ -313,9 +320,10 @@ export const articleIdParamSchema = z.object({
 export const articleInputSchema = z.object({
     title: articleTitleSchema,
     content: articleDocumentSchema,
+    status: articleStatusSchema,
 })
 export type ArticleInput = z.infer<typeof articleInputSchema>
 
-/** POST /api/articles のリクエストボディ */
-export const articleCreateInputSchema = articleInputSchema.extend(articleEventQuerySchema.shape)
+/** POST /api/articles のリクエストボディ。記事は下書きで作るので `status` を持たない */
+export const articleCreateInputSchema = articleInputSchema.omit({ status: true }).extend(articleEventQuerySchema.shape)
 export type ArticleCreateInput = z.infer<typeof articleCreateInputSchema>

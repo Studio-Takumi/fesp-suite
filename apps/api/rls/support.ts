@@ -42,10 +42,14 @@ export type TestUser = {
 export type RlsFixture = {
     eventA: string
     eventB: string
-    /** eventA の記事 */
+    /** eventA の公開済みの記事 */
     articleA: string
-    /** eventB の記事 */
+    /** eventB の公開済みの記事 */
     articleB: string
+    /** eventA の下書きの記事 */
+    draftA: string
+    /** eventB の下書きの記事 */
+    draftB: string
     /** eventA の staff、eventB の visitor */
     staff: TestUser
     /** eventA の visitor */
@@ -139,14 +143,20 @@ export function useRlsFixture(): RlsFixture {
             await serviceClient
                 .from('articles')
                 .insert([
-                    { event_id: fixture.eventA, created_by: fixture.staff.id, title: 'A の記事' },
-                    { event_id: fixture.eventB, created_by: fixture.staff.id, title: 'B の記事' },
+                    { event_id: fixture.eventA, created_by: fixture.staff.id, title: 'A の記事', status: 'published' },
+                    { event_id: fixture.eventB, created_by: fixture.staff.id, title: 'B の記事', status: 'published' },
+                    { event_id: fixture.eventA, created_by: fixture.staff.id, title: 'A の下書き', status: 'draft' },
+                    { event_id: fixture.eventB, created_by: fixture.staff.id, title: 'B の下書き', status: 'draft' },
                 ])
-                .select('id, event_id'),
+                .select('id, event_id, status'),
             '記事の作成',
         )
-        fixture.articleA = articles.find((article) => article.event_id === fixture.eventA)!.id
-        fixture.articleB = articles.find((article) => article.event_id === fixture.eventB)!.id
+        const articleOf = (eventId: string, status: 'draft' | 'published') =>
+            articles.find((article) => article.event_id === eventId && article.status === status)!.id
+        fixture.articleA = articleOf(fixture.eventA, 'published')
+        fixture.articleB = articleOf(fixture.eventB, 'published')
+        fixture.draftA = articleOf(fixture.eventA, 'draft')
+        fixture.draftB = articleOf(fixture.eventB, 'draft')
 
         ensure(
             await serviceClient

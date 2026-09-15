@@ -23,14 +23,14 @@ const INSUFFICIENT_PRIVILEGE = '42501'
 
 /** 記事オブジェクトの列。作成者の表示名は `users` から埋め込む（読める範囲は users の RLS） */
 const ARTICLE_COLUMNS =
-    'id, event_id, created_by, creator:users!created_by(display_name), title, content, created_at, updated_at'
+    'id, event_id, created_by, creator:users!created_by(display_name), title, content, status, published_at, created_at, updated_at'
 
 /** 一覧の列。本文（content）は返さない */
 const ARTICLE_LIST_COLUMNS =
-    'id, event_id, created_by, creator:users!created_by(display_name), title, created_at, updated_at'
+    'id, event_id, created_by, creator:users!created_by(display_name), title, status, published_at, created_at, updated_at'
 
 // ユーザーの JWT を引き継いだクライアントで読み書きするので、所属と役割の判定は RLS に任せる
-// （読み取りはイベントのメンバー、作成・更新はイベントの staff。docs/db.md）
+// （読み取りは staff なら下書きも・それ以外のメンバーは公開済みだけ、作成・更新はイベントの staff。docs/db.md）
 export const articlesRoute = new Hono<AppEnv>()
     .use(requireAuth)
 
@@ -67,7 +67,8 @@ export const articlesRoute = new Hono<AppEnv>()
 
         const { data, error } = await createUserClient(c.env, c.get('accessToken'))
             .from('articles')
-            // 作成者はボディでは受け取らず、トークンのユーザーにする（RLS も created_by = auth.uid() を要求する）
+            // 作成者はボディでは受け取らず、トークンのユーザーにする（RLS も created_by = auth.uid() を要求する）。
+            // 公開状態は渡さず、DB の既定値（下書き）で作る
             .insert({ event_id, created_by: c.get('user').userId, title, content: content as Json })
             .select(ARTICLE_COLUMNS)
             .single()
@@ -84,12 +85,12 @@ export const articlesRoute = new Hono<AppEnv>()
         zValidator('json', articleInputSchema, validationHook),
         async (c) => {
             const { id } = c.req.valid('param')
-            const { title, content } = c.req.valid('json')
+            const { title, content, status } = c.req.valid('json')
             const supabase = createUserClient(c.env, c.get('accessToken'))
 
             const { data, error } = await supabase
                 .from('articles')
-                .update({ title, content: content as Json })
+                .update({ title, content: content as Json, status })
                 .eq('id', id)
                 .select(ARTICLE_COLUMNS)
                 .maybeSingle()
@@ -97,6 +98,7 @@ export const articlesRoute = new Hono<AppEnv>()
             if (data) return c.json<ArticleResponse>(data as ArticleResponse)
 
             // RLS の update は staff でない行を黙って飛ばすので、読めるかどうかで 403 と 404 を分ける
+            // （staff でないメンバーには下書きが読めないので、下書きの更新は 404 になる）
             const { data: readable, error: readError } = await supabase
                 .from('articles')
                 .select('id')

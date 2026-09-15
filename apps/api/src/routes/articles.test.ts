@@ -78,12 +78,14 @@ const article = {
     creator: { display_name: '山田太郎' },
     title: '模擬店のお知らせ',
     content,
+    status: 'published',
+    published_at: '2026-09-14T11:00:00+00:00',
     created_at: '2026-09-14T10:00:00+00:00',
     updated_at: '2026-09-14T12:30:00+00:00',
 }
 
 const ARTICLE_COLUMNS =
-    'id, event_id, created_by, creator:users!created_by(display_name), title, content, created_at, updated_at'
+    'id, event_id, created_by, creator:users!created_by(display_name), title, content, status, published_at, created_at, updated_at'
 const OTHER_USER_ID = '1d2e3f4a-5b6c-4d7e-8f9a-0b1c2d3e4f5a'
 
 const authorization = { Authorization: 'Bearer valid-token' }
@@ -176,7 +178,9 @@ describe('GET /api/articles', () => {
         await expect(res.json()).resolves.toEqual({ items: [listItem], limit: 20, offset: 0 })
         expect(argsOf('from')).toEqual([['articles']])
         expect(argsOf('select')).toEqual([
-            ['id, event_id, created_by, creator:users!created_by(display_name), title, created_at, updated_at'],
+            [
+                'id, event_id, created_by, creator:users!created_by(display_name), title, status, published_at, created_at, updated_at',
+            ],
         ])
         expect(argsOf('eq')).toEqual([['event_id', EVENT_ID]])
         expect(argsOf('order')).toEqual([['updated_at', { ascending: false }]])
@@ -288,6 +292,14 @@ describe('POST /api/articles', () => {
         expect(argsOf('insert')).toEqual([[{ event_id: EVENT_ID, created_by: USER_ID, title: '', content }]])
     })
 
+    it('ボディに status があっても送らず、下書き（DB の既定値）で作る', async () => {
+        result = { data: article, error: null }
+
+        await sendJson('/api/articles', 'POST', { event_id: EVENT_ID, status: 'published', title: '', content })
+
+        expect(argsOf('insert')).toEqual([[{ event_id: EVENT_ID, created_by: USER_ID, title: '', content }]])
+    })
+
     it('作成した記事を作成者つきで読み直す', async () => {
         result = { data: article, error: null }
 
@@ -347,14 +359,18 @@ describe('POST /api/articles', () => {
 })
 
 describe('PUT /api/articles/:id', () => {
-    it('記事IDだけで絞り込んでタイトルと本文を置き換える', async () => {
+    it('記事IDだけで絞り込んでタイトル・本文・公開状態を置き換える', async () => {
         result = { data: article, error: null }
 
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { title: '模擬店のお知らせ', content })
+        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', {
+            title: '模擬店のお知らせ',
+            content,
+            status: 'published',
+        })
 
         expect(res.status).toBe(200)
         await expect(res.json()).resolves.toEqual(article)
-        expect(argsOf('update')).toEqual([[{ title: '模擬店のお知らせ', content }]])
+        expect(argsOf('update')).toEqual([[{ title: '模擬店のお知らせ', content, status: 'published' }]])
         expect(argsOf('eq')).toEqual([['id', ARTICLE_ID]])
     })
 
@@ -366,15 +382,16 @@ describe('PUT /api/articles/:id', () => {
             created_by: OTHER_USER_ID,
             title: '',
             content,
+            status: 'draft',
         })
 
-        expect(argsOf('update')).toEqual([[{ title: '', content }]])
+        expect(argsOf('update')).toEqual([[{ title: '', content, status: 'draft' }]])
     })
 
     it('更新できず、記事は読める（メンバーだが staff でない）と 403', async () => {
         queuedResults.push({ data: null, error: null }, { data: { id: ARTICLE_ID }, error: null })
 
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { title: '', content })
+        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { title: '', content, status: 'draft' })
 
         expect(res.status).toBe(403)
         expect(await errorCodeOf(res)).toBe('forbidden')
@@ -384,7 +401,7 @@ describe('PUT /api/articles/:id', () => {
     it('更新できず、記事も読めない（存在しない・所属していないイベントの記事）と 404', async () => {
         queuedResults.push({ data: null, error: null }, { data: null, error: null })
 
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { title: '', content })
+        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { title: '', content, status: 'draft' })
 
         expect(res.status).toBe(404)
         expect(await errorCodeOf(res)).toBe('not_found')
@@ -394,7 +411,7 @@ describe('PUT /api/articles/:id', () => {
         vi.spyOn(console, 'error').mockImplementation(() => {})
         queuedResults.push({ data: null, error: null }, { data: null, error: dbError('XX000', 'boom') })
 
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { title: '', content })
+        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { title: '', content, status: 'draft' })
 
         expect(res.status).toBe(500)
     })
@@ -438,16 +455,33 @@ describe('PUT /api/articles/:id', () => {
             },
         ]
 
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { title: '', content: blockContent })
+        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', {
+            title: '',
+            content: blockContent,
+            status: 'draft',
+        })
 
         expect(res.status).toBe(200)
-        expect(argsOf('update')).toEqual([[{ title: '', content: blockContent }]])
+        expect(argsOf('update')).toEqual([[{ title: '', content: blockContent, status: 'draft' }]])
     })
 
     it('title が無いと 400', async () => {
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { content })
+        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { content, status: 'draft' })
 
         expect(res.status).toBe(400)
+        expect(calls).toHaveLength(0)
+    })
+
+    it('status が draft / published でない・無いと 400', async () => {
+        const invalid = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', {
+            title: '',
+            content,
+            status: 'archived',
+        })
+        const missing = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { title: '', content })
+
+        expect(invalid.status).toBe(400)
+        expect(missing.status).toBe(400)
         expect(calls).toHaveLength(0)
     })
 })
