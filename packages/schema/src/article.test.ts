@@ -375,17 +375,33 @@ describe('articleListQuerySchema', () => {
 })
 
 describe('articleResponseSchema', () => {
+    const article = {
+        id: '7f1c2a9e-3b4d-4e5f-8a6b-1c2d3e4f5a6b',
+        event_id: EVENT_ID,
+        created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
+        creator: { display_name: '山田太郎' },
+        title: '',
+        content: [],
+        created_at: '2026-09-14T01:00:00.123456+00:00',
+        updated_at: '2026-09-14T03:30:00.654321+00:00',
+    }
+
     it('Supabase が返す形（マイクロ秒・オフセット付きの日時）を受理する', () => {
-        const result = articleResponseSchema.safeParse({
-            id: '7f1c2a9e-3b4d-4e5f-8a6b-1c2d3e4f5a6b',
-            event_id: EVENT_ID,
-            title: '',
-            content: [],
-            created_at: '2026-09-14T01:00:00.123456+00:00',
-            updated_at: '2026-09-14T03:30:00.654321+00:00',
-        })
+        expect(articleResponseSchema.safeParse(article).success).toBe(true)
+    })
+
+    it('作成者の表示名が未設定（null）でも受理する', () => {
+        const result = articleResponseSchema.safeParse({ ...article, creator: { display_name: null } })
 
         expect(result.success).toBe(true)
+    })
+
+    it('作成者（created_by / creator）が無ければ拒否する', () => {
+        const { created_by: _createdBy, ...withoutCreatedBy } = article
+        const { creator: _creator, ...withoutCreator } = article
+
+        expect(articleResponseSchema.safeParse(withoutCreatedBy).success).toBe(false)
+        expect(articleResponseSchema.safeParse(withoutCreator).success).toBe(false)
     })
 })
 
@@ -446,6 +462,8 @@ describe('articleViewResponseSchema', () => {
     const article = {
         id: '7f1c2a9e-3b4d-4e5f-8a6b-1c2d3e4f5a6b',
         event_id: EVENT_ID,
+        created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
+        creator: { display_name: '山田太郎' },
         title: '模擬店のお知らせ',
         created_at: '2026-09-14T01:00:00.123456+00:00',
         updated_at: '2026-09-14T03:30:00.654321+00:00',

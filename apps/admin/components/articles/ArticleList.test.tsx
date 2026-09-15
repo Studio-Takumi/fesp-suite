@@ -27,6 +27,8 @@ function renderWithQueryClient(ui: ReactNode) {
 const listItem = {
     id: ARTICLE_ID,
     event_id: EVENT_ID,
+    created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
+    creator: { display_name: '山田太郎' },
     title: '模擬店のお知らせ',
     created_at: '2026-09-14T01:00:00+00:00',
     updated_at: '2026-09-14T03:30:00+00:00',

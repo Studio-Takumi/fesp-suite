@@ -21,6 +21,14 @@ import type { AppEnv } from '../types'
 /** RLS の with check に通らなかったときの Postgres のエラーコード */
 const INSUFFICIENT_PRIVILEGE = '42501'
 
+/** 記事オブジェクトの列。作成者の表示名は `users` から埋め込む（読める範囲は users の RLS） */
+const ARTICLE_COLUMNS =
+    'id, event_id, created_by, creator:users!created_by(display_name), title, content, created_at, updated_at'
+
+/** 一覧の列。本文（content）は返さない */
+const ARTICLE_LIST_COLUMNS =
+    'id, event_id, created_by, creator:users!created_by(display_name), title, created_at, updated_at'
+
 // ユーザーの JWT を引き継いだクライアントで読み書きするので、所属と役割の判定は RLS に任せる
 // （読み取りはイベントのメンバー、作成・更新はイベントの staff。docs/db.md）
 export const articlesRoute = new Hono<AppEnv>()
@@ -31,7 +39,7 @@ export const articlesRoute = new Hono<AppEnv>()
 
         const { data, error } = await createUserClient(c.env, c.get('accessToken'))
             .from('articles')
-            .select('id, event_id, title, created_at, updated_at')
+            .select(ARTICLE_LIST_COLUMNS)
             .eq('event_id', event_id)
             .order('updated_at', { ascending: false })
             .range(offset, offset + limit - 1)
@@ -45,7 +53,7 @@ export const articlesRoute = new Hono<AppEnv>()
 
         const { data, error } = await createUserClient(c.env, c.get('accessToken'))
             .from('articles')
-            .select('*')
+            .select(ARTICLE_COLUMNS)
             .eq('id', id)
             .maybeSingle()
         if (error) throw error
@@ -59,8 +67,9 @@ export const articlesRoute = new Hono<AppEnv>()
 
         const { data, error } = await createUserClient(c.env, c.get('accessToken'))
             .from('articles')
-            .insert({ event_id, title, content: content as Json })
-            .select('*')
+            // 作成者はボディでは受け取らず、トークンのユーザーにする（RLS も created_by = auth.uid() を要求する）
+            .insert({ event_id, created_by: c.get('user').userId, title, content: content as Json })
+            .select(ARTICLE_COLUMNS)
             .single()
         // staff でない・所属していない・イベントが存在しない、はどれも RLS で弾かれて同じコードになる
         if (error?.code === INSUFFICIENT_PRIVILEGE) throw forbidden('このイベントに記事を作成する権限がありません')
@@ -82,7 +91,7 @@ export const articlesRoute = new Hono<AppEnv>()
                 .from('articles')
                 .update({ title, content: content as Json })
                 .eq('id', id)
-                .select('*')
+                .select(ARTICLE_COLUMNS)
                 .maybeSingle()
             if (error) throw error
             if (data) return c.json<ArticleResponse>(data as ArticleResponse)
