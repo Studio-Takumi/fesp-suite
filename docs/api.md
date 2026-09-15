@@ -8,12 +8,20 @@
 | ------------ | -------- | -------------------------------------------------- |
 | `id`         | `uuid`   | 記事ID                                             |
 | `event_id`   | `uuid`   | 所属するイベント                                   |
+| `created_by` | `uuid`   | 作成したユーザー                                   |
+| `creator`    | `object` | 作成したユーザーの情報（下表）                     |
 | `title`      | `string` | タイトル。100文字まで。空文字のこともある          |
 | `content`    | `array`  | BlockNoteのブロック配列（`articleDocumentSchema`） |
 | `created_at` | `string` | 作成日時                                           |
 | `updated_at` | `string` | 更新日時                                           |
 
 一覧では本文を返さないため、`content` を除いた形になる。
+
+#### `creator`
+
+| フィールド     | 型               | 説明                      |
+| -------------- | ---------------- | ------------------------- |
+| `display_name` | `string \| null` | 表示名。未設定なら `null` |
 
 ### `GET /api/articles`
 
@@ -41,6 +49,8 @@
         {
             "id": "7f1c2a9e-3b4d-4e5f-8a6b-1c2d3e4f5a6b",
             "event_id": "0b7e6d5c-4a3b-4c2d-9e1f-a2b3c4d5e6f7",
+            "created_by": "3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f",
+            "creator": { "display_name": "山田太郎" },
             "title": "模擬店のお知らせ",
             "created_at": "2026-09-14T10:00:00+09:00",
             "updated_at": "2026-09-14T12:30:00+09:00"
@@ -82,6 +92,8 @@
 {
     "id": "7f1c2a9e-3b4d-4e5f-8a6b-1c2d3e4f5a6b",
     "event_id": "0b7e6d5c-4a3b-4c2d-9e1f-a2b3c4d5e6f7",
+    "created_by": "3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f",
+    "creator": { "display_name": "山田太郎" },
     "title": "模擬店のお知らせ",
     "content": [
         {
@@ -131,6 +143,8 @@
 | `title`    | `string` | ✅   | タイトル。前後の空白を取り除いたうえで100文字まで。空文字可  |
 | `content`  | `array`  | ✅   | BlockNoteのブロック配列（`articleDocumentSchema`）。空配列可 |
 
+作成者（`created_by`）はリクエストしたユーザーになる。ボディでは指定できない。
+
 #### レスポンス（`201`）
 
 作成した記事オブジェクト（`GET /api/articles/:id` と同じ形）。
@@ -173,7 +187,7 @@
 | `title`    | `string` | ✅   | タイトル。前後の空白を取り除いたうえで100文字まで。空文字可  |
 | `content`  | `array`  | ✅   | BlockNoteのブロック配列（`articleDocumentSchema`）。空配列可 |
 
-記事のイベント（`event_id`）は変えられない。
+記事のイベント（`event_id`）と作成者（`created_by`）は変えられない。
 
 #### レスポンス（`200`）
 

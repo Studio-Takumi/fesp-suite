@@ -5,6 +5,7 @@ erDiagram
     events ||--o{ articles : "event_id"
     events ||--o{ event_members : "event_id"
     users ||--o{ event_members : "user_id"
+    users ||--o{ articles : "created_by"
 
     events {
         uuid id PK
@@ -17,6 +18,7 @@ erDiagram
     articles {
         uuid id PK
         uuid event_id FK
+        uuid created_by FK
         text title
         jsonb content
         timestamptz created_at
@@ -25,6 +27,7 @@ erDiagram
 
     users {
         uuid id PK "auth.users.id"
+        text display_name
         timestamptz created_at
         timestamptz updated_at
         timestamptz deleted_at
@@ -70,6 +73,7 @@ erDiagram
 | ------------ | ------------- | ---- | ------------------- | --------------------------------------------------------------------------------------------------- |
 | `id`         | `uuid`        | NO   | `gen_random_uuid()` | 主キー                                                                                              |
 | `event_id`   | `uuid`        | NO   |                     | `events.id`。イベントを消すと一緒に消える                                                           |
+| `created_by` | `uuid`        | NO   |                     | `users.id`。記事を作成したユーザー。更新時はトリガーで元の値に戻す（変えられない）                  |
 | `title`      | `text`        | NO   | `''`                | 記事のタイトル。100文字まで。空文字可                                                               |
 | `content`    | `jsonb`       | NO   | `'[]'`              | BlockNoteのブロック配列。形は `articleDocumentSchema`（`packages/schema/src/article.ts`）で検証する |
 | `created_at` | `timestamptz` | NO   | `now()`             |                                                                                                     |
@@ -78,31 +82,36 @@ erDiagram
 ### 制約・インデックス
 
 - `foreign key (event_id) references events (id) on delete cascade`
+- `foreign key (created_by) references users (id)` … ユーザーは論理削除するので、記事を持つユーザーの行は消せない
 - `check (char_length(title) <= 100)`
 - `index (event_id, updated_at desc)` … 一覧（イベント内で更新日時の新しい順）用
+- `index (created_by)` … `users` の RLS で作成者を引く用
 
 ### RLS
 
-| 操作                | 許可する条件                                                    |
-| ------------------- | --------------------------------------------------------------- |
-| `select`            | `event_id` のイベントのメンバー                                 |
-| `insert` / `update` | `event_id` のイベントの `staff`（更新後の `event_id` でも判定） |
-| `delete`            | なし（`service_role` のみ）                                     |
+| 操作     | 許可する条件                                                     |
+| -------- | ---------------------------------------------------------------- |
+| `select` | `event_id` のイベントのメンバー                                  |
+| `insert` | `event_id` のイベントの `staff` で、`created_by` が `auth.uid()` |
+| `update` | `event_id` のイベントの `staff`（更新後の `event_id` でも判定）  |
+| `delete` | なし（`service_role` のみ）                                      |
 
 ## users
 
 ログインできる人1人 = 1行。Supabase Auth の `auth.users` と 1:1 で、ウェブアプリ・管理者サイトで共通。
 
-| 列           | 型            | NULL | 既定値  | 説明                                                         |
-| ------------ | ------------- | ---- | ------- | ------------------------------------------------------------ |
-| `id`         | `uuid`        | NO   |         | 主キー。`auth.users.id`。Auth のユーザーを消すと一緒に消える |
-| `created_at` | `timestamptz` | NO   | `now()` |                                                              |
-| `updated_at` | `timestamptz` | NO   | `now()` | 更新時にトリガーで `now()` にする                            |
-| `deleted_at` | `timestamptz` | YES  |         | 論理削除した日時。削除していなければ `NULL`                  |
+| 列             | 型            | NULL | 既定値  | 説明                                                         |
+| -------------- | ------------- | ---- | ------- | ------------------------------------------------------------ |
+| `id`           | `uuid`        | NO   |         | 主キー。`auth.users.id`。Auth のユーザーを消すと一緒に消える |
+| `display_name` | `text`        | YES  |         | 表示名。未設定なら `NULL`                                    |
+| `created_at`   | `timestamptz` | NO   | `now()` |                                                              |
+| `updated_at`   | `timestamptz` | NO   | `now()` | 更新時にトリガーで `now()` にする                            |
+| `deleted_at`   | `timestamptz` | YES  |         | 論理削除した日時。削除していなければ `NULL`                  |
 
 ### 行の作成
 
 - `auth.users` に行が入ったとき（メールアドレスでの新規登録・Google での初回ログイン）に、トリガーで1行作る
+- `display_name` には `auth.users.raw_user_meta_data` の `full_name`（Google のアカウント名）を入れる。無ければ `NULL`（メールアドレスでの新規登録）
 
 ### 制約・インデックス
 
@@ -110,10 +119,10 @@ erDiagram
 
 ### RLS
 
-| 操作                           | 許可する条件                           |
-| ------------------------------ | -------------------------------------- |
-| `select`                       | `id` = `auth.uid()`                    |
-| `insert` / `update` / `delete` | なし（トリガーと `service_role` のみ） |
+| 操作                           | 許可する条件                                                                                                      |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `select`                       | `id` = `auth.uid()`、`private.shares_event_with(id)`、または読める記事（`articles` の RLS に従う）の `created_by` |
+| `insert` / `update` / `delete` | なし（トリガーと `service_role` のみ）                                                                            |
 
 ## event_members
 
@@ -142,10 +151,11 @@ erDiagram
 RLS から次の関数を呼んで判定する。`private` スキーマに置き、API（PostgREST）からは呼べない。
 `security definer` で、`event_members` 自身の RLS を通さずに引く。
 
-| 関数                                | `true` を返す条件                                                          |
-| ----------------------------------- | -------------------------------------------------------------------------- |
-| `private.is_event_member(event_id)` | `auth.uid()` の `event_members` の行があり、`users` が論理削除されていない |
-| `private.is_event_staff(event_id)`  | 上に加えて、`role` が `staff`                                              |
+| 関数                                 | `true` を返す条件                                                                                                                          |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `private.is_event_member(event_id)`  | `auth.uid()` の `event_members` の行があり、`users` が論理削除されていない                                                                 |
+| `private.is_event_staff(event_id)`   | 上に加えて、`role` が `staff`                                                                                                              |
+| `private.shares_event_with(user_id)` | `user_id` と `auth.uid()` が同じイベントに所属していて、`auth.uid()` の `users` が論理削除されていない（`user_id` 側の論理削除は問わない） |
 
 ### RLS
 
