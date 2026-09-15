@@ -80,6 +80,35 @@ function ensure<T>(result: { data: T | null; error: unknown }, step: string): T 
 }
 
 /**
+ * ユーザーの権限で記事を作る（本文は空。版1ができる）。`published` なら版1を公開する。
+ * 記事と版1は同じトランザクションで作る必要があり、service_role からは作れないので、記事のイベントの staff で呼ぶこと
+ */
+export async function createArticle(
+    user: TestUser,
+    eventId: string,
+    title: string,
+    status: 'draft' | 'published' = 'draft',
+): Promise<string> {
+    const id = ensure(
+        await user.client.rpc('create_article', { target_event_id: eventId, new_title: title, new_content: [] }),
+        `記事（${title}）の作成`,
+    )
+    if (status === 'published') {
+        const saved = ensure(
+            await user.client.rpc('save_article', {
+                target_article_id: id,
+                new_title: title,
+                new_content: [],
+                new_status: 'published',
+            }),
+            `記事（${title}）の公開`,
+        )
+        if (!saved) throw new Error(`記事（${title}）の公開に失敗しました: 保存できませんでした`)
+    }
+    return id
+}
+
+/**
  * テスト用のイベント2つ・記事・ユーザー4人を作り、ファイルの終わりに消す。
  * 値は beforeAll の中で埋まるので、テストの中で読むこと。
  */
@@ -125,12 +154,13 @@ export function useRlsFixture(): RlsFixture {
         fixture.outsider = await createUser('outsider')
         fixture.deleted = await createUser('deleted')
 
+        // staff は eventB の記事も作れるよう、記事を作り終えるまで eventB でも staff にしておく
         ensure(
             await serviceClient
                 .from('event_members')
                 .insert([
                     { user_id: fixture.staff.id, event_id: fixture.eventA, role: 'staff' },
-                    { user_id: fixture.staff.id, event_id: fixture.eventB, role: 'visitor' },
+                    { user_id: fixture.staff.id, event_id: fixture.eventB, role: 'staff' },
                     { user_id: fixture.visitor.id, event_id: fixture.eventA, role: 'visitor' },
                     { user_id: fixture.deleted.id, event_id: fixture.eventA, role: 'staff' },
                 ])
@@ -138,25 +168,20 @@ export function useRlsFixture(): RlsFixture {
             '所属の作成',
         )
 
-        // 記事の作成者はユーザーを参照するので、ユーザーを作ってから作る
-        const articles = ensure(
+        fixture.articleA = await createArticle(fixture.staff, fixture.eventA, 'A の記事', 'published')
+        fixture.articleB = await createArticle(fixture.staff, fixture.eventB, 'B の記事', 'published')
+        fixture.draftA = await createArticle(fixture.staff, fixture.eventA, 'A の下書き')
+        fixture.draftB = await createArticle(fixture.staff, fixture.eventB, 'B の下書き')
+
+        ensure(
             await serviceClient
-                .from('articles')
-                .insert([
-                    { event_id: fixture.eventA, created_by: fixture.staff.id, title: 'A の記事', status: 'published' },
-                    { event_id: fixture.eventB, created_by: fixture.staff.id, title: 'B の記事', status: 'published' },
-                    { event_id: fixture.eventA, created_by: fixture.staff.id, title: 'A の下書き', status: 'draft' },
-                    { event_id: fixture.eventB, created_by: fixture.staff.id, title: 'B の下書き', status: 'draft' },
-                ])
-                .select('id, event_id, status'),
-            '記事の作成',
+                .from('event_members')
+                .update({ role: 'visitor' })
+                .eq('user_id', fixture.staff.id)
+                .eq('event_id', fixture.eventB)
+                .select('user_id'),
+            'eventB の staff を visitor に戻す',
         )
-        const articleOf = (eventId: string, status: 'draft' | 'published') =>
-            articles.find((article) => article.event_id === eventId && article.status === status)!.id
-        fixture.articleA = articleOf(fixture.eventA, 'published')
-        fixture.articleB = articleOf(fixture.eventB, 'published')
-        fixture.draftA = articleOf(fixture.eventA, 'draft')
-        fixture.draftB = articleOf(fixture.eventB, 'draft')
 
         ensure(
             await serviceClient

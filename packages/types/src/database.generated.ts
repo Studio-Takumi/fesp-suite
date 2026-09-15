@@ -58,39 +58,36 @@ export type Database = {
             }
             articles: {
                 Row: {
-                    content: Json
                     created_at: string
                     created_by: string
                     event_id: string
                     id: string
+                    latest_version: number
                     published_at: string | null
                     published_version: number | null
                     status: Database['public']['Enums']['article_status']
-                    title: string
                     updated_at: string
                 }
                 Insert: {
-                    content?: Json
                     created_at?: string
                     created_by: string
                     event_id: string
                     id?: string
+                    latest_version: number
                     published_at?: string | null
                     published_version?: number | null
                     status?: Database['public']['Enums']['article_status']
-                    title?: string
                     updated_at?: string
                 }
                 Update: {
-                    content?: Json
                     created_at?: string
                     created_by?: string
                     event_id?: string
                     id?: string
+                    latest_version?: number
                     published_at?: string | null
                     published_version?: number | null
                     status?: Database['public']['Enums']['article_status']
-                    title?: string
                     updated_at?: string
                 }
                 Relationships: [
@@ -107,6 +104,13 @@ export type Database = {
                         isOneToOne: false
                         referencedRelation: 'events'
                         referencedColumns: ['id']
+                    },
+                    {
+                        foreignKeyName: 'articles_latest_version_fkey'
+                        columns: ['id', 'latest_version']
+                        isOneToOne: false
+                        referencedRelation: 'article_histories'
+                        referencedColumns: ['article_id', 'version']
                     },
                     {
                         foreignKeyName: 'articles_published_version_fkey'
@@ -209,6 +213,10 @@ export type Database = {
             [_ in never]: never
         }
         Functions: {
+            create_article: {
+                Args: { new_content: Json; new_title: string; target_event_id: string }
+                Returns: string
+            }
             save_article: {
                 Args: {
                     new_content: Json

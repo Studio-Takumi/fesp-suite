@@ -17,10 +17,12 @@
 | `published_at`      | `string \| null` | 初めて公開した日時。以降は変わらない。一度も公開していなければ `null` |
 | `created_at`        | `string`         | 作成日時                                                              |
 | `updated_at`        | `string`         | 更新日時                                                              |
-| `latest_history`    | `object \| null` | 最新の版（下表）。イベントの `staff` でなければ `null`                |
+| `latest_history`    | `object \| null` | 最新の版（下表）。読めなければ `null`（下記）                         |
 
 `title` / `content` は、公開中の記事なら公開している中身、下書きなら最新の版の中身。
 公開中の記事を一時保存した変更（`PUT /api/articles/:id`）は、公開に反映するまで `latest_history` にだけ入る。
+
+`latest_history` は、イベントの `staff` には常に返す。それ以外のメンバーには、最新の版が公開中の版のときだけ返し、それ以外は `null` を返す（公開していない版は見せない）。
 
 一覧では本文を返さないため、`content` と `latest_history` を除いた形になる。
 
@@ -141,7 +143,7 @@
 }
 ```
 
-例は、版2を公開したあとに版3を一時保存した記事。`latest_history` はイベントの `staff` にだけ返し、それ以外のメンバーには `null` を返す。
+例は、版2を公開したあとに版3を一時保存した記事。`staff` でないメンバーには、版3は公開していないので `latest_history` を `null` で返す。
 
 #### エラー
 
@@ -243,7 +245,7 @@
 | `published` | `title` / `content` を今回の中身にして公開する。`published_version` は今回の版 | `title` / `content` を今回の中身にする（公開に反映）。`published_version` は今回の版 |
 | `draft`     | `title` / `content` を今回の中身にする                                         | `title` / `content` を今回の中身にして下書きに戻す。`published_version` は `null`    |
 
-一時保存以外では `updated_at` が現在時刻になる。一時保存では変わらない。
+保存のたびに `updated_at` が現在時刻になる（一時保存でも、中身が変わっていなくても）。
 記事のイベント（`event_id`）と作成者（`created_by`）は変えられない。
 公開日時（`published_at`）は初めて `published` にしたときの現在時刻になり、以降は下書きに戻しても、公開し直しても変わらない。ボディでは指定できない。
 

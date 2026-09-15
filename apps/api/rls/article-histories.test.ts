@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { anonClient, INSUFFICIENT_PRIVILEGE, serviceClient, type TestUser, useRlsFixture } from './support'
+import {
+    anonClient,
+    createArticle,
+    INSUFFICIENT_PRIVILEGE,
+    serviceClient,
+    type TestUser,
+    useRlsFixture,
+} from './support'
 
 const f = useRlsFixture()
 
@@ -20,22 +27,16 @@ async function historiesOf(articleId: string) {
 async function articleOf(articleId: string) {
     const { data, error } = await serviceClient
         .from('articles')
-        .select('title, status, published_version, published_at, updated_at')
+        .select('status, latest_version, published_version, published_at, updated_at')
         .eq('id', articleId)
         .single()
     if (error) throw new Error(`記事の取得に失敗しました: ${JSON.stringify(error)}`)
     return data
 }
 
-/** staff が下書きの記事を作る（版1ができる） */
-async function createDraft(title: string): Promise<string> {
-    const { data, error } = await f.staff.client
-        .from('articles')
-        .insert({ event_id: f.eventA, created_by: f.staff.id, title })
-        .select('id')
-        .single()
-    if (error || !data) throw new Error(`記事の作成に失敗しました: ${JSON.stringify(error)}`)
-    return data.id
+/** staff が eventA に下書きの記事を作る（版1ができる） */
+function createDraft(title: string): Promise<string> {
+    return createArticle(f.staff, f.eventA, title)
 }
 
 function save(user: TestUser, articleId: string, title: string, status?: 'draft' | 'published') {
@@ -64,10 +65,37 @@ describe('article_histories の読み取り', () => {
         expect(data?.map((row) => row.article_id).sort()).toEqual([f.articleA, f.draftA].sort())
     })
 
-    it('visitor（公開済みの記事も含む）・visitor として所属するイベント・所属していない・論理削除・未ログインは読めない', async () => {
+    it('staff でないメンバーは、公開中の版だけ読める（下書きの版・一時保存した版は読めない）', async () => {
+        const id = await createDraft('公開中の版')
+        await saveAsStaff(id, '公開中の版', 'published')
+        // 別の人の版にしておき、一時保存で版2が足されるようにする
+        await serviceClient.from('article_histories').update({ created_by: f.visitor.id }).eq('article_id', id)
+        await saveAsStaff(id, '一時保存した版')
+
+        const visitor = await f.visitor.client
+            .from('article_histories')
+            .select('article_id, version')
+            .in('article_id', [f.articleA, f.draftA, id])
+        // staff は eventB では visitor なので、eventB の記事も公開中の版だけ読める
+        const staffInB = await f.staff.client
+            .from('article_histories')
+            .select('article_id, version')
+            .in('article_id', [f.articleB, f.draftB])
+
+        expect(visitor.error).toBeNull()
+        expect(visitor.data).toHaveLength(2)
+        expect(visitor.data).toEqual(
+            expect.arrayContaining([
+                { article_id: f.articleA, version: 1 },
+                { article_id: id, version: 1 },
+            ]),
+        )
+        expect(staffInB.error).toBeNull()
+        expect(staffInB.data).toEqual([{ article_id: f.articleB, version: 1 }])
+    })
+
+    it('所属していない・論理削除・未ログインは読めない', async () => {
         const cases = [
-            [f.visitor.client, [f.articleA, f.draftA]],
-            [f.staff.client, [f.articleB, f.draftB]],
             [f.outsider.client, [f.articleA, f.draftA]],
             [f.deleted.client, [f.articleA, f.draftA]],
             [anonClient, [f.articleA, f.draftA]],
@@ -82,6 +110,29 @@ describe('article_histories の読み取り', () => {
             expect(data).toEqual([])
         }
     })
+
+    it('記事から公開中の版・最新の版を1件ずつ埋め込める（読めない版は null）', async () => {
+        const id = await createDraft('埋め込みのテスト')
+        await saveAsStaff(id, '埋め込みのテスト', 'published')
+        await serviceClient.from('article_histories').update({ created_by: f.visitor.id }).eq('article_id', id)
+        await saveAsStaff(id, '一時保存した版')
+        const columns =
+            'published_history:article_histories!articles_published_version_fkey(version, title), latest_history:article_histories!articles_latest_version_fkey(version, title)'
+
+        const staff = await f.staff.client.from('articles').select(columns).eq('id', id).single()
+        const visitor = await f.visitor.client.from('articles').select(columns).eq('id', id).single()
+
+        expect(staff.error).toBeNull()
+        expect(staff.data).toEqual({
+            published_history: { version: 1, title: '埋め込みのテスト' },
+            latest_history: { version: 2, title: '一時保存した版' },
+        })
+        expect(visitor.error).toBeNull()
+        expect(visitor.data).toEqual({
+            published_history: { version: 1, title: '埋め込みのテスト' },
+            latest_history: null,
+        })
+    })
 })
 
 describe('記事の作成と版1', () => {
@@ -89,12 +140,7 @@ describe('記事の作成と版1', () => {
         const id = await createDraft('版1のテスト')
 
         expect(await historiesOf(id)).toEqual([{ version: 1, title: '版1のテスト', created_by: f.staff.id }])
-        expect((await articleOf(id)).published_version).toBeNull()
-    })
-
-    it('published で作った記事は、版1が公開中の版になる', async () => {
-        expect(await historiesOf(f.articleA)).toEqual([{ version: 1, title: 'A の記事', created_by: f.staff.id }])
-        expect((await articleOf(f.articleA)).published_version).toBe(1)
+        expect(await articleOf(id)).toMatchObject({ status: 'draft', latest_version: 1, published_version: null })
     })
 })
 
@@ -115,6 +161,28 @@ describe('article_histories への直接の書き込み', () => {
         expect(error?.code).toBe(INSUFFICIENT_PRIVILEGE)
     })
 
+    it('staff は公開していない版を上書きできるが、公開中の版は上書きできない', async () => {
+        const id = await createDraft('上書きのテスト')
+
+        const draft = await f.staff.client
+            .from('article_histories')
+            .update({ title: '下書きの版を上書き' })
+            .eq('article_id', id)
+            .select('version')
+        expect(draft.error).toBeNull()
+        expect(draft.data).toEqual([{ version: 1 }])
+
+        await saveAsStaff(id, '下書きの版を上書き', 'published')
+        const published = await f.staff.client
+            .from('article_histories')
+            .update({ title: '公開中の版を上書き' })
+            .eq('article_id', id)
+            .select('version')
+        expect(published.error).toBeNull()
+        expect(published.data).toEqual([])
+        expect((await historiesOf(id))[0]?.title).toBe('下書きの版を上書き')
+    })
+
     it('staff でも版は消せない', async () => {
         const { data, error } = await f.staff.client
             .from('article_histories')
@@ -127,12 +195,15 @@ describe('article_histories への直接の書き込み', () => {
         expect(await historiesOf(f.draftA)).toHaveLength(1)
     })
 
-    it('存在しない版を公開中の版にできない', async () => {
+    it('存在しない版を公開中の版・最新の版にできない', async () => {
         const id = await createDraft('外部キーのテスト')
 
-        const { error } = await f.staff.client.from('articles').update({ published_version: 99 }).eq('id', id)
+        const published = await f.staff.client.from('articles').update({ published_version: 99 }).eq('id', id)
+        const latest = await f.staff.client.from('articles').update({ latest_version: 99 }).eq('id', id)
 
-        expect(error?.code).toBe(FOREIGN_KEY_VIOLATION)
+        expect(published.error?.code).toBe(FOREIGN_KEY_VIOLATION)
+        expect(latest.error?.code).toBe(FOREIGN_KEY_VIOLATION)
+        expect(await articleOf(id)).toMatchObject({ latest_version: 1, published_version: null })
     })
 })
 
@@ -162,7 +233,7 @@ describe('save_article の権限', () => {
         })
 
         expect(error).not.toBeNull()
-        expect((await articleOf(f.draftA)).title).toBe('A の下書き')
+        expect((await historiesOf(f.draftA)).map((history) => history.title)).toEqual(['A の下書き'])
     })
 })
 
@@ -173,16 +244,19 @@ describe('save_article の版の残し方', () => {
         await saveAsStaff(id, '上書き後')
 
         expect(await historiesOf(id)).toEqual([{ version: 1, title: '上書き後', created_by: f.staff.id }])
+        expect((await articleOf(id)).latest_version).toBe(1)
     })
 
-    it('中身が最新の版と同じなら、版は増えない', async () => {
+    it('中身が最新の版と同じなら、版は増えない（記事の更新日時は進む）', async () => {
         const id = await createDraft('同じ中身')
         // 別の人の版にしておき、中身が違えば新しい版が足される状態にする
         await serviceClient.from('article_histories').update({ created_by: f.visitor.id }).eq('article_id', id)
+        const before = await articleOf(id)
 
         await saveAsStaff(id, '同じ中身')
 
         expect(await historiesOf(id)).toEqual([{ version: 1, title: '同じ中身', created_by: f.visitor.id }])
+        expect((await articleOf(id)).updated_at > before.updated_at).toBe(true)
     })
 
     it('最新の版を別の人が保存していたら、上書きせずに新しい版を足す', async () => {
@@ -195,6 +269,7 @@ describe('save_article の版の残し方', () => {
             { version: 1, title: '別の人の版', created_by: f.visitor.id },
             { version: 2, title: '自分の版', created_by: f.staff.id },
         ])
+        expect((await articleOf(id)).latest_version).toBe(2)
     })
 
     it('最新の版を作ってから30分を過ぎていたら、上書きせずに新しい版を足す', async () => {
@@ -209,29 +284,32 @@ describe('save_article の版の残し方', () => {
 })
 
 describe('save_article の公開状態', () => {
-    it('下書きを status なしで保存すると、記事も今回の中身になる（下書きのまま）', async () => {
+    it('下書きを status なしで保存すると、下書きのまま最新の版が今回の中身になる', async () => {
         const id = await createDraft('下書き')
 
         await saveAsStaff(id, '下書きを編集')
 
-        expect(await articleOf(id)).toMatchObject({ title: '下書きを編集', status: 'draft', published_version: null })
+        expect(await articleOf(id)).toMatchObject({ status: 'draft', latest_version: 1, published_version: null })
+        expect((await historiesOf(id)).map((history) => history.title)).toEqual(['下書きを編集'])
     })
 
-    it('公開 → 一時保存 → 公開に反映 → 下書きに戻す、の流れで記事と版が変わる', async () => {
+    it('公開 → 一時保存 → 公開に反映 → 下書きに戻す、の流れで記事が指す版が変わる', async () => {
         const id = await createDraft('流れのテスト')
 
         // 公開する。版1（未公開・自分・30分以内）を上書きして公開中の版にする
         await saveAsStaff(id, '公開した中身', 'published')
-        expect(await articleOf(id)).toMatchObject({ title: '公開した中身', status: 'published', published_version: 1 })
         const published = await articleOf(id)
+        expect(published).toMatchObject({ status: 'published', latest_version: 1, published_version: 1 })
 
-        // 一時保存する。公開中の版は上書きせずに版2を足し、記事（公開中の中身・更新日時）は変えない
+        // 一時保存する。公開中の版は上書きせずに版2を足す。公開中の版は変わらず、更新日時は進む
         await saveAsStaff(id, '一時保存した中身')
         expect(await historiesOf(id)).toEqual([
             { version: 1, title: '公開した中身', created_by: f.staff.id },
             { version: 2, title: '一時保存した中身', created_by: f.staff.id },
         ])
-        expect(await articleOf(id)).toEqual(published)
+        const tempSaved = await articleOf(id)
+        expect(tempSaved).toMatchObject({ status: 'published', latest_version: 2, published_version: 1 })
+        expect(tempSaved.updated_at > published.updated_at).toBe(true)
 
         // 続けて一時保存すると、未公開の版2を上書きする
         await saveAsStaff(id, 'もう一度一時保存した中身')
@@ -242,14 +320,14 @@ describe('save_article の公開状態', () => {
 
         // 公開に反映する。版2を上書きして公開中の版にする
         await saveAsStaff(id, '反映した中身', 'published')
-        expect(await articleOf(id)).toMatchObject({ title: '反映した中身', status: 'published', published_version: 2 })
+        expect(await articleOf(id)).toMatchObject({ status: 'published', latest_version: 2, published_version: 2 })
         expect(await historiesOf(id)).toHaveLength(2)
 
         // 下書きに戻す。公開中だった版2は上書きせずに版3を足し、公開中の版は NULL。公開日時は残る
         await saveAsStaff(id, '下書きに戻した中身', 'draft')
         expect(await articleOf(id)).toMatchObject({
-            title: '下書きに戻した中身',
             status: 'draft',
+            latest_version: 3,
             published_version: null,
             published_at: published.published_at,
         })
