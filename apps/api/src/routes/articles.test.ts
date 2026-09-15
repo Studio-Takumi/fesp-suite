@@ -71,6 +71,16 @@ const content = [
     },
 ]
 
+const latestHistory = {
+    version: 2,
+    title: '模擬店のお知らせ（2日目）',
+    content,
+    created_by: USER_ID,
+    created_at: '2026-09-14T13:00:00+00:00',
+    updated_at: '2026-09-14T13:10:00+00:00',
+}
+
+/** API が返す記事オブジェクト */
 const article = {
     id: ARTICLE_ID,
     event_id: EVENT_ID,
@@ -79,13 +89,21 @@ const article = {
     title: '模擬店のお知らせ',
     content,
     status: 'published',
+    published_version: 1,
     published_at: '2026-09-14T11:00:00+00:00',
     created_at: '2026-09-14T10:00:00+00:00',
     updated_at: '2026-09-14T12:30:00+00:00',
+    latest_history: latestHistory,
 }
 
+/** DB から返る記事の行。埋め込んだ版は配列で返る */
+const articleRow = { ...article, latest_history: [latestHistory] }
+
 const ARTICLE_COLUMNS =
-    'id, event_id, created_by, creator:users!created_by(display_name), title, content, status, published_at, created_at, updated_at'
+    'id, event_id, created_by, creator:users!created_by(display_name), title, content, status, published_version, published_at, created_at, updated_at, latest_history:article_histories!article_histories_article_id_fkey(version, title, content, created_by, created_at, updated_at)'
+/** 埋め込む版を最新の1件にする並べ替えと件数 */
+const LATEST_HISTORY_ORDER = ['version', { referencedTable: 'latest_history', ascending: false }]
+const LATEST_HISTORY_LIMIT = [1, { referencedTable: 'latest_history' }]
 const OTHER_USER_ID = '1d2e3f4a-5b6c-4d7e-8f9a-0b1c2d3e4f5a'
 
 const authorization = { Authorization: 'Bearer valid-token' }
@@ -159,7 +177,7 @@ describe('認証', () => {
     })
 
     it('ユーザーのトークンを引き継いだクライアントで DB を読む（RLS を効かせる）', async () => {
-        result = { data: article, error: null }
+        result = { data: articleRow, error: null }
 
         await get(`/api/articles/${ARTICLE_ID}`)
 
@@ -168,8 +186,8 @@ describe('認証', () => {
 })
 
 describe('GET /api/articles', () => {
-    it('イベントの記事を更新日時の新しい順に、本文なしで返す', async () => {
-        const { content: _content, ...listItem } = article
+    it('イベントの記事を更新日時の新しい順に、本文・最新の版なしで返す', async () => {
+        const { content: _content, latest_history: _latestHistory, ...listItem } = article
         result = { data: [listItem], error: null }
 
         const res = await get(`/api/articles?event_id=${EVENT_ID}`)
@@ -179,7 +197,7 @@ describe('GET /api/articles', () => {
         expect(argsOf('from')).toEqual([['articles']])
         expect(argsOf('select')).toEqual([
             [
-                'id, event_id, created_by, creator:users!created_by(display_name), title, status, published_at, created_at, updated_at',
+                'id, event_id, created_by, creator:users!created_by(display_name), title, status, published_version, published_at, created_at, updated_at',
             ],
         ])
         expect(argsOf('eq')).toEqual([['event_id', EVENT_ID]])
@@ -216,8 +234,8 @@ describe('GET /api/articles', () => {
 })
 
 describe('GET /api/articles/:id', () => {
-    it('記事IDだけで絞り込んで、本文と作成者つきで返す', async () => {
-        result = { data: article, error: null }
+    it('記事IDだけで絞り込んで、本文・作成者・最新の版つきで返す', async () => {
+        result = { data: articleRow, error: null }
 
         const res = await get(`/api/articles/${ARTICLE_ID}`)
 
@@ -225,6 +243,17 @@ describe('GET /api/articles/:id', () => {
         await expect(res.json()).resolves.toEqual(article)
         expect(argsOf('select')).toEqual([[ARTICLE_COLUMNS]])
         expect(argsOf('eq')).toEqual([['id', ARTICLE_ID]])
+        expect(argsOf('order')).toEqual([LATEST_HISTORY_ORDER])
+        expect(argsOf('limit')).toEqual([LATEST_HISTORY_LIMIT])
+    })
+
+    it('版が読めない（RLS で staff でない）と、最新の版は null で返す', async () => {
+        result = { data: { ...articleRow, latest_history: [] }, error: null }
+
+        const res = await get(`/api/articles/${ARTICLE_ID}`)
+
+        expect(res.status).toBe(200)
+        await expect(res.json()).resolves.toEqual({ ...article, latest_history: null })
     })
 
     it('記事が無い（所属していないイベントの記事を含む）と 404', async () => {
@@ -254,7 +283,7 @@ describe('GET /api/articles/:id', () => {
 
 describe('POST /api/articles', () => {
     it('ボディのイベントに記事を作成して 201', async () => {
-        result = { data: article, error: null }
+        result = { data: articleRow, error: null }
 
         const res = await sendJson('/api/articles', 'POST', { event_id: EVENT_ID, title: '模擬店のお知らせ', content })
 
@@ -266,7 +295,7 @@ describe('POST /api/articles', () => {
     })
 
     it('タイトル・本文とも空でも作成できる', async () => {
-        result = { data: { ...article, title: '', content: [] }, error: null }
+        result = { data: { ...articleRow, title: '', content: [] }, error: null }
 
         const res = await sendJson('/api/articles', 'POST', { event_id: EVENT_ID, title: '', content: [] })
 
@@ -275,7 +304,7 @@ describe('POST /api/articles', () => {
     })
 
     it('タイトルの前後の空白は取り除いて保存する', async () => {
-        result = { data: article, error: null }
+        result = { data: articleRow, error: null }
 
         await sendJson('/api/articles', 'POST', { event_id: EVENT_ID, title: '  模擬店のお知らせ  ', content })
 
@@ -285,7 +314,7 @@ describe('POST /api/articles', () => {
     })
 
     it('ボディに created_by があっても、トークンのユーザーを作成者にする', async () => {
-        result = { data: article, error: null }
+        result = { data: articleRow, error: null }
 
         await sendJson('/api/articles', 'POST', { event_id: EVENT_ID, created_by: OTHER_USER_ID, title: '', content })
 
@@ -293,15 +322,15 @@ describe('POST /api/articles', () => {
     })
 
     it('ボディに status があっても送らず、下書き（DB の既定値）で作る', async () => {
-        result = { data: article, error: null }
+        result = { data: articleRow, error: null }
 
         await sendJson('/api/articles', 'POST', { event_id: EVENT_ID, status: 'published', title: '', content })
 
         expect(argsOf('insert')).toEqual([[{ event_id: EVENT_ID, created_by: USER_ID, title: '', content }]])
     })
 
-    it('作成した記事を作成者つきで読み直す', async () => {
-        result = { data: article, error: null }
+    it('作成した記事を作成者・最新の版つきで読み直す', async () => {
+        result = { data: articleRow, error: null }
 
         await sendJson('/api/articles', 'POST', { event_id: EVENT_ID, title: '', content })
 
@@ -359,25 +388,48 @@ describe('POST /api/articles', () => {
 })
 
 describe('PUT /api/articles/:id', () => {
-    it('記事IDだけで絞り込んでタイトル・本文・公開状態を置き換える', async () => {
-        result = { data: article, error: null }
+    const path = `/api/articles/${ARTICLE_ID}`
 
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', {
-            title: '模擬店のお知らせ',
-            content,
-            status: 'published',
-        })
+    it('保存の関数にタイトル・本文・公開状態を渡し、保存後の記事を最新の版つきで返す', async () => {
+        queuedResults.push({ data: true, error: null }, { data: articleRow, error: null })
+
+        const res = await sendJson(path, 'PUT', { title: '模擬店のお知らせ', content, status: 'published' })
 
         expect(res.status).toBe(200)
         await expect(res.json()).resolves.toEqual(article)
-        expect(argsOf('update')).toEqual([[{ title: '模擬店のお知らせ', content, status: 'published' }]])
+        expect(argsOf('rpc')).toEqual([
+            [
+                'save_article',
+                {
+                    target_article_id: ARTICLE_ID,
+                    new_title: '模擬店のお知らせ',
+                    new_content: content,
+                    new_status: 'published',
+                },
+            ],
+        ])
+        expect(argsOf('update')).toEqual([])
+        expect(argsOf('select')).toEqual([[ARTICLE_COLUMNS]])
         expect(argsOf('eq')).toEqual([['id', ARTICLE_ID]])
+        expect(argsOf('order')).toEqual([LATEST_HISTORY_ORDER])
+        expect(argsOf('limit')).toEqual([LATEST_HISTORY_LIMIT])
     })
 
-    it('ボディに event_id・created_by があっても、記事のイベント・作成者は変えない', async () => {
-        result = { data: article, error: null }
+    it('status を省略すると、公開状態を渡さない（公開状態を変えない。公開中の記事なら一時保存）', async () => {
+        queuedResults.push({ data: true, error: null }, { data: articleRow, error: null })
 
-        await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', {
+        const res = await sendJson(path, 'PUT', { title: '模擬店のお知らせ', content })
+
+        expect(res.status).toBe(200)
+        const [[, args]] = argsOf('rpc') as [[string, Record<string, unknown>]]
+        expect(args.new_status).toBeUndefined()
+        expect(JSON.parse(JSON.stringify(args))).not.toHaveProperty('new_status')
+    })
+
+    it('ボディに event_id・created_by があっても、保存の関数に渡さない', async () => {
+        queuedResults.push({ data: true, error: null }, { data: articleRow, error: null })
+
+        await sendJson(path, 'PUT', {
             event_id: EVENT_ID,
             created_by: OTHER_USER_ID,
             title: '',
@@ -385,39 +437,54 @@ describe('PUT /api/articles/:id', () => {
             status: 'draft',
         })
 
-        expect(argsOf('update')).toEqual([[{ title: '', content, status: 'draft' }]])
+        expect(argsOf('rpc')).toEqual([
+            [
+                'save_article',
+                { target_article_id: ARTICLE_ID, new_title: '', new_content: content, new_status: 'draft' },
+            ],
+        ])
     })
 
-    it('更新できず、記事は読める（メンバーだが staff でない）と 403', async () => {
-        queuedResults.push({ data: null, error: null }, { data: { id: ARTICLE_ID }, error: null })
+    it('保存できず（関数が false）、記事は読める（メンバーだが staff でない）と 403', async () => {
+        queuedResults.push({ data: false, error: null }, { data: { id: ARTICLE_ID }, error: null })
 
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { title: '', content, status: 'draft' })
+        const res = await sendJson(path, 'PUT', { title: '', content, status: 'draft' })
 
         expect(res.status).toBe(403)
         expect(await errorCodeOf(res)).toBe('forbidden')
-        expect(argsOf('select')).toEqual([[ARTICLE_COLUMNS], ['id']])
+        expect(argsOf('select')).toEqual([['id']])
     })
 
-    it('更新できず、記事も読めない（存在しない・所属していないイベントの記事）と 404', async () => {
-        queuedResults.push({ data: null, error: null }, { data: null, error: null })
+    it('保存できず、記事も読めない（存在しない・所属していないイベントの記事）と 404', async () => {
+        queuedResults.push({ data: false, error: null }, { data: null, error: null })
 
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { title: '', content, status: 'draft' })
+        const res = await sendJson(path, 'PUT', { title: '', content, status: 'draft' })
 
         expect(res.status).toBe(404)
         expect(await errorCodeOf(res)).toBe('not_found')
     })
 
-    it('読み直しで DB のエラーが出たら 500', async () => {
+    it('保存の関数で DB のエラーが出たら 500 で、読み直さない', async () => {
         vi.spyOn(console, 'error').mockImplementation(() => {})
-        queuedResults.push({ data: null, error: null }, { data: null, error: dbError('XX000', 'boom') })
+        queuedResults.push({ data: null, error: dbError('XX000', 'boom') })
 
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { title: '', content, status: 'draft' })
+        const res = await sendJson(path, 'PUT', { title: '', content, status: 'draft' })
+
+        expect(res.status).toBe(500)
+        expect(argsOf('select')).toEqual([])
+    })
+
+    it('403 / 404 を分ける読み直しで DB のエラーが出たら 500', async () => {
+        vi.spyOn(console, 'error').mockImplementation(() => {})
+        queuedResults.push({ data: false, error: null }, { data: null, error: dbError('XX000', 'boom') })
+
+        const res = await sendJson(path, 'PUT', { title: '', content, status: 'draft' })
 
         expect(res.status).toBe(500)
     })
 
     it('区切り線・表を含む本文（エディタの出力をそのまま JSON で送ったもの）を保存できる', async () => {
-        result = { data: article, error: null }
+        queuedResults.push({ data: true, error: null }, { data: articleRow, error: null })
         const cellProps = {
             backgroundColor: 'default',
             textColor: 'default',
@@ -455,33 +522,28 @@ describe('PUT /api/articles/:id', () => {
             },
         ]
 
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', {
-            title: '',
-            content: blockContent,
-            status: 'draft',
-        })
+        const res = await sendJson(path, 'PUT', { title: '', content: blockContent, status: 'draft' })
 
         expect(res.status).toBe(200)
-        expect(argsOf('update')).toEqual([[{ title: '', content: blockContent, status: 'draft' }]])
+        expect(argsOf('rpc')).toEqual([
+            [
+                'save_article',
+                { target_article_id: ARTICLE_ID, new_title: '', new_content: blockContent, new_status: 'draft' },
+            ],
+        ])
     })
 
     it('title が無いと 400', async () => {
-        const res = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { content, status: 'draft' })
+        const res = await sendJson(path, 'PUT', { content, status: 'draft' })
 
         expect(res.status).toBe(400)
         expect(calls).toHaveLength(0)
     })
 
-    it('status が draft / published でない・無いと 400', async () => {
-        const invalid = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', {
-            title: '',
-            content,
-            status: 'archived',
-        })
-        const missing = await sendJson(`/api/articles/${ARTICLE_ID}`, 'PUT', { title: '', content })
+    it('status が draft / published でないと 400', async () => {
+        const res = await sendJson(path, 'PUT', { title: '', content, status: 'archived' })
 
-        expect(invalid.status).toBe(400)
-        expect(missing.status).toBe(400)
+        expect(res.status).toBe(400)
         expect(calls).toHaveLength(0)
     })
 })

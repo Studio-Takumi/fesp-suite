@@ -350,11 +350,14 @@ describe('articleInputSchema', () => {
 })
 
 describe('articleInputSchema の公開状態', () => {
-    it('status は draft / published だけ受理し、無ければ拒否する', () => {
+    it('status は draft / published だけ受理する', () => {
         expect(articleInputSchema.safeParse({ title: '', content: [], status: 'published' }).success).toBe(true)
         expect(articleInputSchema.safeParse({ title: '', content: [], status: 'draft' }).success).toBe(true)
         expect(articleInputSchema.safeParse({ title: '', content: [], status: 'archived' }).success).toBe(false)
-        expect(articleInputSchema.safeParse({ title: '', content: [] }).success).toBe(false)
+    })
+
+    it('status は省略できる（公開状態を変えない）', () => {
+        expect(articleInputSchema.parse({ title: '', content: [] })).toEqual({ title: '', content: [] })
     })
 })
 
@@ -405,13 +408,55 @@ describe('articleResponseSchema', () => {
         title: '',
         content: [],
         status: 'published',
+        published_version: 1,
         published_at: '2026-09-14T02:00:00.123456+00:00',
         created_at: '2026-09-14T01:00:00.123456+00:00',
         updated_at: '2026-09-14T03:30:00.654321+00:00',
+        latest_history: {
+            version: 2,
+            title: '',
+            content: [],
+            created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
+            created_at: '2026-09-14T04:00:00.123456+00:00',
+            updated_at: '2026-09-14T04:10:00.654321+00:00',
+        },
     }
 
     it('Supabase が返す形（マイクロ秒・オフセット付きの日時）を受理する', () => {
         expect(articleResponseSchema.safeParse(article).success).toBe(true)
+    })
+
+    it('最新の版が読めない（latest_history が null の）記事を受理する', () => {
+        expect(articleResponseSchema.safeParse({ ...article, latest_history: null }).success).toBe(true)
+    })
+
+    it('最新の版を保存した人が null（service_role から保存）でも受理する', () => {
+        const result = articleResponseSchema.safeParse({
+            ...article,
+            latest_history: { ...article.latest_history, created_by: null },
+        })
+
+        expect(result.success).toBe(true)
+    })
+
+    it('公開中の版の番号・最新の版が無ければ拒否する', () => {
+        const { published_version: _publishedVersion, ...withoutPublishedVersion } = article
+        const { latest_history: _latestHistory, ...withoutLatestHistory } = article
+
+        expect(articleResponseSchema.safeParse(withoutPublishedVersion).success).toBe(false)
+        expect(articleResponseSchema.safeParse(withoutLatestHistory).success).toBe(false)
+    })
+
+    it('最新の版の本文が記事ドキュメントの形でなければ拒否する', () => {
+        const result = articleResponseSchema.safeParse({
+            ...article,
+            latest_history: {
+                ...article.latest_history,
+                content: [{ id: '1', type: 'image', props: {}, children: [] }],
+            },
+        })
+
+        expect(result.success).toBe(false)
     })
 
     it('作成者の表示名が未設定（null）でも受理する', () => {
@@ -503,10 +548,29 @@ describe('articleViewResponseSchema', () => {
         creator: { display_name: '山田太郎' },
         title: '模擬店のお知らせ',
         status: 'published',
+        published_version: 1,
         published_at: '2026-09-14T02:00:00.123456+00:00',
         created_at: '2026-09-14T01:00:00.123456+00:00',
         updated_at: '2026-09-14T03:30:00.654321+00:00',
     }
+
+    it('最新の版は持たない（staff が開いたときに、描画できないブロックを含む版で落とさない）', () => {
+        const result = articleViewResponseSchema.safeParse({
+            ...article,
+            content: [],
+            latest_history: {
+                version: 2,
+                title: '',
+                content: [{ id: '1', type: 'shopList', props: { day: 1 }, children: [] }],
+                created_by: null,
+                created_at: '2026-09-14T04:00:00.123456+00:00',
+                updated_at: '2026-09-14T04:10:00.654321+00:00',
+            },
+        })
+
+        expect(result.success).toBe(true)
+        expect(result.data).not.toHaveProperty('latest_history')
+    })
 
     it('本文に描画できないブロックがあっても記事は受理し、そのブロックだけ取り除く', () => {
         const result = articleViewResponseSchema.safeParse({

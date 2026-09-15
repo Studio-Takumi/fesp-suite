@@ -1,17 +1,18 @@
 import type { ReactNode } from 'react'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { ArticleResponse } from '@fesp/schema'
+import type { ArticleDocument, ArticleResponse } from '@fesp/schema'
 import { ApiError } from '@fesp/types'
 
 import { ArticleEditView } from './ArticleEditView'
 
 const EVENT_ID = '0b7e6d5c-4a3b-4c2d-9e1f-a2b3c4d5e6f7'
 const ARTICLE_ID = '7f1c2a9e-3b4d-4e5f-8a6b-1c2d3e4f5a6b'
+const USER_ID = '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f'
 
 const adminFetch = vi.fn()
 
@@ -23,25 +24,60 @@ function renderWithQueryClient(ui: ReactNode) {
     return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>)
 }
 
-const article: ArticleResponse = {
-    id: ARTICLE_ID,
-    event_id: EVENT_ID,
-    created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
-    creator: { display_name: '山田太郎' },
-    status: 'draft',
-    published_at: null,
-    title: '模擬店のお知らせ',
-    content: [
+function paragraph(text: string): ArticleDocument {
+    return [
         {
             id: '1',
             type: 'paragraph',
             props: { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' },
-            content: [{ type: 'text', text: '現金のみです。', styles: {} }],
+            content: [{ type: 'text', text, styles: {} }],
             children: [],
         },
-    ],
+    ]
+}
+
+/** 下書きの記事。最新の版（版1）は記事と同じ中身 */
+const article: ArticleResponse = {
+    id: ARTICLE_ID,
+    event_id: EVENT_ID,
+    created_by: USER_ID,
+    creator: { display_name: '山田太郎' },
+    status: 'draft',
+    published_version: null,
+    published_at: null,
+    title: '模擬店のお知らせ',
+    content: paragraph('現金のみです。'),
     created_at: '2026-09-14T01:00:00+00:00',
     updated_at: '2026-09-14T03:30:00+00:00',
+    latest_history: {
+        version: 1,
+        title: '模擬店のお知らせ',
+        content: paragraph('現金のみです。'),
+        created_by: USER_ID,
+        created_at: '2026-09-14T01:00:00+00:00',
+        updated_at: '2026-09-14T03:30:00+00:00',
+    },
+}
+
+/** 公開中の記事。版1を公開していて、一時保存した変更は無い */
+const publishedArticle: ArticleResponse = {
+    ...article,
+    status: 'published',
+    published_version: 1,
+    published_at: '2026-09-14T02:00:00+00:00',
+}
+
+/** 公開中の記事に、版2を一時保存したもの */
+const temporarilySavedArticle: ArticleResponse = {
+    ...publishedArticle,
+    latest_history: {
+        version: 2,
+        title: '2日目のお知らせ',
+        content: paragraph('一時保存した本文です。'),
+        created_by: USER_ID,
+        created_at: '2026-09-14T04:00:00+00:00',
+        updated_at: '2026-09-14T04:10:00+00:00',
+    },
 }
 
 const articlePath = `/api/articles/${ARTICLE_ID}`
@@ -50,6 +86,10 @@ type FetchOptions = { method?: string; body?: unknown }
 
 function putCalls() {
     return adminFetch.mock.calls.filter(([, , options]) => (options as FetchOptions | undefined)?.method === 'PUT')
+}
+
+function putBodies() {
+    return putCalls().map(([, , options]) => (options as FetchOptions).body)
 }
 
 describe('ArticleEditView', () => {
@@ -71,6 +111,25 @@ describe('ArticleEditView', () => {
         )
     })
 
+    it('最新の版（一時保存した変更）のタイトル・本文を初期値にする', async () => {
+        adminFetch.mockResolvedValue(temporarilySavedArticle)
+
+        renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+
+        expect(await screen.findByText('一時保存した本文です。')).toBeInTheDocument()
+        expect(screen.queryByText('現金のみです。')).not.toBeInTheDocument()
+        expect(screen.getByRole('textbox', { name: 'タイトル' })).toHaveValue('2日目のお知らせ')
+    })
+
+    it('最新の版が無ければ、記事のタイトル・本文を初期値にする', async () => {
+        adminFetch.mockResolvedValue({ ...article, latest_history: null })
+
+        renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+
+        expect(await screen.findByText('現金のみです。')).toBeInTheDocument()
+        expect(screen.getByRole('textbox', { name: 'タイトル' })).toHaveValue('模擬店のお知らせ')
+    })
+
     it.each([
         ['山田太郎', '作成者: 山田太郎'],
         [null, '作成者: （名前未設定）'],
@@ -80,6 +139,26 @@ describe('ArticleEditView', () => {
         renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
 
         expect(await screen.findByText(text)).toBeInTheDocument()
+    })
+
+    it('公開中の記事で、最新の版が公開中の版と違うと「公開していない変更があります」と出す', async () => {
+        adminFetch.mockResolvedValue(temporarilySavedArticle)
+
+        renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+
+        expect(await screen.findByText('公開していない変更があります')).toBeInTheDocument()
+    })
+
+    it.each([
+        ['公開中の版が最新の版', publishedArticle],
+        ['下書きの記事', article],
+    ])('%sなら「公開していない変更があります」を出さない', async (_label, fixture) => {
+        adminFetch.mockResolvedValue(fixture)
+
+        renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+        await screen.findByText('現金のみです。')
+
+        expect(screen.queryByText('公開していない変更があります')).not.toBeInTheDocument()
     })
 
     it('記事が見つからないと、エディタの代わりに一覧へのリンクを出す', async () => {
@@ -155,7 +234,7 @@ describe('ArticleEditView', () => {
         expect(screen.getByRole('switch', { name: '公開' })).toHaveAttribute('aria-checked', checked)
     })
 
-    it('公開のスイッチを切り替えただけでは保存せず、保存ボタンで公開状態も一緒に PUT する', async () => {
+    it('下書きの記事は、公開のスイッチを切り替えただけでは保存せず、保存ボタンでダイアログなしに公開状態も一緒に PUT する', async () => {
         adminFetch.mockResolvedValue(article)
 
         renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
@@ -167,9 +246,8 @@ describe('ArticleEditView', () => {
         await userEvent.click(screen.getByRole('button', { name: '保存' }))
 
         expect(await screen.findByText('保存しました')).toBeInTheDocument()
-        expect(putCalls().map(([, , options]) => (options as FetchOptions).body)).toEqual([
-            { title: '模擬店のお知らせ', content: article.content, status: 'published' },
-        ])
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+        expect(putBodies()).toEqual([{ title: '模擬店のお知らせ', content: article.content, status: 'published' }])
     })
 
     it('公開のスイッチを切り替えると「保存しました」を消す', async () => {
@@ -183,6 +261,72 @@ describe('ArticleEditView', () => {
         await userEvent.click(screen.getByRole('switch', { name: '公開' }))
 
         expect(screen.queryByText('保存しました')).not.toBeInTheDocument()
+    })
+
+    describe('公開中の記事の保存', () => {
+        async function openDialog() {
+            adminFetch.mockResolvedValue(publishedArticle)
+
+            renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+            await screen.findByText('現金のみです。')
+            await userEvent.click(screen.getByRole('button', { name: '保存' }))
+
+            return screen.findByRole('alertdialog', { name: '公開中の記事です' })
+        }
+
+        it('スイッチがオンのまま保存すると、ダイアログを出し、まだ保存しない', async () => {
+            const dialog = await openDialog()
+
+            expect(
+                within(dialog).getByText('一時保存すると、公開中の記事はそのままで変更だけを保存します。'),
+            ).toBeInTheDocument()
+            expect(putCalls()).toHaveLength(0)
+        })
+
+        it('「一時保存する」を選ぶと、公開状態を送らずに PUT する', async () => {
+            const dialog = await openDialog()
+
+            await userEvent.click(within(dialog).getByRole('button', { name: '一時保存する' }))
+
+            expect(await screen.findByText('保存しました')).toBeInTheDocument()
+            expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+            expect(putBodies()).toEqual([{ title: '模擬店のお知らせ', content: publishedArticle.content }])
+        })
+
+        it('「公開に反映する」を選ぶと、公開状態を published にして PUT する', async () => {
+            const dialog = await openDialog()
+
+            await userEvent.click(within(dialog).getByRole('button', { name: '公開に反映する' }))
+
+            expect(await screen.findByText('保存しました')).toBeInTheDocument()
+            expect(putBodies()).toEqual([
+                { title: '模擬店のお知らせ', content: publishedArticle.content, status: 'published' },
+            ])
+        })
+
+        it('「キャンセル」を選ぶと、保存せずにダイアログを閉じる', async () => {
+            const dialog = await openDialog()
+
+            await userEvent.click(within(dialog).getByRole('button', { name: 'キャンセル' }))
+
+            expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+            expect(putCalls()).toHaveLength(0)
+        })
+
+        it('スイッチをオフにして保存すると、ダイアログを出さずに下書きに戻す PUT をする', async () => {
+            adminFetch.mockResolvedValue(publishedArticle)
+
+            renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+            await screen.findByText('現金のみです。')
+            await userEvent.click(screen.getByRole('switch', { name: '公開' }))
+            await userEvent.click(screen.getByRole('button', { name: '保存' }))
+
+            expect(await screen.findByText('保存しました')).toBeInTheDocument()
+            expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+            expect(putBodies()).toEqual([
+                { title: '模擬店のお知らせ', content: publishedArticle.content, status: 'draft' },
+            ])
+        })
     })
 
     it('タイトルが100文字を超えるとエラーを出し、保存しない', async () => {

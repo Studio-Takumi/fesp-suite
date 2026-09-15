@@ -8,6 +8,54 @@ export type Database = {
     }
     public: {
         Tables: {
+            article_histories: {
+                Row: {
+                    article_id: string
+                    content: Json
+                    created_at: string
+                    created_by: string | null
+                    id: string
+                    title: string
+                    updated_at: string
+                    version: number
+                }
+                Insert: {
+                    article_id: string
+                    content: Json
+                    created_at?: string
+                    created_by?: string | null
+                    id?: string
+                    title: string
+                    updated_at?: string
+                    version: number
+                }
+                Update: {
+                    article_id?: string
+                    content?: Json
+                    created_at?: string
+                    created_by?: string | null
+                    id?: string
+                    title?: string
+                    updated_at?: string
+                    version?: number
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: 'article_histories_article_id_fkey'
+                        columns: ['article_id']
+                        isOneToOne: false
+                        referencedRelation: 'articles'
+                        referencedColumns: ['id']
+                    },
+                    {
+                        foreignKeyName: 'article_histories_created_by_fkey'
+                        columns: ['created_by']
+                        isOneToOne: false
+                        referencedRelation: 'users'
+                        referencedColumns: ['id']
+                    },
+                ]
+            }
             articles: {
                 Row: {
                     content: Json
@@ -16,6 +64,7 @@ export type Database = {
                     event_id: string
                     id: string
                     published_at: string | null
+                    published_version: number | null
                     status: Database['public']['Enums']['article_status']
                     title: string
                     updated_at: string
@@ -27,6 +76,7 @@ export type Database = {
                     event_id: string
                     id?: string
                     published_at?: string | null
+                    published_version?: number | null
                     status?: Database['public']['Enums']['article_status']
                     title?: string
                     updated_at?: string
@@ -38,6 +88,7 @@ export type Database = {
                     event_id?: string
                     id?: string
                     published_at?: string | null
+                    published_version?: number | null
                     status?: Database['public']['Enums']['article_status']
                     title?: string
                     updated_at?: string
@@ -56,6 +107,13 @@ export type Database = {
                         isOneToOne: false
                         referencedRelation: 'events'
                         referencedColumns: ['id']
+                    },
+                    {
+                        foreignKeyName: 'articles_published_version_fkey'
+                        columns: ['id', 'published_version']
+                        isOneToOne: false
+                        referencedRelation: 'article_histories'
+                        referencedColumns: ['article_id', 'version']
                     },
                 ]
             }
@@ -151,7 +209,15 @@ export type Database = {
             [_ in never]: never
         }
         Functions: {
-            [_ in never]: never
+            save_article: {
+                Args: {
+                    new_content: Json
+                    new_status?: Database['public']['Enums']['article_status']
+                    new_title: string
+                    target_article_id: string
+                }
+                Returns: boolean
+            }
         }
         Enums: {
             article_status: 'draft' | 'published'

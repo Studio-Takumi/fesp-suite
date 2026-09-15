@@ -248,19 +248,38 @@ export type ArticleCreator = z.infer<typeof articleCreatorSchema>
 export const articleStatusSchema = z.enum(['draft', 'published'])
 export type ArticleStatus = z.infer<typeof articleStatusSchema>
 
+/** 記事の版（`article_histories` の1行）。保存のたびに残る編集履歴 */
+export const articleHistorySchema = z.object({
+    /** 記事ごとに1から増える番号 */
+    version: z.number().int().min(1),
+    title: z.string(),
+    content: articleDocumentSchema,
+    /** その版を保存したユーザー。`service_role` から保存したときは `null` */
+    created_by: uuidSchema.nullable(),
+    created_at: timestampSchema,
+    updated_at: timestampSchema,
+})
+export type ArticleHistory = z.infer<typeof articleHistorySchema>
+
 /** 記事オブジェクト（GET /api/articles/:id などのレスポンス） */
 export const articleResponseSchema = z.object({
     id: uuidSchema,
     event_id: uuidSchema,
     created_by: uuidSchema,
     creator: articleCreatorSchema,
+    /** 公開中なら公開している版の、下書きなら最新の版のタイトル */
     title: z.string(),
+    /** 公開中なら公開している版の、下書きなら最新の版の本文 */
     content: articleDocumentSchema,
     status: articleStatusSchema,
+    /** 公開中の版の番号。下書きなら `null` */
+    published_version: z.number().int().min(1).nullable(),
     /** 初めて公開した日時。一度も公開していなければ `null` */
     published_at: timestampSchema.nullable(),
     created_at: timestampSchema,
     updated_at: timestampSchema,
+    /** 最新の版。公開中の記事を一時保存した変更はここにだけ入る。イベントの `staff` でなければ `null` */
+    latest_history: articleHistorySchema.nullable(),
 })
 export type ArticleResponse = z.infer<typeof articleResponseSchema>
 
@@ -283,14 +302,17 @@ export function parseArticleDocument(blocks: unknown[]): ArticleDocument {
     })
 }
 
-/** ウェブアプリで表示するときの記事オブジェクト。本文は `parseArticleDocument` で描画できるブロックだけにする */
-export const articleViewResponseSchema = articleResponseSchema.extend({
+/**
+ * ウェブアプリで表示するときの記事オブジェクト。本文は `parseArticleDocument` で描画できるブロックだけにする。
+ * 最新の版（`latest_history`）は表示に使わないので持たない（staff が開いたときに、版の本文の検証で落とさないため）
+ */
+export const articleViewResponseSchema = articleResponseSchema.omit({ latest_history: true }).extend({
     content: z.array(z.unknown()).transform(parseArticleDocument),
 })
 export type ArticleViewResponse = z.infer<typeof articleViewResponseSchema>
 
-/** 一覧の1行。本文（content）は返さない */
-export const articleListItemSchema = articleResponseSchema.omit({ content: true })
+/** 一覧の1行。本文（content）と最新の版（latest_history）は返さない */
+export const articleListItemSchema = articleResponseSchema.omit({ content: true, latest_history: true })
 export type ArticleListItem = z.infer<typeof articleListItemSchema>
 
 /** GET /api/articles のレスポンス */
@@ -320,7 +342,8 @@ export const articleIdParamSchema = z.object({
 export const articleInputSchema = z.object({
     title: articleTitleSchema,
     content: articleDocumentSchema,
-    status: articleStatusSchema,
+    /** 保存後の公開状態。省略すると公開状態を変えない（公開中の記事なら一時保存になる） */
+    status: articleStatusSchema.optional(),
 })
 export type ArticleInput = z.infer<typeof articleInputSchema>
 
