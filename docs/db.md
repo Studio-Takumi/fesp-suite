@@ -21,6 +21,8 @@ erDiagram
         uuid created_by FK
         text title
         jsonb content
+        article_status status
+        timestamptz published_at
         timestamptz created_at
         timestamptz updated_at
     }
@@ -69,15 +71,17 @@ erDiagram
 
 記事のタイトルと本文。1行 = 1記事。
 
-| 列           | 型            | NULL | 既定値              | 説明                                                                                                |
-| ------------ | ------------- | ---- | ------------------- | --------------------------------------------------------------------------------------------------- |
-| `id`         | `uuid`        | NO   | `gen_random_uuid()` | 主キー                                                                                              |
-| `event_id`   | `uuid`        | NO   |                     | `events.id`。イベントを消すと一緒に消える                                                           |
-| `created_by` | `uuid`        | NO   |                     | `users.id`。記事を作成したユーザー。更新時はトリガーで元の値に戻す（変えられない）                  |
-| `title`      | `text`        | NO   | `''`                | 記事のタイトル。100文字まで。空文字可                                                               |
-| `content`    | `jsonb`       | NO   | `'[]'`              | BlockNoteのブロック配列。形は `articleDocumentSchema`（`packages/schema/src/article.ts`）で検証する |
-| `created_at` | `timestamptz` | NO   | `now()`             |                                                                                                     |
-| `updated_at` | `timestamptz` | NO   | `now()`             | 更新時にトリガーで `now()` にする                                                                   |
+| 列             | 型               | NULL | 既定値              | 説明                                                                                                                                                                       |
+| -------------- | ---------------- | ---- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`           | `uuid`           | NO   | `gen_random_uuid()` | 主キー                                                                                                                                                                     |
+| `event_id`     | `uuid`           | NO   |                     | `events.id`。イベントを消すと一緒に消える                                                                                                                                  |
+| `created_by`   | `uuid`           | NO   |                     | `users.id`。記事を作成したユーザー。更新時はトリガーで元の値に戻す（変えられない）                                                                                         |
+| `title`        | `text`           | NO   | `''`                | 記事のタイトル。100文字まで。空文字可                                                                                                                                      |
+| `content`      | `jsonb`          | NO   | `'[]'`              | BlockNoteのブロック配列。形は `articleDocumentSchema`（`packages/schema/src/article.ts`）で検証する                                                                        |
+| `status`       | `article_status` | NO   | `'draft'`           | 公開状態。`draft`（下書き）/ `published`（公開）                                                                                                                           |
+| `published_at` | `timestamptz`    | YES  |                     | 初めて公開した日時。一度も公開していなければ `NULL`。作成・更新時にトリガーで決める（初めて `published` になったときに `now()`、以降は元の値に戻す。渡された値は使わない） |
+| `created_at`   | `timestamptz`    | NO   | `now()`             |                                                                                                                                                                            |
+| `updated_at`   | `timestamptz`    | NO   | `now()`             | 更新時にトリガーで `now()` にする                                                                                                                                          |
 
 ### 制約・インデックス
 
@@ -89,12 +93,12 @@ erDiagram
 
 ### RLS
 
-| 操作     | 許可する条件                                                     |
-| -------- | ---------------------------------------------------------------- |
-| `select` | `event_id` のイベントのメンバー                                  |
-| `insert` | `event_id` のイベントの `staff` で、`created_by` が `auth.uid()` |
-| `update` | `event_id` のイベントの `staff`（更新後の `event_id` でも判定）  |
-| `delete` | なし（`service_role` のみ）                                      |
+| 操作     | 許可する条件                                                                                       |
+| -------- | -------------------------------------------------------------------------------------------------- |
+| `select` | `event_id` のイベントの `staff`。または `event_id` のイベントのメンバーで、`status` が `published` |
+| `insert` | `event_id` のイベントの `staff` で、`created_by` が `auth.uid()`                                   |
+| `update` | `event_id` のイベントの `staff`（更新後の `event_id` でも判定）                                    |
+| `delete` | なし（`service_role` のみ）                                                                        |
 
 ## users
 
