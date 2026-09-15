@@ -40,7 +40,7 @@ describe('events', () => {
 })
 
 describe('articles の読み取り', () => {
-    it('メンバーは所属するイベントの記事だけ読める（役割は問わない）', async () => {
+    it('公開済みの記事は、所属するイベントのメンバーなら読める（役割は問わない）', async () => {
         const ids = [f.articleA, f.articleB]
 
         const staff = await f.staff.client.from('articles').select('id').in('id', ids)
@@ -50,8 +50,19 @@ describe('articles の読み取り', () => {
         expect(idsOf(visitor.data)).toEqual([f.articleA])
     })
 
+    it('下書きは、そのイベントの staff だけ読める（visitor として所属するイベントの下書きは読めない）', async () => {
+        const ids = [f.draftA, f.draftB]
+
+        const staff = await f.staff.client.from('articles').select('id').in('id', ids)
+        const visitor = await f.visitor.client.from('articles').select('id').in('id', ids)
+
+        expect(idsOf(staff.data)).toEqual([f.draftA])
+        expect(visitor.error).toBeNull()
+        expect(visitor.data).toEqual([])
+    })
+
     it('所属していない・論理削除されたユーザー・未ログインは読めない', async () => {
-        const ids = [f.articleA, f.articleB]
+        const ids = [f.articleA, f.articleB, f.draftA, f.draftB]
 
         for (const client of [f.outsider.client, f.deleted.client, anonClient]) {
             const { data, error } = await client.from('articles').select('id').in('id', ids)
@@ -160,6 +171,75 @@ describe('articles の更新', () => {
         expect(error).toBeNull()
         const { data } = await serviceClient.from('articles').select('created_by').eq('id', f.articleA).single()
         expect(data?.created_by).toBe(f.staff.id)
+    })
+})
+
+describe('articles の公開状態と公開日時', () => {
+    async function publicationOf(articleId: string) {
+        const { data } = await serviceClient
+            .from('articles')
+            .select('status, published_at')
+            .eq('id', articleId)
+            .single()
+        return data
+    }
+
+    async function createDraft(): Promise<string> {
+        const { data, error } = await f.staff.client
+            .from('articles')
+            .insert({ event_id: f.eventA, created_by: f.staff.id, title: '公開日時のテスト' })
+            .select('id')
+            .single()
+        if (error || !data) throw new Error(`記事の作成に失敗しました: ${JSON.stringify(error)}`)
+        return data.id
+    }
+
+    async function update(articleId: string, values: { status?: 'draft' | 'published'; published_at?: string }) {
+        const { error } = await f.staff.client.from('articles').update(values).eq('id', articleId)
+        expect(error).toBeNull()
+    }
+
+    it('作成した記事は下書きで、公開日時は NULL（公開日時を渡しても入らない）', async () => {
+        const { data, error } = await f.staff.client
+            .from('articles')
+            .insert({
+                event_id: f.eventA,
+                created_by: f.staff.id,
+                title: '公開日時を渡して作成',
+                published_at: '2000-01-01T00:00:00+00:00',
+            })
+            .select('id')
+            .single()
+
+        expect(error).toBeNull()
+        expect(await publicationOf(data!.id)).toEqual({ status: 'draft', published_at: null })
+    })
+
+    it('初めて公開したときに公開日時が入り、下書きに戻しても・公開し直しても変わらない', async () => {
+        const id = await createDraft()
+
+        await update(id, { status: 'published' })
+        const published = await publicationOf(id)
+        expect(published?.status).toBe('published')
+        expect(published?.published_at).not.toBeNull()
+
+        await update(id, { status: 'draft' })
+        expect(await publicationOf(id)).toEqual({ status: 'draft', published_at: published?.published_at })
+
+        await update(id, { status: 'published' })
+        expect(await publicationOf(id)).toEqual({ status: 'published', published_at: published?.published_at })
+    })
+
+    it('staff でも公開日時は書き換えられない（下書きは NULL のまま、公開済みは元の値のまま）', async () => {
+        const id = await createDraft()
+
+        await update(id, { published_at: '2000-01-01T00:00:00+00:00' })
+        expect((await publicationOf(id))?.published_at).toBeNull()
+
+        await update(id, { status: 'published' })
+        const published = await publicationOf(id)
+        await update(id, { published_at: '2000-01-01T00:00:00+00:00' })
+        expect((await publicationOf(id))?.published_at).toBe(published?.published_at)
     })
 })
 

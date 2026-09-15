@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import type { z } from 'zod'
 
 import { type ArticleDocument, articleInputSchema, type ArticleResponse } from '@fesp/schema'
@@ -14,13 +14,16 @@ import { ApiError } from '@fesp/types'
 import { ArticleEditor } from '~/components/editor/ArticleEditor'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
+import { Label } from '~/components/ui/label'
+import { Switch } from '~/components/ui/switch'
 import { articleQuery, useUpdateArticle } from '~/lib/queries'
 
-const articleTitleFormSchema = articleInputSchema.pick({ title: true })
+/** 本文は BlockNote の変更を state で持つので、フォームで扱うのはタイトルと公開状態 */
+const articleFormSchema = articleInputSchema.pick({ title: true, status: true })
 
 /** zod の .trim() があるため、フォームの入力型（input）と送信型（output）は別物になる */
-type ArticleTitleFormValues = z.input<typeof articleTitleFormSchema>
-type ArticleTitleFormOutput = z.output<typeof articleTitleFormSchema>
+type ArticleFormValues = z.input<typeof articleFormSchema>
+type ArticleFormOutput = z.output<typeof articleFormSchema>
 
 export type ArticleEditViewProps = {
     id: string
@@ -63,11 +66,12 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
     const updateArticle = useUpdateArticle(article.id)
     const {
         register,
+        control,
         handleSubmit,
         formState: { errors },
-    } = useForm<ArticleTitleFormValues, unknown, ArticleTitleFormOutput>({
-        resolver: zodResolver(articleTitleFormSchema),
-        defaultValues: { title: article.title },
+    } = useForm<ArticleFormValues, unknown, ArticleFormOutput>({
+        resolver: zodResolver(articleFormSchema),
+        defaultValues: { title: article.title, status: article.status },
     })
 
     const clearSavedStatus = () => {
@@ -79,7 +83,9 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
         clearSavedStatus()
     }
 
-    const handleSave = handleSubmit(({ title }) => updateArticle.mutate({ title, content: articleDocument }))
+    const handleSave = handleSubmit(({ title, status }) =>
+        updateArticle.mutate({ title, content: articleDocument, status }),
+    )
 
     return (
         <div className='space-y-6 p-8'>
@@ -103,6 +109,23 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
                                 {updateArticle.error.message}
                             </p>
                         ) : null}
+                        <Controller
+                            control={control}
+                            name='status'
+                            render={({ field }) => (
+                                <div className='flex items-center gap-2'>
+                                    <Switch
+                                        id='article-published'
+                                        checked={field.value === 'published'}
+                                        onCheckedChange={(checked) => {
+                                            field.onChange(checked ? 'published' : 'draft')
+                                            clearSavedStatus()
+                                        }}
+                                    />
+                                    <Label htmlFor='article-published'>公開</Label>
+                                </div>
+                            )}
+                        />
                         <Button type='submit' disabled={updateArticle.isPending}>
                             保存
                         </Button>

@@ -30,6 +30,15 @@ if (typeof Range.prototype.getBoundingClientRect !== 'function') {
     })
 }
 
+/** jsdomは ResizeObserver を実装しないため、Radix UI（Switch など）が要素の大きさを測るところでエラーになる */
+if (typeof globalThis.ResizeObserver !== 'function') {
+    globalThis.ResizeObserver = class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+    }
+}
+
 afterEach(() => {
     cleanup()
 })

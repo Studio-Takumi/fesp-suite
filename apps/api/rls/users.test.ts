@@ -43,7 +43,7 @@ describe('users の読み取り', () => {
         // イベントを抜けた人が書いた記事の代わりに、所属していないユーザーを作成者にした記事を置く
         const { data: article } = await serviceClient
             .from('articles')
-            .insert({ event_id: f.eventA, created_by: f.outsider.id, title: '抜けた人の記事' })
+            .insert({ event_id: f.eventA, created_by: f.outsider.id, title: '抜けた人の記事', status: 'published' })
             .select('id')
             .single()
 
@@ -55,6 +55,26 @@ describe('users の読み取り', () => {
 
         expect(error).toBeNull()
         expect(data).toEqual({ created_by: f.outsider.id, creator: { display_name: null } })
+    })
+
+    it('下書きの記事の作成者は、記事を通しては staff にしか見えない', async () => {
+        // 同じイベントのメンバー同士だと別のポリシーで読めてしまうので、所属していないユーザーを作成者にする。
+        // 公開済みの記事が残っているとそこから読めてしまうので、先に消しておく
+        await serviceClient.from('articles').delete().eq('created_by', f.outsider.id)
+        const { data: article } = await serviceClient
+            .from('articles')
+            .insert({ event_id: f.eventA, created_by: f.outsider.id, title: '抜けた人の下書き', status: 'draft' })
+            .select('id')
+            .single()
+
+        const staff = await f.staff.client.from('users').select('id').eq('id', f.outsider.id)
+        const visitor = await f.visitor.client.from('users').select('id').eq('id', f.outsider.id)
+
+        expect(idsOf(staff.data)).toEqual([f.outsider.id])
+        expect(visitor.error).toBeNull()
+        expect(visitor.data).toEqual([])
+
+        await serviceClient.from('articles').delete().eq('id', article!.id)
     })
 })
 

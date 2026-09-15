@@ -28,6 +28,8 @@ const article: ArticleResponse = {
     event_id: EVENT_ID,
     created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
     creator: { display_name: '山田太郎' },
+    status: 'draft',
+    published_at: null,
     title: '模擬店のお知らせ',
     content: [
         {
@@ -90,7 +92,7 @@ describe('ArticleEditView', () => {
         expect(screen.queryByLabelText('本文エディタ')).not.toBeInTheDocument()
     })
 
-    it('保存ボタンでタイトルと本文を PUT し、成功したら「保存しました」と出す', async () => {
+    it('保存ボタンでタイトル・本文・公開状態を PUT し、成功したら「保存しました」と出す', async () => {
         adminFetch.mockResolvedValue(article)
 
         renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
@@ -101,7 +103,7 @@ describe('ArticleEditView', () => {
         expect(await screen.findByText('保存しました')).toBeInTheDocument()
         expect(adminFetch).toHaveBeenCalledWith(articlePath, expect.anything(), {
             method: 'PUT',
-            body: { title: '模擬店のお知らせ', content: article.content },
+            body: { title: '模擬店のお知らせ', content: article.content, status: 'draft' },
             authenticated: true,
         })
     })
@@ -137,6 +139,48 @@ describe('ArticleEditView', () => {
         await screen.findByText('保存しました')
 
         await userEvent.type(screen.getByRole('textbox', { name: 'タイトル' }), '！')
+
+        expect(screen.queryByText('保存しました')).not.toBeInTheDocument()
+    })
+
+    it.each([
+        ['draft', 'false'],
+        ['published', 'true'],
+    ] as const)('公開のスイッチの初期値を記事の公開状態にする（%s）', async (status, checked) => {
+        adminFetch.mockResolvedValue({ ...article, status })
+
+        renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+        await screen.findByText('現金のみです。')
+
+        expect(screen.getByRole('switch', { name: '公開' })).toHaveAttribute('aria-checked', checked)
+    })
+
+    it('公開のスイッチを切り替えただけでは保存せず、保存ボタンで公開状態も一緒に PUT する', async () => {
+        adminFetch.mockResolvedValue(article)
+
+        renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+        await screen.findByText('現金のみです。')
+
+        await userEvent.click(screen.getByRole('switch', { name: '公開' }))
+        expect(putCalls()).toHaveLength(0)
+
+        await userEvent.click(screen.getByRole('button', { name: '保存' }))
+
+        expect(await screen.findByText('保存しました')).toBeInTheDocument()
+        expect(putCalls().map(([, , options]) => (options as FetchOptions).body)).toEqual([
+            { title: '模擬店のお知らせ', content: article.content, status: 'published' },
+        ])
+    })
+
+    it('公開のスイッチを切り替えると「保存しました」を消す', async () => {
+        adminFetch.mockResolvedValue(article)
+
+        renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+        await screen.findByText('現金のみです。')
+        await userEvent.click(screen.getByRole('button', { name: '保存' }))
+        await screen.findByText('保存しました')
+
+        await userEvent.click(screen.getByRole('switch', { name: '公開' }))
 
         expect(screen.queryByText('保存しました')).not.toBeInTheDocument()
     })

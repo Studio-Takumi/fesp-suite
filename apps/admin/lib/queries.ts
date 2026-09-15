@@ -4,6 +4,7 @@ import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query
 import { z } from 'zod'
 
 import {
+    type ArticleCreateInput,
     type ArticleInput,
     articleListResponseSchema,
     articleResponseSchema,
@@ -65,7 +66,8 @@ export function useCreateArticle() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: (input: ArticleInput) =>
+        // 記事は下書きで作るので、作成の入力は公開状態を持たない
+        mutationFn: (input: Omit<ArticleCreateInput, 'event_id'>) =>
             adminFetch('/api/articles', articleResponseSchema, {
                 method: 'POST',
                 body: { ...input, event_id: env.NEXT_PUBLIC_EVENT_ID },

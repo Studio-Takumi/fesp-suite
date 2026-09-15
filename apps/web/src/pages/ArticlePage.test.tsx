@@ -23,6 +23,8 @@ const articleFixture = {
     event_id: EVENT_ID,
     created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
     creator: { display_name: '山田太郎' },
+    status: 'published',
+    published_at: '2026-09-14T12:00:00+09:00',
     title: '模擬店のお知らせ',
     content: [paragraph('1', '現金のみです。')],
     created_at: '2026-09-14T10:00:00+09:00',

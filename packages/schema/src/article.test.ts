@@ -314,33 +314,47 @@ const EVENT_ID = '0b7e6d5c-4a3b-4c2d-9e1f-a2b3c4d5e6f7'
 
 describe('articleInputSchema', () => {
     it('タイトル・本文とも空でも受理する', () => {
-        expect(articleInputSchema.safeParse({ title: '', content: [] }).success).toBe(true)
+        expect(articleInputSchema.safeParse({ title: '', content: [], status: 'draft' }).success).toBe(true)
     })
 
     it('タイトルの前後の空白を取り除く', () => {
-        expect(articleInputSchema.parse({ title: '  模擬店のお知らせ  ', content: [] }).title).toBe('模擬店のお知らせ')
+        expect(articleInputSchema.parse({ title: '  模擬店のお知らせ  ', content: [], status: 'draft' }).title).toBe(
+            '模擬店のお知らせ',
+        )
     })
 
     it('タイトルは100文字まで受理し、101文字は拒否する', () => {
-        expect(articleInputSchema.safeParse({ title: 'あ'.repeat(100), content: [] }).success).toBe(true)
+        expect(articleInputSchema.safeParse({ title: 'あ'.repeat(100), content: [], status: 'draft' }).success).toBe(
+            true,
+        )
 
-        const result = articleInputSchema.safeParse({ title: 'あ'.repeat(101), content: [] })
+        const result = articleInputSchema.safeParse({ title: 'あ'.repeat(101), content: [], status: 'draft' })
         expect(result.success).toBe(false)
         expect(result.error?.issues[0]?.message).toBe('タイトルは100文字以内で入力してください')
     })
 
     it('title / content が無ければ拒否する', () => {
-        expect(articleInputSchema.safeParse({ content: [] }).success).toBe(false)
-        expect(articleInputSchema.safeParse({ title: '' }).success).toBe(false)
+        expect(articleInputSchema.safeParse({ content: [], status: 'draft' }).success).toBe(false)
+        expect(articleInputSchema.safeParse({ title: '', status: 'draft' }).success).toBe(false)
     })
 
     it('content が記事ドキュメントの形でなければ拒否する', () => {
         const result = articleInputSchema.safeParse({
             title: '',
             content: [{ id: '1', type: 'image', props: {}, children: [] }],
+            status: 'draft',
         })
 
         expect(result.success).toBe(false)
+    })
+})
+
+describe('articleInputSchema の公開状態', () => {
+    it('status は draft / published だけ受理し、無ければ拒否する', () => {
+        expect(articleInputSchema.safeParse({ title: '', content: [], status: 'published' }).success).toBe(true)
+        expect(articleInputSchema.safeParse({ title: '', content: [], status: 'draft' }).success).toBe(true)
+        expect(articleInputSchema.safeParse({ title: '', content: [], status: 'archived' }).success).toBe(false)
+        expect(articleInputSchema.safeParse({ title: '', content: [] }).success).toBe(false)
     })
 })
 
@@ -356,6 +370,14 @@ describe('articleCreateInputSchema', () => {
     it('event_id が無い・UUID でなければ拒否する', () => {
         expect(articleCreateInputSchema.safeParse({ title: '', content: [] }).success).toBe(false)
         expect(articleCreateInputSchema.safeParse({ event_id: 'dev', title: '', content: [] }).success).toBe(false)
+    })
+})
+
+describe('articleCreateInputSchema の公開状態', () => {
+    it('status は受け取らない（記事は下書きで作る）', () => {
+        expect(
+            articleCreateInputSchema.parse({ event_id: EVENT_ID, title: '', content: [], status: 'published' }),
+        ).toEqual({ event_id: EVENT_ID, title: '', content: [] })
     })
 })
 
@@ -382,6 +404,8 @@ describe('articleResponseSchema', () => {
         creator: { display_name: '山田太郎' },
         title: '',
         content: [],
+        status: 'published',
+        published_at: '2026-09-14T02:00:00.123456+00:00',
         created_at: '2026-09-14T01:00:00.123456+00:00',
         updated_at: '2026-09-14T03:30:00.654321+00:00',
     }
@@ -402,6 +426,19 @@ describe('articleResponseSchema', () => {
 
         expect(articleResponseSchema.safeParse(withoutCreatedBy).success).toBe(false)
         expect(articleResponseSchema.safeParse(withoutCreator).success).toBe(false)
+    })
+
+    it('一度も公開していない（published_at が null の）下書きを受理する', () => {
+        const result = articleResponseSchema.safeParse({ ...article, status: 'draft', published_at: null })
+
+        expect(result.success).toBe(true)
+    })
+
+    it('公開状態が無い・draft / published でなければ拒否する', () => {
+        const { status: _status, ...withoutStatus } = article
+
+        expect(articleResponseSchema.safeParse(withoutStatus).success).toBe(false)
+        expect(articleResponseSchema.safeParse({ ...article, status: 'archived' }).success).toBe(false)
     })
 })
 
@@ -465,6 +502,8 @@ describe('articleViewResponseSchema', () => {
         created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
         creator: { display_name: '山田太郎' },
         title: '模擬店のお知らせ',
+        status: 'published',
+        published_at: '2026-09-14T02:00:00.123456+00:00',
         created_at: '2026-09-14T01:00:00.123456+00:00',
         updated_at: '2026-09-14T03:30:00.654321+00:00',
     }

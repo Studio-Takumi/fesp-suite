@@ -15,6 +15,8 @@ export type Database = {
                     created_by: string
                     event_id: string
                     id: string
+                    published_at: string | null
+                    status: Database['public']['Enums']['article_status']
                     title: string
                     updated_at: string
                 }
@@ -24,6 +26,8 @@ export type Database = {
                     created_by: string
                     event_id: string
                     id?: string
+                    published_at?: string | null
+                    status?: Database['public']['Enums']['article_status']
                     title?: string
                     updated_at?: string
                 }
@@ -33,6 +37,8 @@ export type Database = {
                     created_by?: string
                     event_id?: string
                     id?: string
+                    published_at?: string | null
+                    status?: Database['public']['Enums']['article_status']
                     title?: string
                     updated_at?: string
                 }
@@ -148,6 +154,7 @@ export type Database = {
             [_ in never]: never
         }
         Enums: {
+            article_status: 'draft' | 'published'
             event_member_role: 'staff' | 'visitor'
         }
         CompositeTypes: {
@@ -266,6 +273,7 @@ export type CompositeTypes<
 export const Constants = {
     public: {
         Enums: {
+            article_status: ['draft', 'published'],
             event_member_role: ['staff', 'visitor'],
         },
     },
