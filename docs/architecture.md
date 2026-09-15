@@ -42,8 +42,8 @@
 4. DBアクセスは原則 **ユーザーのJWTを引き継いだ Supabase クライアント**（`createUserClient`）で RLS を効かせる。
    `service_role` が必要な操作は Hono 側で認可を自前実装すること
 
-認可に使う独自クレーム（所属など）は Auth Hook で `app_metadata` に埋める方針。
-スキーマが決まったら `jwtClaimsSchema`（`packages/schema/src/auth.ts`）に項目を足す。
+イベントへの所属は JWT のクレームに持たせず、RLS が `auth.uid()` から `event_members` を引いて判定する
+（ユーザーとイベントが多対多のため）。判定関数は [`docs/db.md`](./db.md) の `event_members` を参照。
 
 ## リアルタイム同期（TipTap + Yjs + PartyKit）
 

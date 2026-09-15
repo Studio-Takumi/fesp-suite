@@ -43,6 +43,45 @@ export type Database = {
                     },
                 ]
             }
+            event_members: {
+                Row: {
+                    created_at: string
+                    event_id: string
+                    role: Database['public']['Enums']['event_member_role']
+                    updated_at: string
+                    user_id: string
+                }
+                Insert: {
+                    created_at?: string
+                    event_id: string
+                    role: Database['public']['Enums']['event_member_role']
+                    updated_at?: string
+                    user_id: string
+                }
+                Update: {
+                    created_at?: string
+                    event_id?: string
+                    role?: Database['public']['Enums']['event_member_role']
+                    updated_at?: string
+                    user_id?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: 'event_members_event_id_fkey'
+                        columns: ['event_id']
+                        isOneToOne: false
+                        referencedRelation: 'events'
+                        referencedColumns: ['id']
+                    },
+                    {
+                        foreignKeyName: 'event_members_user_id_fkey'
+                        columns: ['user_id']
+                        isOneToOne: false
+                        referencedRelation: 'users'
+                        referencedColumns: ['id']
+                    },
+                ]
+            }
             events: {
                 Row: {
                     created_at: string
@@ -96,7 +135,7 @@ export type Database = {
             [_ in never]: never
         }
         Enums: {
-            [_ in never]: never
+            event_member_role: 'staff' | 'visitor'
         }
         CompositeTypes: {
             [_ in never]: never
@@ -213,6 +252,8 @@ export type CompositeTypes<
 
 export const Constants = {
     public: {
-        Enums: {},
+        Enums: {
+            event_member_role: ['staff', 'visitor'],
+        },
     },
 } as const

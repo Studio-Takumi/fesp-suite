@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+    articleCreateInputSchema,
     articleDocumentSchema,
     articleInputSchema,
     articleListQuerySchema,
@@ -340,6 +341,21 @@ describe('articleInputSchema', () => {
         })
 
         expect(result.success).toBe(false)
+    })
+})
+
+describe('articleCreateInputSchema', () => {
+    it('event_id・タイトル・本文を受理し、タイトルの前後の空白を取り除く', () => {
+        expect(articleCreateInputSchema.parse({ event_id: EVENT_ID, title: ' 模擬店 ', content: [] })).toEqual({
+            event_id: EVENT_ID,
+            title: '模擬店',
+            content: [],
+        })
+    })
+
+    it('event_id が無い・UUID でなければ拒否する', () => {
+        expect(articleCreateInputSchema.safeParse({ title: '', content: [] }).success).toBe(false)
+        expect(articleCreateInputSchema.safeParse({ event_id: 'dev', title: '', content: [] }).success).toBe(false)
     })
 })
 

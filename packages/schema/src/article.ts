@@ -300,9 +300,13 @@ export const articleIdParamSchema = z.object({
     id: uuidSchema,
 })
 
-/** POST /api/articles・PUT /api/articles/:id のリクエストボディ */
+/** PUT /api/articles/:id のリクエストボディ。記事のイベントは変えられないので `event_id` を持たない */
 export const articleInputSchema = z.object({
     title: articleTitleSchema,
     content: articleDocumentSchema,
 })
 export type ArticleInput = z.infer<typeof articleInputSchema>
+
+/** POST /api/articles のリクエストボディ */
+export const articleCreateInputSchema = articleInputSchema.extend(articleEventQuerySchema.shape)
+export type ArticleCreateInput = z.infer<typeof articleCreateInputSchema>

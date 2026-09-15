@@ -75,6 +75,14 @@ bun run test:watch
 ```
 
 `jose` は `vi.mock` で差し替えて JWT検証の分岐を検証している。
+
+RLS は `rls/` に別で置いている（fesp-dev に対して実行。`.dev.vars` の `SUPABASE_SERVICE_ROLE_KEY` が必要で、CI では動かさない）。
+詳しくは [`supabase/README.md`](../../supabase/README.md) の「RLS のテスト」。
+
+```bash
+bun run test:rls     # vitest --config vitest.rls.config.ts
+```
+
 実 workerd 上での検証が必要になったら `@cloudflare/vitest-pool-workers` を追加する。
 
 ## デプロイ
