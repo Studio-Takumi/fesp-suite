@@ -17,7 +17,7 @@ export function QueryBoundary<T>({ isPending, error, data, children }: QueryBoun
     if (isPending) {
         return (
             <div className='flex justify-center py-12'>
-                <Spinner />
+                <Spinner aria-label='読み込み中' />
             </div>
         )
     }
