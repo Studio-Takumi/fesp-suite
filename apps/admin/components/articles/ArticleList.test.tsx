@@ -36,6 +36,7 @@ const listItem = {
     title: '模擬店のお知らせ',
     created_at: '2026-09-14T01:00:00+00:00',
     updated_at: '2026-09-14T03:30:00+00:00',
+    schedule: null,
 }
 
 describe('ArticleList', () => {
@@ -101,6 +102,39 @@ describe('ArticleList', () => {
         expect(within(draftRow).getByText('下書き')).toBeInTheDocument()
         expect(within(publishedRow).getByText('公開中')).toBeInTheDocument()
         expect(screen.getByRole('columnheader', { name: '公開状態' })).toBeInTheDocument()
+    })
+
+    it('予約があると、下書きは「予約中」、公開中は「公開中（更新予約あり）」と出す', async () => {
+        const schedule = {
+            version: 2,
+            publish_at: '2099-09-20T00:00:00+00:00',
+            created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
+            created_at: '2026-09-14T05:00:00+00:00',
+            updated_at: '2026-09-14T05:00:00+00:00',
+        }
+        adminFetch.mockResolvedValue({
+            items: [
+                {
+                    ...listItem,
+                    id: DRAFT_ARTICLE_ID,
+                    title: '予約した下書き',
+                    status: 'draft',
+                    published_version: null,
+                    published_at: null,
+                    schedule,
+                },
+                { ...listItem, schedule },
+            ],
+            limit: 100,
+            offset: 0,
+        })
+
+        renderWithQueryClient(<ArticleList />)
+
+        const draftRow = await screen.findByRole('row', { name: /予約した下書き/ })
+        const publishedRow = screen.getByRole('row', { name: /模擬店のお知らせ/ })
+        expect(within(draftRow).getByText('予約中')).toBeInTheDocument()
+        expect(within(publishedRow).getByText('公開中（更新予約あり）')).toBeInTheDocument()
     })
 
     it('0件なら「記事がありません」と出す', async () => {

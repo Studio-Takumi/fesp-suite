@@ -56,6 +56,55 @@ export type Database = {
                     },
                 ]
             }
+            article_schedules: {
+                Row: {
+                    article_id: string
+                    created_at: string
+                    created_by: string | null
+                    publish_at: string
+                    updated_at: string
+                    version: number
+                }
+                Insert: {
+                    article_id: string
+                    created_at?: string
+                    created_by?: string | null
+                    publish_at: string
+                    updated_at?: string
+                    version: number
+                }
+                Update: {
+                    article_id?: string
+                    created_at?: string
+                    created_by?: string | null
+                    publish_at?: string
+                    updated_at?: string
+                    version?: number
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: 'article_schedules_article_id_fkey'
+                        columns: ['article_id']
+                        isOneToOne: true
+                        referencedRelation: 'articles'
+                        referencedColumns: ['id']
+                    },
+                    {
+                        foreignKeyName: 'article_schedules_article_id_version_fkey'
+                        columns: ['article_id', 'version']
+                        isOneToOne: false
+                        referencedRelation: 'article_histories'
+                        referencedColumns: ['article_id', 'version']
+                    },
+                    {
+                        foreignKeyName: 'article_schedules_created_by_fkey'
+                        columns: ['created_by']
+                        isOneToOne: false
+                        referencedRelation: 'users'
+                        referencedColumns: ['id']
+                    },
+                ]
+            }
             articles: {
                 Row: {
                     created_at: string
@@ -213,16 +262,30 @@ export type Database = {
             [_ in never]: never
         }
         Functions: {
+            cancel_article_schedule: {
+                Args: { target_article_id: string }
+                Returns: boolean
+            }
             create_article: {
                 Args: { new_content: Json; new_title: string; target_event_id: string }
                 Returns: string
             }
+            publish_scheduled_articles: { Args: never; Returns: undefined }
             save_article: {
                 Args: {
                     new_content: Json
                     new_status?: Database['public']['Enums']['article_status']
                     new_title: string
                     target_article_id: string
+                }
+                Returns: boolean
+            }
+            schedule_article: {
+                Args: {
+                    new_publish_at: string
+                    target_article_id: string
+                    target_version: number
+                    version_updated_at: string
                 }
                 Returns: boolean
             }

@@ -10,7 +10,9 @@ import type { z } from 'zod'
 
 import { type ArticleDocument, articleInputSchema, type ArticleResponse } from '@fesp/schema'
 import { ApiError } from '@fesp/types'
+import { dateFormatter } from '@fesp/ui'
 
+import { ArticleScheduleDialog } from '~/components/articles/ArticleScheduleDialog'
 import { ArticleEditor } from '~/components/editor/ArticleEditor'
 import {
     AlertDialog,
@@ -26,7 +28,7 @@ import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { Switch } from '~/components/ui/switch'
-import { articleQuery, useUpdateArticle } from '~/lib/queries'
+import { articleQuery, useCancelArticleSchedule, useScheduleArticle, useUpdateArticle } from '~/lib/queries'
 
 /** 本文は BlockNote の変更を state で持つので、フォームで扱うのはタイトルと公開状態 */
 const articleFormSchema = articleInputSchema.pick({ title: true, status: true }).required()
@@ -77,7 +79,10 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
     const [articleDocument, setArticleDocument] = useState<ArticleDocument>(initial.content)
     /** 公開中の記事を公開のまま保存しようとしたときのタイトル。ダイアログを開いている間だけ入る */
     const [pendingTitle, setPendingTitle] = useState<string | null>(null)
+    const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false)
     const updateArticle = useUpdateArticle(article.id)
+    const scheduleArticle = useScheduleArticle(article.id)
+    const cancelSchedule = useCancelArticleSchedule(article.id)
     const {
         register,
         control,
@@ -93,16 +98,26 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
         article.latest_history !== null &&
         article.latest_history.version !== article.published_version
 
-    const clearSavedStatus = () => {
+    /** 予約した版のあとに保存した変更（予約には入らない）があるか */
+    const hasChangesAfterSchedule =
+        article.schedule !== null &&
+        article.latest_history !== null &&
+        article.latest_history.version !== article.schedule.version
+
+    /** 「保存しました」「予約しました」「予約を取り消しました」を消す */
+    const clearNotices = () => {
         if (updateArticle.isSuccess) updateArticle.reset()
+        if (scheduleArticle.isSuccess) scheduleArticle.reset()
+        if (cancelSchedule.isSuccess) cancelSchedule.reset()
     }
 
     const handleDocumentChange = (nextDocument: ArticleDocument) => {
         setArticleDocument(nextDocument)
-        clearSavedStatus()
+        clearNotices()
     }
 
     const handleSave = handleSubmit(({ title, status }) => {
+        clearNotices()
         // 公開中の記事を公開のまま保存するときは、公開に反映するか一時保存にするかを選んでもらう
         if (article.status === 'published' && status === 'published') {
             setPendingTitle(title)
@@ -121,6 +136,30 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
         )
     }
 
+    const openScheduleDialog = () => {
+        if (scheduleArticle.isError) scheduleArticle.reset()
+        setIsScheduleDialogOpen(true)
+    }
+
+    /** 今の中身を保存して、保存した最新の版を予約する。公開のスイッチは使わない */
+    const handleSchedule = (publishAt: string) =>
+        handleSubmit(
+            ({ title }) => {
+                clearNotices()
+                scheduleArticle.mutate(
+                    { title, content: articleDocument, publish_at: publishAt },
+                    { onSuccess: () => setIsScheduleDialogOpen(false) },
+                )
+            },
+            // タイトルのエラーはタイトルの入力欄の下に出すので、ダイアログは閉じる
+            () => setIsScheduleDialogOpen(false),
+        )()
+
+    const handleCancelSchedule = () => {
+        clearNotices()
+        cancelSchedule.mutate()
+    }
+
     return (
         <div className='space-y-6 p-8'>
             {/* BlockNote のツールバーのボタンで送信されないよう、エディタはフォームの外に置く */}
@@ -134,6 +173,32 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
                         {hasUnpublishedChanges ? (
                             <p className='text-sm text-muted-foreground'>公開していない変更があります</p>
                         ) : null}
+                        {article.schedule ? (
+                            <div className='flex items-center gap-3'>
+                                <p className='text-sm text-muted-foreground'>
+                                    {`${dateFormatter(article.schedule.publish_at, 'YYYY/MM/DD HH:mm')} に公開予定`}
+                                </p>
+                                <Button
+                                    type='button'
+                                    variant='outline'
+                                    size='sm'
+                                    onClick={handleCancelSchedule}
+                                    disabled={cancelSchedule.isPending}
+                                >
+                                    予約を取り消す
+                                </Button>
+                            </div>
+                        ) : null}
+                        {hasChangesAfterSchedule ? (
+                            <p className='text-sm text-muted-foreground'>
+                                予約した版のあとに保存した変更があります（予約には入りません）
+                            </p>
+                        ) : null}
+                        {cancelSchedule.isError ? (
+                            <p role='alert' className='text-sm text-destructive'>
+                                {cancelSchedule.error.message}
+                            </p>
+                        ) : null}
                     </div>
                     <div className='flex items-center gap-3'>
                         {updateArticle.isSuccess ? (
@@ -141,11 +206,24 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
                                 保存しました
                             </p>
                         ) : null}
+                        {scheduleArticle.isSuccess ? (
+                            <p role='status' className='text-sm text-muted-foreground'>
+                                予約しました
+                            </p>
+                        ) : null}
+                        {cancelSchedule.isSuccess ? (
+                            <p role='status' className='text-sm text-muted-foreground'>
+                                予約を取り消しました
+                            </p>
+                        ) : null}
                         {updateArticle.isError ? (
                             <p role='alert' className='text-sm text-destructive'>
                                 {updateArticle.error.message}
                             </p>
                         ) : null}
+                        <Button type='button' variant='outline' onClick={openScheduleDialog}>
+                            予約
+                        </Button>
                         <Controller
                             control={control}
                             name='status'
@@ -156,7 +234,7 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
                                         checked={field.value === 'published'}
                                         onCheckedChange={(checked) => {
                                             field.onChange(checked ? 'published' : 'draft')
-                                            clearSavedStatus()
+                                            clearNotices()
                                         }}
                                     />
                                     <Label htmlFor='article-published'>公開</Label>
@@ -173,7 +251,7 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
                     <Input
                         aria-label='タイトル'
                         placeholder='タイトル'
-                        {...register('title', { onChange: clearSavedStatus })}
+                        {...register('title', { onChange: clearNotices })}
                         aria-invalid={Boolean(errors.title)}
                         aria-describedby={errors.title ? 'title-error' : undefined}
                     />
@@ -207,6 +285,16 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* 予約ダイアログのフォームの送信が記事のフォームに伝わらないよう、記事のフォームの外に置く */}
+            <ArticleScheduleDialog
+                open={isScheduleDialogOpen}
+                onOpenChange={setIsScheduleDialogOpen}
+                defaultPublishAt={article.schedule?.publish_at ?? null}
+                isPending={scheduleArticle.isPending}
+                errorMessage={scheduleArticle.isError ? scheduleArticle.error.message : null}
+                onSubmit={handleSchedule}
+            />
 
             <ArticleEditor content={initial.content} onChange={handleDocumentChange} />
 
