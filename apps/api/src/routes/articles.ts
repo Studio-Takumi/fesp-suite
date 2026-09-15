@@ -23,35 +23,58 @@ import type { AppEnv } from '../types'
 const INSUFFICIENT_PRIVILEGE = '42501'
 
 /**
- * 記事オブジェクトの列。作成者の表示名は `users` から、最新の版は `article_histories` から埋め込む
- * （読める範囲はそれぞれの RLS。版は staff にしか読めない）。
- * articles と article_histories の間には外部キーが2本（版 → 記事、記事 → 公開中の版）あるので、版 → 記事を指定する
+ * 記事の列のうち、版を除いたもの。作成者の表示名は `users` から埋め込む（読める範囲は `users` の RLS）
  */
-const ARTICLE_COLUMNS =
-    'id, event_id, created_by, creator:users!created_by(display_name), title, content, status, published_version, published_at, created_at, updated_at, latest_history:article_histories!article_histories_article_id_fkey(version, title, content, created_by, created_at, updated_at)'
+const ARTICLE_BASE_COLUMNS =
+    'id, event_id, created_by, creator:users!created_by(display_name), status, published_version, published_at, created_at, updated_at'
 
-/** 一覧の列。本文（content）と最新の版は返さない */
-const ARTICLE_LIST_COLUMNS =
-    'id, event_id, created_by, creator:users!created_by(display_name), title, status, published_version, published_at, created_at, updated_at'
+/**
+ * 記事オブジェクトの列。タイトル・本文は記事が指す版（公開中の版・最新の版）から埋め込む。
+ * articles と article_histories の間には外部キーが3本あるので、たどる外部キーを指定する。
+ * 版の読める範囲は RLS（公開中の版はメンバー全員、それ以外の版は staff だけ）で、読めなければ null になる
+ */
+const ARTICLE_COLUMNS = `${ARTICLE_BASE_COLUMNS}, published_history:article_histories!articles_published_version_fkey(title, content), latest_history:article_histories!articles_latest_version_fkey(version, title, content, created_by, created_at, updated_at)`
+
+/** 一覧の列。本文（content）と最新の版は返さないので、版からはタイトルだけ埋め込む */
+const ARTICLE_LIST_COLUMNS = `${ARTICLE_BASE_COLUMNS}, published_history:article_histories!articles_published_version_fkey(title), latest_history:article_histories!articles_latest_version_fkey(title)`
 
 type UserClient = ReturnType<typeof createUserClient>
 
-/** DB から返る記事の行。埋め込んだ版は配列で返る（読めなければ空の配列） */
-type ArticleRow = Omit<ArticleResponse, 'latest_history'> & { latest_history: ArticleHistory[] }
-
-function toArticleResponse({ latest_history, ...article }: ArticleRow): ArticleResponse {
-    return { ...article, latest_history: latest_history[0] ?? null }
+/** DB から返る記事の行。タイトル・本文は持たず、埋め込んだ版で返る */
+type ArticleRow = Omit<ArticleResponse, 'title' | 'content'> & {
+    published_history: Pick<ArticleHistory, 'title' | 'content'> | null
 }
 
-/** 記事を1件、最新の版（番号がいちばん大きい1件）つきで読む */
+/** DB から返る一覧の行 */
+type ArticleListRow = Omit<ArticleListItem, 'title'> & {
+    published_history: Pick<ArticleHistory, 'title'> | null
+    latest_history: Pick<ArticleHistory, 'title'> | null
+}
+
+/**
+ * 記事に出す版を選ぶ。公開中の記事は公開中の版、下書きは最新の版。
+ * 下書きは staff にしか読めず、staff は最新の版も読めるので、記事が読めれば必ずどちらかがある
+ */
+function shownHistoryOf<T>(row: { published_history: T | null; latest_history: T | null }): T {
+    const history = row.published_history ?? row.latest_history
+    if (!history) throw new Error('記事の版が読めません')
+    return history
+}
+
+function toArticleResponse(row: ArticleRow): ArticleResponse {
+    const { published_history: _publishedHistory, ...article } = row
+    const { title, content } = shownHistoryOf(row)
+    return { ...article, title, content }
+}
+
+function toArticleListItem(row: ArticleListRow): ArticleListItem {
+    const { published_history: _publishedHistory, latest_history: _latestHistory, ...article } = row
+    return { ...article, title: shownHistoryOf(row).title }
+}
+
+/** 記事を1件、公開中の版・最新の版つきで読む */
 function selectArticle(supabase: UserClient, id: string) {
-    return supabase
-        .from('articles')
-        .select(ARTICLE_COLUMNS)
-        .eq('id', id)
-        .order('version', { referencedTable: 'latest_history', ascending: false })
-        .limit(1, { referencedTable: 'latest_history' })
-        .maybeSingle()
+    return supabase.from('articles').select(ARTICLE_COLUMNS).eq('id', id).maybeSingle()
 }
 
 // ユーザーの JWT を引き継いだクライアントで読み書きするので、所属と役割の判定は RLS に任せる
@@ -70,7 +93,11 @@ export const articlesRoute = new Hono<AppEnv>()
             .range(offset, offset + limit - 1)
         if (error) throw error
 
-        return c.json<ArticleListResponse>({ items: data as ArticleListItem[], limit, offset })
+        return c.json<ArticleListResponse>({
+            items: (data as unknown as ArticleListRow[]).map(toArticleListItem),
+            limit,
+            offset,
+        })
     })
 
     .get('/:id', zValidator('param', articleIdParamSchema, validationHook), async (c) => {
@@ -86,18 +113,23 @@ export const articlesRoute = new Hono<AppEnv>()
     .post('/', zValidator('json', articleCreateInputSchema, validationHook), async (c) => {
         const { event_id, title, content } = c.req.valid('json')
 
-        const { data, error } = await createUserClient(c.env, c.get('accessToken'))
-            .from('articles')
-            // 作成者はボディでは受け取らず、トークンのユーザーにする（RLS も created_by = auth.uid() を要求する）。
-            // 公開状態は渡さず、DB の既定値（下書き）で作る。版1は DB のトリガーで作られる
-            .insert({ event_id, created_by: c.get('user').userId, title, content: content as Json })
-            .select(ARTICLE_COLUMNS)
-            .single()
+        const supabase = createUserClient(c.env, c.get('accessToken'))
+
+        // 記事と版1は、DB の関数で1トランザクションにまとめて作る（docs/db.md の「作成」）。
+        // 作成者はボディでは受け取らず、関数の中でトークンのユーザー（auth.uid()）にする。記事は下書きで作られる
+        const { data: id, error } = await supabase.rpc('create_article', {
+            target_event_id: event_id,
+            new_title: title,
+            new_content: content as Json,
+        })
         // staff でない・所属していない・イベントが存在しない、はどれも RLS で弾かれて同じコードになる
         if (error?.code === INSUFFICIENT_PRIVILEGE) throw forbidden('このイベントに記事を作成する権限がありません')
         if (error) throw error
 
-        // 作った直後の記事の版は版1だけなので、並べ替えずにそのまま使う
+        const { data, error: readError } = await selectArticle(supabase, id)
+        if (readError) throw readError
+        if (!data) throw notFound('記事が見つかりません')
+
         return c.json<ArticleResponse>(toArticleResponse(data as ArticleRow), 201)
     })
 

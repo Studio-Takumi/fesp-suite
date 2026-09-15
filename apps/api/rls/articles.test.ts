@@ -1,12 +1,23 @@
 import { describe, expect, it } from 'vitest'
 
-import { anonClient, idsOf, INSUFFICIENT_PRIVILEGE, serviceClient, sorted, useRlsFixture } from './support'
+import {
+    anonClient,
+    createArticle,
+    idsOf,
+    INSUFFICIENT_PRIVILEGE,
+    serviceClient,
+    sorted,
+    useRlsFixture,
+} from './support'
 
 const f = useRlsFixture()
 
-async function titleOf(articleId: string): Promise<string | undefined> {
-    const { data } = await serviceClient.from('articles').select('title').eq('id', articleId).single()
-    return data?.title
+/** Postgres の foreign_key_violation */
+const FOREIGN_KEY_VIOLATION = '23503'
+
+async function publishedVersionOf(articleId: string): Promise<number | null | undefined> {
+    const { data } = await serviceClient.from('articles').select('published_version').eq('id', articleId).single()
+    return data?.published_version
 }
 
 describe('events', () => {
@@ -72,16 +83,21 @@ describe('articles の読み取り', () => {
     })
 })
 
-describe('articles の作成', () => {
-    it('staff はそのイベントに作成できる', async () => {
-        const { data, error } = await f.staff.client
-            .from('articles')
-            .insert({ event_id: f.eventA, created_by: f.staff.id, title: 'staff が作成' })
-            .select('id, event_id')
-            .single()
+describe('articles の作成（create_article）', () => {
+    it('staff はそのイベントに作成でき、作成者は呼び出したユーザーになる', async () => {
+        const { data: id, error } = await f.staff.client.rpc('create_article', {
+            target_event_id: f.eventA,
+            new_title: 'staff が作成',
+            new_content: [],
+        })
 
         expect(error).toBeNull()
-        expect(data?.event_id).toBe(f.eventA)
+        const { data } = await serviceClient
+            .from('articles')
+            .select('event_id, created_by, latest_version')
+            .eq('id', id!)
+            .single()
+        expect(data).toEqual({ event_id: f.eventA, created_by: f.staff.id, latest_version: 1 })
     })
 
     it.each([
@@ -90,33 +106,47 @@ describe('articles の作成', () => {
         ['所属していないユーザー', 'outsider', 'eventA'],
         ['論理削除されたユーザー', 'deleted', 'eventA'],
     ] as const)('%s は作成できない', async (_label, user, event) => {
-        const { error } = await f[user].client
-            .from('articles')
-            .insert({ event_id: f[event], created_by: f[user].id, title: '作成できない' })
+        const { error } = await f[user].client.rpc('create_article', {
+            target_event_id: f[event],
+            new_title: '作成できない',
+            new_content: [],
+        })
 
         expect(error?.code).toBe(INSUFFICIENT_PRIVILEGE)
     })
 
     it('存在しないイベントへの作成も RLS で弾かれる（外部キー違反より先）', async () => {
-        const { error } = await f.staff.client
-            .from('articles')
-            .insert({ event_id: crypto.randomUUID(), created_by: f.staff.id, title: '存在しないイベント' })
+        const { error } = await f.staff.client.rpc('create_article', {
+            target_event_id: crypto.randomUUID(),
+            new_title: '存在しないイベント',
+            new_content: [],
+        })
 
         expect(error?.code).toBe(INSUFFICIENT_PRIVILEGE)
     })
 
-    it('未ログインは作成できない', async () => {
-        const { error } = await anonClient
-            .from('articles')
-            .insert({ event_id: f.eventA, created_by: f.staff.id, title: '未ログイン' })
+    it('未ログインは呼べない', async () => {
+        const { error } = await anonClient.rpc('create_article', {
+            target_event_id: f.eventA,
+            new_title: '未ログイン',
+            new_content: [],
+        })
 
         expect(error).not.toBeNull()
     })
 
-    it('staff でも、自分以外を作成者にして作成できない', async () => {
+    it('staff でも、版なしで記事を直接作れない（最新の版の外部キー違反）', async () => {
         const { error } = await f.staff.client
             .from('articles')
-            .insert({ event_id: f.eventA, created_by: f.visitor.id, title: '他人の名前で作成' })
+            .insert({ event_id: f.eventA, created_by: f.staff.id, latest_version: 1 })
+
+        expect(error?.code).toBe(FOREIGN_KEY_VIOLATION)
+    })
+
+    it('staff でも、自分以外を作成者にして記事を直接作れない', async () => {
+        const { error } = await f.staff.client
+            .from('articles')
+            .insert({ event_id: f.eventA, created_by: f.visitor.id, latest_version: 1 })
 
         expect(error?.code).toBe(INSUFFICIENT_PRIVILEGE)
     })
@@ -124,15 +154,17 @@ describe('articles の作成', () => {
 
 describe('articles の更新', () => {
     it('staff はそのイベントの記事を更新できる', async () => {
+        const id = await createArticle(f.staff, f.eventA, '更新のテスト', 'published')
+
         const { data, error } = await f.staff.client
             .from('articles')
-            .update({ title: 'staff が更新' })
-            .eq('id', f.articleA)
+            .update({ published_version: null })
+            .eq('id', id)
             .select('id')
 
         expect(error).toBeNull()
-        expect(idsOf(data)).toEqual([f.articleA])
-        expect(await titleOf(f.articleA)).toBe('staff が更新')
+        expect(idsOf(data)).toEqual([id])
+        expect(await publishedVersionOf(id)).toBeNull()
     })
 
     it.each([
@@ -140,18 +172,16 @@ describe('articles の更新', () => {
         ['visitor', 'visitor', 'articleA'],
         ['所属していないユーザー', 'outsider', 'articleA'],
         ['論理削除されたユーザー', 'deleted', 'articleA'],
-    ] as const)('%s は更新できない（0件になり、中身は変わらない）', async (_label, user, article) => {
-        const before = await titleOf(f[article])
-
+    ] as const)('%s は更新できない（0件になり、公開中のまま変わらない）', async (_label, user, article) => {
         const { data, error } = await f[user].client
             .from('articles')
-            .update({ title: '更新できない' })
+            .update({ published_version: null })
             .eq('id', f[article])
             .select('id')
 
         expect(error).toBeNull()
         expect(data).toEqual([])
-        expect(await titleOf(f[article])).toBe(before)
+        expect(await publishedVersionOf(f[article])).toBe(1)
     })
 
     it('staff でも、staff でないイベントへ記事を移せない', async () => {
@@ -184,59 +214,50 @@ describe('articles の公開状態と公開日時', () => {
         return data
     }
 
-    async function createDraft(): Promise<string> {
-        const { data, error } = await f.staff.client
-            .from('articles')
-            .insert({ event_id: f.eventA, created_by: f.staff.id, title: '公開日時のテスト' })
-            .select('id')
-            .single()
-        if (error || !data) throw new Error(`記事の作成に失敗しました: ${JSON.stringify(error)}`)
-        return data.id
-    }
-
-    async function update(articleId: string, values: { status?: 'draft' | 'published'; published_at?: string }) {
+    async function update(articleId: string, values: { published_version?: number | null; published_at?: string }) {
         const { error } = await f.staff.client.from('articles').update(values).eq('id', articleId)
         expect(error).toBeNull()
     }
 
-    it('作成した記事は下書きで、公開日時は NULL（公開日時を渡しても入らない）', async () => {
-        const { data, error } = await f.staff.client
-            .from('articles')
-            .insert({
-                event_id: f.eventA,
-                created_by: f.staff.id,
-                title: '公開日時を渡して作成',
-                published_at: '2000-01-01T00:00:00+00:00',
-            })
-            .select('id')
-            .single()
+    it('作成した記事は下書きで、公開日時は NULL', async () => {
+        const id = await createArticle(f.staff, f.eventA, '作成直後')
 
-        expect(error).toBeNull()
-        expect(await publicationOf(data!.id)).toEqual({ status: 'draft', published_at: null })
+        expect(await publicationOf(id)).toEqual({ status: 'draft', published_at: null })
+    })
+
+    it('公開状態は公開中の版から決まり、直接は書き込めない（生成列）', async () => {
+        const id = await createArticle(f.staff, f.eventA, '公開状態のテスト')
+
+        const { error } = await f.staff.client.from('articles').update({ status: 'published' }).eq('id', id)
+        expect(error).not.toBeNull()
+        expect((await publicationOf(id))?.status).toBe('draft')
+
+        await update(id, { published_version: 1 })
+        expect((await publicationOf(id))?.status).toBe('published')
     })
 
     it('初めて公開したときに公開日時が入り、下書きに戻しても・公開し直しても変わらない', async () => {
-        const id = await createDraft()
+        const id = await createArticle(f.staff, f.eventA, '公開日時のテスト')
 
-        await update(id, { status: 'published' })
+        await update(id, { published_version: 1 })
         const published = await publicationOf(id)
         expect(published?.status).toBe('published')
         expect(published?.published_at).not.toBeNull()
 
-        await update(id, { status: 'draft' })
+        await update(id, { published_version: null })
         expect(await publicationOf(id)).toEqual({ status: 'draft', published_at: published?.published_at })
 
-        await update(id, { status: 'published' })
+        await update(id, { published_version: 1 })
         expect(await publicationOf(id)).toEqual({ status: 'published', published_at: published?.published_at })
     })
 
     it('staff でも公開日時は書き換えられない（下書きは NULL のまま、公開済みは元の値のまま）', async () => {
-        const id = await createDraft()
+        const id = await createArticle(f.staff, f.eventA, '公開日時の書き換え')
 
         await update(id, { published_at: '2000-01-01T00:00:00+00:00' })
         expect((await publicationOf(id))?.published_at).toBeNull()
 
-        await update(id, { status: 'published' })
+        await update(id, { published_version: 1 })
         const published = await publicationOf(id)
         await update(id, { published_at: '2000-01-01T00:00:00+00:00' })
         expect((await publicationOf(id))?.published_at).toBe(published?.published_at)
@@ -249,6 +270,6 @@ describe('articles の削除', () => {
 
         expect(error).toBeNull()
         expect(data).toEqual([])
-        expect(await titleOf(f.articleA)).toBeDefined()
+        expect(await publishedVersionOf(f.articleA)).toBe(1)
     })
 })
