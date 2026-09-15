@@ -65,7 +65,7 @@ describe('articles の作成', () => {
     it('staff はそのイベントに作成できる', async () => {
         const { data, error } = await f.staff.client
             .from('articles')
-            .insert({ event_id: f.eventA, title: 'staff が作成' })
+            .insert({ event_id: f.eventA, created_by: f.staff.id, title: 'staff が作成' })
             .select('id, event_id')
             .single()
 
@@ -79,7 +79,9 @@ describe('articles の作成', () => {
         ['所属していないユーザー', 'outsider', 'eventA'],
         ['論理削除されたユーザー', 'deleted', 'eventA'],
     ] as const)('%s は作成できない', async (_label, user, event) => {
-        const { error } = await f[user].client.from('articles').insert({ event_id: f[event], title: '作成できない' })
+        const { error } = await f[user].client
+            .from('articles')
+            .insert({ event_id: f[event], created_by: f[user].id, title: '作成できない' })
 
         expect(error?.code).toBe(INSUFFICIENT_PRIVILEGE)
     })
@@ -87,15 +89,25 @@ describe('articles の作成', () => {
     it('存在しないイベントへの作成も RLS で弾かれる（外部キー違反より先）', async () => {
         const { error } = await f.staff.client
             .from('articles')
-            .insert({ event_id: crypto.randomUUID(), title: '存在しないイベント' })
+            .insert({ event_id: crypto.randomUUID(), created_by: f.staff.id, title: '存在しないイベント' })
 
         expect(error?.code).toBe(INSUFFICIENT_PRIVILEGE)
     })
 
     it('未ログインは作成できない', async () => {
-        const { error } = await anonClient.from('articles').insert({ event_id: f.eventA, title: '未ログイン' })
+        const { error } = await anonClient
+            .from('articles')
+            .insert({ event_id: f.eventA, created_by: f.staff.id, title: '未ログイン' })
 
         expect(error).not.toBeNull()
+    })
+
+    it('staff でも、自分以外を作成者にして作成できない', async () => {
+        const { error } = await f.staff.client
+            .from('articles')
+            .insert({ event_id: f.eventA, created_by: f.visitor.id, title: '他人の名前で作成' })
+
+        expect(error?.code).toBe(INSUFFICIENT_PRIVILEGE)
     })
 })
 
@@ -137,6 +149,17 @@ describe('articles の更新', () => {
         expect(error?.code).toBe(INSUFFICIENT_PRIVILEGE)
         const { data } = await serviceClient.from('articles').select('event_id').eq('id', f.articleA).single()
         expect(data?.event_id).toBe(f.eventA)
+    })
+
+    it('staff でも作成者は変えられない（元の値のまま残る）', async () => {
+        const { error } = await f.staff.client
+            .from('articles')
+            .update({ created_by: f.visitor.id })
+            .eq('id', f.articleA)
+
+        expect(error).toBeNull()
+        const { data } = await serviceClient.from('articles').select('created_by').eq('id', f.articleA).single()
+        expect(data?.created_by).toBe(f.staff.id)
     })
 })
 

@@ -12,6 +12,7 @@ export type Database = {
                 Row: {
                     content: Json
                     created_at: string
+                    created_by: string
                     event_id: string
                     id: string
                     title: string
@@ -20,6 +21,7 @@ export type Database = {
                 Insert: {
                     content?: Json
                     created_at?: string
+                    created_by: string
                     event_id: string
                     id?: string
                     title?: string
@@ -28,12 +30,20 @@ export type Database = {
                 Update: {
                     content?: Json
                     created_at?: string
+                    created_by?: string
                     event_id?: string
                     id?: string
                     title?: string
                     updated_at?: string
                 }
                 Relationships: [
+                    {
+                        foreignKeyName: 'articles_created_by_fkey'
+                        columns: ['created_by']
+                        isOneToOne: false
+                        referencedRelation: 'users'
+                        referencedColumns: ['id']
+                    },
                     {
                         foreignKeyName: 'articles_event_id_fkey'
                         columns: ['event_id']
@@ -110,18 +120,21 @@ export type Database = {
                 Row: {
                     created_at: string
                     deleted_at: string | null
+                    display_name: string | null
                     id: string
                     updated_at: string
                 }
                 Insert: {
                     created_at?: string
                     deleted_at?: string | null
+                    display_name?: string | null
                     id: string
                     updated_at?: string
                 }
                 Update: {
                     created_at?: string
                     deleted_at?: string | null
+                    display_name?: string | null
                     id?: string
                     updated_at?: string
                 }

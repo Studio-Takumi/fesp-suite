@@ -26,6 +26,8 @@ function renderWithQueryClient(ui: ReactNode) {
 const article: ArticleResponse = {
     id: ARTICLE_ID,
     event_id: EVENT_ID,
+    created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
+    creator: { display_name: '山田太郎' },
     title: '模擬店のお知らせ',
     content: [
         {
@@ -65,6 +67,17 @@ describe('ArticleEditView', () => {
             expect.anything(),
             expect.objectContaining({ authenticated: true }),
         )
+    })
+
+    it.each([
+        ['山田太郎', '作成者: 山田太郎'],
+        [null, '作成者: （名前未設定）'],
+    ])('見出しの下に作成者を出す（表示名: %s）', async (displayName, text) => {
+        adminFetch.mockResolvedValue({ ...article, creator: { display_name: displayName } })
+
+        renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+
+        expect(await screen.findByText(text)).toBeInTheDocument()
     })
 
     it('記事が見つからないと、エディタの代わりに一覧へのリンクを出す', async () => {

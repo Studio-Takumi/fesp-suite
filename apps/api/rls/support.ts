@@ -116,19 +116,6 @@ export function useRlsFixture(): RlsFixture {
         fixture.eventA = events.find((event) => event.slug.endsWith('-a'))!.id
         fixture.eventB = events.find((event) => event.slug.endsWith('-b'))!.id
 
-        const articles = ensure(
-            await serviceClient
-                .from('articles')
-                .insert([
-                    { event_id: fixture.eventA, title: 'A の記事' },
-                    { event_id: fixture.eventB, title: 'B の記事' },
-                ])
-                .select('id, event_id'),
-            '記事の作成',
-        )
-        fixture.articleA = articles.find((article) => article.event_id === fixture.eventA)!.id
-        fixture.articleB = articles.find((article) => article.event_id === fixture.eventB)!.id
-
         fixture.staff = await createUser('staff')
         fixture.visitor = await createUser('visitor')
         fixture.outsider = await createUser('outsider')
@@ -147,6 +134,20 @@ export function useRlsFixture(): RlsFixture {
             '所属の作成',
         )
 
+        // 記事の作成者はユーザーを参照するので、ユーザーを作ってから作る
+        const articles = ensure(
+            await serviceClient
+                .from('articles')
+                .insert([
+                    { event_id: fixture.eventA, created_by: fixture.staff.id, title: 'A の記事' },
+                    { event_id: fixture.eventB, created_by: fixture.staff.id, title: 'B の記事' },
+                ])
+                .select('id, event_id'),
+            '記事の作成',
+        )
+        fixture.articleA = articles.find((article) => article.event_id === fixture.eventA)!.id
+        fixture.articleB = articles.find((article) => article.event_id === fixture.eventB)!.id
+
         ensure(
             await serviceClient
                 .from('users')
@@ -158,12 +159,13 @@ export function useRlsFixture(): RlsFixture {
     })
 
     afterAll(async () => {
-        // ユーザーを消すと users・event_members も、イベントを消すと articles も一緒に消える
-        for (const id of createdUserIds) {
-            await serviceClient.auth.admin.deleteUser(id)
-        }
+        // イベントを消すと articles も、ユーザーを消すと users・event_members も一緒に消える。
+        // 記事が作成者のユーザーを参照しているので、イベント（記事）を先に消す
         if (createdEventIds.length > 0) {
             await serviceClient.from('events').delete().in('id', createdEventIds)
+        }
+        for (const id of createdUserIds) {
+            await serviceClient.auth.admin.deleteUser(id)
         }
     })
 

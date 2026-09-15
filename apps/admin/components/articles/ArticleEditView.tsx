@@ -86,7 +86,12 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
             {/* BlockNote のツールバーのボタンで送信されないよう、エディタはフォームの外に置く */}
             <form onSubmit={handleSave} className='space-y-6' noValidate>
                 <div className='flex items-center justify-between'>
-                    <h1 className='text-2xl font-bold'>記事エディタ</h1>
+                    <div className='space-y-1'>
+                        <h1 className='text-2xl font-bold'>記事エディタ</h1>
+                        <p className='text-sm text-muted-foreground'>
+                            {`作成者: ${article.creator.display_name ?? '（名前未設定）'}`}
+                        </p>
+                    </div>
                     <div className='flex items-center gap-3'>
                         {updateArticle.isSuccess ? (
                             <p role='status' className='text-sm text-muted-foreground'>

@@ -237,10 +237,19 @@ export type ArticleDocument = z.infer<typeof articleDocumentSchema>
 /** 記事のタイトル。空文字も許す */
 export const articleTitleSchema = z.string().trim().max(100, 'タイトルは100文字以内で入力してください')
 
+/** 記事の作成者。`users` から埋め込んで返す */
+export const articleCreatorSchema = z.object({
+    /** 未設定なら `null` */
+    display_name: z.string().nullable(),
+})
+export type ArticleCreator = z.infer<typeof articleCreatorSchema>
+
 /** 記事オブジェクト（GET /api/articles/:id などのレスポンス） */
 export const articleResponseSchema = z.object({
     id: uuidSchema,
     event_id: uuidSchema,
+    created_by: uuidSchema,
+    creator: articleCreatorSchema,
     title: z.string(),
     content: articleDocumentSchema,
     created_at: timestampSchema,
