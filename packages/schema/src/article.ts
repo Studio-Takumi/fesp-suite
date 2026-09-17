@@ -189,6 +189,15 @@ export const weatherComponentTypes = [
 ] as const
 export type WeatherComponentType = (typeof weatherComponentTypes)[number]
 
+/** スケジュール表（`scheduleTable`）の props。管理者サイトのサイドパネルのフォームでもこのスキーマで検証する */
+export const scheduleTablePropsSchema = z
+    .object({
+        /** 日付タブを出すか。出さないときは1日目のタイムテーブルを出す */
+        showDateTabs: z.boolean(),
+    })
+    .strict()
+export type ScheduleTableProps = z.infer<typeof scheduleTablePropsSchema>
+
 /** コードブロックの中身はスタイル（太字等）を持たない「プレーンテキスト」 */
 const plainTextSchema = z.object({
     type: z.literal('text'),
@@ -237,6 +246,8 @@ export type ArticleBlock = {
         | 'table'
         | 'codeBlock'
         | 'pageHeader'
+        | 'map'
+        | 'scheduleTable'
         | 'newsList'
         | 'coverImage'
         | 'postSummary'
@@ -337,6 +348,13 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
         }),
         z.object({
             id: z.string().min(1),
+            type: z.literal('scheduleTable'),
+            props: scheduleTablePropsSchema,
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
+        z.object({
+            id: z.string().min(1),
             type: z.literal('newsList'),
             props: newsListPropsSchema,
             content: z.undefined().optional(),
@@ -349,6 +367,7 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             content: z.undefined().optional(),
             children: z.array(articleBlockSchema),
         }),
+        emptyComponentBlockSchema('map'),
         emptyComponentBlockSchema('postSummary'),
         emptyComponentBlockSchema('adjacentPosts'),
         emptyComponentBlockSchema('todayWeather'),

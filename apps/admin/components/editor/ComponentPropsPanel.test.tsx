@@ -21,7 +21,15 @@ function render(ui: ReactNode) {
 
 describe('isComponentBlock', () => {
     it('独自コンポーネントのブロックだけを true にする', () => {
-        for (const type of ['pageHeader', 'newsList', 'coverImage', 'postSummary', 'adjacentPosts']) {
+        for (const type of [
+            'pageHeader',
+            'scheduleTable',
+            'map',
+            'newsList',
+            'coverImage',
+            'postSummary',
+            'adjacentPosts',
+        ]) {
             expect(isComponentBlock({ type })).toBe(true)
         }
         for (const type of weatherComponentTypes) expect(isComponentBlock({ type })).toBe(true)
@@ -70,6 +78,40 @@ describe('ComponentPropsPanel（ページ見出し）', () => {
         expect(await screen.findByText('日本語タイトルは50文字以内で入力してください')).toBeInTheDocument()
 
         expect(onChange).not.toHaveBeenCalled()
+    })
+})
+
+describe('ComponentPropsPanel（スケジュール表）', () => {
+    const block = { id: '1', type: 'scheduleTable', props: { showDateTabs: false } } as const
+
+    it('コンポーネント名と、ブロックの props を初期値にしたスイッチを出す', () => {
+        render(<ComponentPropsPanel block={block} onChange={vi.fn()} />)
+
+        expect(screen.getByRole('heading', { name: 'スケジュール表' })).toBeInTheDocument()
+        expect(screen.getByRole('switch', { name: '日付タブを出す' })).not.toBeChecked()
+    })
+
+    it('スイッチを切り替えるたびに props を渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        await user.click(screen.getByRole('switch', { name: '日付タブを出す' }))
+        expect(onChange).toHaveBeenLastCalledWith({ showDateTabs: true })
+
+        await user.click(screen.getByRole('switch', { name: '日付タブを出す' }))
+        expect(onChange).toHaveBeenLastCalledWith({ showDateTabs: false })
+    })
+})
+
+describe('ComponentPropsPanel（マップ）', () => {
+    it('props を持たないので、コンポーネント名の下に「設定する項目はありません」と出し、入力欄を出さない', () => {
+        render(<ComponentPropsPanel block={{ id: '1', type: 'map', props: {} }} onChange={vi.fn()} />)
+
+        const panel = screen.getByRole('complementary', { name: 'コンポーネントの設定' })
+        expect(screen.getByRole('heading', { name: 'マップ' })).toBeInTheDocument()
+        expect(panel).toHaveTextContent('設定する項目はありません')
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
     })
 })
 

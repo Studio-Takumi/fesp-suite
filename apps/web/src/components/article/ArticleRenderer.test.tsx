@@ -435,6 +435,27 @@ describe('ArticleRenderer', () => {
         expect(screen.getByText(/更新 ・ 出典: 気象庁/)).toBeInTheDocument()
     })
 
+    it('スケジュール表は日付タブと会場ごとのタイムテーブルを出す（仮データ）', async () => {
+        renderWithQuery([{ id: '1', type: 'scheduleTable', props: { showDateTabs: true }, children: [] }])
+
+        expect(await screen.findByRole('tablist', { name: '日付' })).toBeInTheDocument()
+        expect(screen.getByRole('region', { name: 'スケジュール' })).toContainElement(
+            screen.getByRole('list', { name: '体育館' }),
+        )
+    })
+
+    it('マップは地図の領域とボトムシートの場所の一覧を出し、そのあとのブロックの描画を続ける', async () => {
+        renderWithQuery([
+            { id: '1', type: 'map', props: {}, children: [] },
+            block('2', 'paragraph', [text('続きの段落')]),
+        ])
+
+        expect(screen.getByRole('region', { name: 'マップ' })).toHaveClass('h-dvh')
+        expect(screen.getByRole('searchbox', { name: '場所・模擬店を検索' })).toBeInTheDocument()
+        expect(await screen.findByRole('list', { name: '場所の一覧' })).toBeInTheDocument()
+        expect(screen.getByText('続きの段落')).toBeInTheDocument()
+    })
+
     it('注意書きは種類ごとの見出し・色の枠に本文を出す', () => {
         const callout = (id: string, variant: string, value: string): ArticleBlock => ({
             id,

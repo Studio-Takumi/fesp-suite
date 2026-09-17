@@ -580,6 +580,106 @@ describe('articleDocumentSchema の props を持たない独自コンポーネ�
     })
 })
 
+describe('articleDocumentSchema のスケジュール表（scheduleTable）', () => {
+    const scheduleTable = (props: Record<string, unknown>) => [
+        { id: '1', type: 'scheduleTable', props, content: undefined, children: [] },
+    ]
+
+    it('日付タブを出すか（true / false）を受理する（JSONを経由してcontentキーが消えていてもよい）', () => {
+        expect(articleDocumentSchema.safeParse(scheduleTable({ showDateTabs: true })).success).toBe(true)
+        expect(articleDocumentSchema.safeParse(scheduleTable({ showDateTabs: false })).success).toBe(true)
+        expect(
+            articleDocumentSchema.safeParse([
+                { id: '1', type: 'scheduleTable', props: { showDateTabs: true }, children: [] },
+            ]).success,
+        ).toBe(true)
+    })
+
+    it('props が欠けている・真偽値でない・知らない props があれば拒否する', () => {
+        expect(articleDocumentSchema.safeParse(scheduleTable({})).success).toBe(false)
+        expect(articleDocumentSchema.safeParse(scheduleTable({ showDateTabs: 'true' })).success).toBe(false)
+        expect(articleDocumentSchema.safeParse(scheduleTable({ showDateTabs: true, day: 1 })).success).toBe(false)
+    })
+
+    it('中身（content）を持っていたら拒否する', () => {
+        expect(
+            articleDocumentSchema.safeParse([
+                {
+                    id: '1',
+                    type: 'scheduleTable',
+                    props: { showDateTabs: true },
+                    content: [{ type: 'text', text: 'スケジュール', styles: {} }],
+                    children: [],
+                },
+            ]).success,
+        ).toBe(false)
+    })
+})
+
+describe('articleDocumentSchema のスケジュール表（scheduleTable）', () => {
+    const scheduleTable = (props: Record<string, unknown>) => [
+        { id: '1', type: 'scheduleTable', props, content: undefined, children: [] },
+    ]
+
+    it('日付タブを出すか（true / false）を受理する（JSONを経由してcontentキーが消えていてもよい）', () => {
+        expect(articleDocumentSchema.safeParse(scheduleTable({ showDateTabs: true })).success).toBe(true)
+        expect(articleDocumentSchema.safeParse(scheduleTable({ showDateTabs: false })).success).toBe(true)
+        expect(
+            articleDocumentSchema.safeParse([
+                { id: '1', type: 'scheduleTable', props: { showDateTabs: true }, children: [] },
+            ]).success,
+        ).toBe(true)
+    })
+
+    it('props が欠けている・真偽値でない・知らない props があれば拒否する', () => {
+        expect(articleDocumentSchema.safeParse(scheduleTable({})).success).toBe(false)
+        expect(articleDocumentSchema.safeParse(scheduleTable({ showDateTabs: 'true' })).success).toBe(false)
+        expect(articleDocumentSchema.safeParse(scheduleTable({ showDateTabs: true, day: 1 })).success).toBe(false)
+    })
+
+    it('中身（content）を持っていたら拒否する', () => {
+        expect(
+            articleDocumentSchema.safeParse([
+                {
+                    id: '1',
+                    type: 'scheduleTable',
+                    props: { showDateTabs: true },
+                    content: [{ type: 'text', text: 'スケジュール', styles: {} }],
+                    children: [],
+                },
+            ]).success,
+        ).toBe(false)
+    })
+})
+
+describe('articleDocumentSchema のマップ（map）', () => {
+    it('props なしのマップを受理する（JSONを経由してcontentキーが消えていてもよい）', () => {
+        expect(
+            articleDocumentSchema.safeParse([{ id: '1', type: 'map', props: {}, content: undefined, children: [] }])
+                .success,
+        ).toBe(true)
+        expect(articleDocumentSchema.safeParse([{ id: '1', type: 'map', props: {}, children: [] }]).success).toBe(true)
+    })
+
+    it('props が無い・知らない props がある・中身（content）を持っていたら拒否する', () => {
+        expect(articleDocumentSchema.safeParse([{ id: '1', type: 'map', children: [] }]).success).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse([{ id: '1', type: 'map', props: { floor: '1F' }, children: [] }]).success,
+        ).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse([
+                {
+                    id: '1',
+                    type: 'map',
+                    props: {},
+                    content: [{ type: 'text', text: 'マップ', styles: {} }],
+                    children: [],
+                },
+            ]).success,
+        ).toBe(false)
+    })
+})
+
 describe('emptyComponentPropsSchema', () => {
     it('空の props だけ受理する', () => {
         expect(emptyComponentPropsSchema.safeParse({}).success).toBe(true)
