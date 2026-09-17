@@ -1,4 +1,7 @@
-import { render, screen } from '@testing-library/react'
+import type { ReactNode } from 'react'
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render as rtlRender, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -6,14 +9,34 @@ import type { ArticleDocument } from '@fesp/schema'
 
 import { ArticleEditor, articleSchema } from './ArticleEditor'
 
+// 独自コンポーネント（お知らせ一覧）が lib/queries.ts を読むので、env と API クライアントを差し替える
+vi.mock('~/lib/env', () => ({ env: { NEXT_PUBLIC_EVENT_ID: '0b7e6d5c-4a3b-4c2d-9e1f-a2b3c4d5e6f7' } }))
+vi.mock('~/lib/api', () => ({ adminFetch: vi.fn() }))
+
+/** 独自コンポーネントが仮データを TanStack Query で読むので、QueryClient の中で描画する */
+function render(ui: ReactNode) {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    return rtlRender(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>)
+}
+
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
 
 describe('articleSchema', () => {
-    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・注意書き・区切り線・表・コードブロックと、独自コンポーネントのページ見出しだけを許可する（画像・動画等は含まない）', () => {
+    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・注意書き・区切り線・表・コードブロックと、独自コンポーネント（ページ見出し・お知らせ・天気）だけを許可する（画像・動画等は含まない）', () => {
         expect(Object.keys(articleSchema.blockSchema).sort()).toEqual(
             [
-                'bulletListItem',
+                'adjacentPosts',
+                'coverImage',
+                'newsList',
+                'postSummary',
+                'todayWeather',
+                'weeklyForecast',
+                'weatherAlert',
+                'wbgt',
+                'weatherOverview',
+                'weatherCredit',
                 'callout',
+                'bulletListItem',
                 'checkListItem',
                 'codeBlock',
                 'divider',
@@ -142,6 +165,135 @@ describe('ArticleEditor', () => {
         expect(await screen.findByText('編集中')).toBeInTheDocument()
         expect(screen.getAllByText('ページ見出し', { selector: 'span' })).toHaveLength(2)
         expect(screen.getByText('設定')).toBeInTheDocument()
+    })
+
+    it('お知らせ一覧はカードに設定の要約を出す（タグはタグの一覧の順に名前で出す）', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'paragraph', props: defaultBlockProps, content: [], children: [] },
+            {
+                id: '2',
+                type: 'newsList',
+                props: { showTagTabs: true, tags: 'shop,stage', limit: 3, showViewAll: true },
+                children: [],
+            },
+            {
+                id: '3',
+                type: 'newsList',
+                props: { showTagTabs: true, tags: '', showViewAll: false },
+                children: [],
+            },
+            {
+                id: '4',
+                type: 'newsList',
+                props: { showTagTabs: false, tags: 'shop', showViewAll: false },
+                children: [],
+            },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('タグタブ: あり（ステージ・模擬店）')).toBeInTheDocument()
+        expect(screen.getByText('表示件数: 3')).toBeInTheDocument()
+        expect(screen.getByText('すべて見る: あり')).toBeInTheDocument()
+        expect(screen.getByText('タグタブ: あり（タグ未選択）')).toBeInTheDocument()
+        expect(screen.getAllByText('表示件数: すべて')).toHaveLength(2)
+        expect(screen.getByText('タグタブ: なし')).toBeInTheDocument()
+    })
+
+    it('記事の画像はカードに URL を出し、空なら設定されていないことを出す', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'coverImage', props: { imageUrl: 'https://example.com/cover.jpg' }, children: [] },
+            { id: '2', type: 'coverImage', props: { imageUrl: '' }, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('画像: https://example.com/cover.jpg')).toBeInTheDocument()
+        expect(screen.getByText('画像が設定されていません（ウェブアプリには何も出ません）')).toBeInTheDocument()
+    })
+
+    it('記事のサマリー・前後の記事はカードに説明を出し、選択中はサイドパネルに「設定する項目はありません」と出す', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'postSummary', props: {}, children: [] },
+            { id: '2', type: 'adjacentPosts', props: {}, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('表示中の記事の作成者・日時・ハッシュタグを出します')).toBeInTheDocument()
+        expect(screen.getByText('表示中の記事の前の記事・次の記事へのリンクを出します')).toBeInTheDocument()
+        // 開いた直後はカーソルが先頭のブロック（記事のサマリー）にある
+        const panel = await screen.findByRole('complementary', { name: 'コンポーネントの設定' })
+        expect(within(panel).getByRole('heading', { name: '記事のサマリー' })).toBeInTheDocument()
+        expect(within(panel).getByText('設定する項目はありません')).toBeInTheDocument()
+    })
+
+    it('お知らせ一覧のサイドパネルで表示件数を入れると props に入り、空にすると props から消す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        const content: ArticleDocument = [
+            {
+                id: '1',
+                type: 'newsList',
+                props: { showTagTabs: true, tags: '', showViewAll: false },
+                children: [],
+            },
+        ]
+
+        render(<ArticleEditor content={content} onChange={onChange} />)
+
+        const limitInput = await screen.findByLabelText('表示件数')
+        await user.type(limitInput, '5')
+
+        expect(await screen.findByText('表示件数: 5')).toBeInTheDocument()
+        expect(onChange).toHaveBeenLastCalledWith([
+            expect.objectContaining({ id: '1', type: 'newsList', props: expect.objectContaining({ limit: 5 }) }),
+        ])
+
+        await user.clear(limitInput)
+
+        expect(await screen.findByText('表示件数: すべて')).toBeInTheDocument()
+        const [block] = onChange.mock.lastCall?.[0] as ArticleDocument
+        expect(block?.props.limit).toBeUndefined()
+        expect(JSON.parse(JSON.stringify(block?.props))).toEqual({ showTagTabs: true, tags: '', showViewAll: false })
+    })
+
+    it('天気のブロックは、カードに名前と説明の1文を出す', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'paragraph', props: defaultBlockProps, content: [], children: [] },
+            { id: '2', type: 'todayWeather', props: {}, children: [] },
+            { id: '3', type: 'weeklyForecast', props: {}, children: [] },
+            { id: '4', type: 'weatherAlert', props: {}, children: [] },
+            { id: '5', type: 'wbgt', props: {}, children: [] },
+            { id: '6', type: 'weatherOverview', props: {}, children: [] },
+            { id: '7', type: 'weatherCredit', props: {}, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        for (const [name, description] of [
+            ['今日の天気', '今日の天気と気温を出します'],
+            ['週間予報', '1週間分の天気と気温を横に並べて出します'],
+            ['気象警報・注意報', '発表中の警報・注意報を出します（無いときは出しません）'],
+            ['暑さ指数', '暑さ指数（WBGT）と段階を出します'],
+            ['天気概況', '気象台の天気概況の文章を出します'],
+            ['天気の更新時刻・出典', '天気の更新時刻と出典（気象庁）を出します'],
+        ]) {
+            expect(await screen.findByText(name!, { selector: 'span' })).toBeInTheDocument()
+            expect(screen.getByText(description!)).toBeInTheDocument()
+        }
+        expect(screen.queryByRole('complementary', { name: 'コンポーネントの設定' })).not.toBeInTheDocument()
+    })
+
+    it('カーソルが天気のブロックにあれば、サイドパネルに名前と「設定する項目はありません」を出す', async () => {
+        const content: ArticleDocument = [{ id: '1', type: 'wbgt', props: {}, children: [] }]
+
+        render(<ArticleEditor content={content} />)
+
+        const panel = await screen.findByRole('complementary', { name: 'コンポーネントの設定' })
+        expect(within(panel).getByRole('heading', { name: '暑さ指数' })).toBeInTheDocument()
+        expect(within(panel).getByText('設定する項目はありません')).toBeInTheDocument()
+        expect(within(panel).queryByRole('textbox')).not.toBeInTheDocument()
     })
 
     it('注意書きは種類の見出しと本文を出し、子ブロックも同じブロックの中に出す', async () => {

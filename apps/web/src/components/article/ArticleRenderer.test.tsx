@@ -1,7 +1,14 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
 import type { ArticleBlock, ArticleDocument, ArticleStyles } from '@fesp/schema'
+
+import { mockNewsPosts, type NewsPost } from '~/lib/mock/news'
+import { createMockWeather } from '~/lib/mock/weather'
+import { queryKeys, weatherQuery } from '~/lib/queries'
+import { createTestQueryClient, renderWithQueryClient } from '~/test/render'
 
 import { ArticleRenderer } from './ArticleRenderer'
 import { blockRegistry } from './block-registry'
@@ -18,6 +25,39 @@ const block = (
 ): ArticleBlock => ({ id, type, props: { ...defaultBlockProps, ...props }, content, children })
 
 const renderBlocks = (blocks: ArticleDocument) => render(<ArticleRenderer blocks={blocks} />)
+
+/**
+ * データを読む独自コンポーネント用。`data` を渡すとそのキーにデータを入れておき、仮データの代わりに使う
+ * （`staleTime: Infinity` なので読み直さない）
+ */
+const renderWithQuery = (blocks: ArticleDocument, data: [readonly unknown[], unknown][] = []) => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })
+    for (const [key, value] of data) queryClient.setQueryData(key, value)
+    return render(
+        <QueryClientProvider client={queryClient}>
+            <ArticleRenderer blocks={blocks} />
+        </QueryClientProvider>,
+    )
+}
+
+const componentBlock = (type: ArticleBlock['type'], props: Record<string, unknown> = {}): ArticleBlock => ({
+    id: '1',
+    type,
+    props,
+    children: [],
+})
+
+const newsList = (props: Record<string, unknown> = {}) =>
+    componentBlock('newsList', { showTagTabs: false, tags: '', showViewAll: false, ...props })
+
+const newsPost = (id: string, title: string, tagIds: string[]): NewsPost => ({
+    id,
+    title,
+    author: '実行委員会本部',
+    published_at: '2026-06-06T11:30:00+09:00',
+    updated_at: '2026-06-06T11:51:00+09:00',
+    tags: tagIds.map((tagId) => ({ id: tagId, name: tagId === 'stage' ? 'ステージ' : '模擬店' })),
+})
 
 describe('ArticleRenderer', () => {
     it('段落を描画し、見出しはレベルを1段下げる', () => {
@@ -237,6 +277,162 @@ describe('ArticleRenderer', () => {
             />,
         )
         expect(screen.queryByRole('banner')).not.toBeInTheDocument()
+    })
+
+    it('お知らせ一覧は投稿者・タイトル・タグ・日付（ゼロ埋めしない月と日）の行を並べ、行はお知らせへのリンクにする', async () => {
+        renderWithQuery([newsList()])
+
+        const rows = await screen.findAllByRole('listitem')
+        expect(rows).toHaveLength(mockNewsPosts.length)
+        const first = within(rows[0]!)
+        expect(first.getByRole('link')).toHaveAttribute('href', '/news/news-8')
+        expect(first.getByText('模擬店の整理券について')).toBeInTheDocument()
+        expect(first.getByText('実行委員会本部')).toBeInTheDocument()
+        expect(first.getByText('#模擬店')).toBeInTheDocument()
+        expect(first.getByText('6月')).toBeInTheDocument()
+        expect(first.getByText('6')).toBeInTheDocument()
+        expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
+        expect(screen.queryByRole('link', { name: 'すべて見る' })).not.toBeInTheDocument()
+    })
+
+    it('お知らせ一覧は「すべて」と選んだタグのタブを出し、タブで絞り込む', async () => {
+        const user = userEvent.setup()
+        renderWithQuery([newsList({ showTagTabs: true, tags: 'shop,stage,unknown' })])
+
+        const tabs = await screen.findAllByRole('tab')
+        // 並びはタグの一覧の順。タグの一覧に無い ID は出さない
+        expect(tabs.map((tab) => tab.textContent)).toEqual(['すべて', 'ステージ', '模擬店'])
+        expect(screen.getByRole('tab', { name: 'すべて' })).toHaveAttribute('aria-selected', 'true')
+
+        await user.click(screen.getByRole('tab', { name: 'ステージ' }))
+
+        expect(screen.getByRole('tab', { name: 'ステージ' })).toHaveAttribute('aria-selected', 'true')
+        const rows = screen.getAllByRole('listitem')
+        expect(rows).toHaveLength(2)
+        for (const row of rows) expect(within(row).getByText('#ステージ')).toBeInTheDocument()
+    })
+
+    it('お知らせ一覧はタグタブを出す設定でも、タグを選んでいなければタブを出さない', async () => {
+        renderWithQuery([newsList({ showTagTabs: true, tags: '' })])
+
+        expect(await screen.findAllByRole('listitem')).toHaveLength(mockNewsPosts.length)
+        expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
+    })
+
+    it('お知らせ一覧は表示件数だけ出し、「すべて見る」を出す設定ならお知らせ一覧へのリンクを出す', async () => {
+        renderWithQuery([newsList({ limit: 3, showViewAll: true })])
+
+        expect(await screen.findAllByRole('listitem')).toHaveLength(3)
+        expect(screen.getByRole('link', { name: 'すべて見る' })).toHaveAttribute('href', '/news')
+    })
+
+    it('お知らせ一覧は絞り込んだあとの先頭から表示件数だけ出す', async () => {
+        const user = userEvent.setup()
+        renderWithQuery(
+            [newsList({ showTagTabs: true, tags: 'stage', limit: 1 })],
+            [
+                [
+                    queryKeys.news,
+                    [
+                        newsPost('a', '模擬店A', ['shop']),
+                        newsPost('b', 'ステージB', ['stage']),
+                        newsPost('c', 'ステージC', ['stage']),
+                    ],
+                ],
+            ],
+        )
+
+        await user.click(await screen.findByRole('tab', { name: 'ステージ' }))
+
+        expect(screen.getAllByRole('listitem')).toHaveLength(1)
+        expect(screen.getByText('ステージB')).toBeInTheDocument()
+    })
+
+    it('お知らせ一覧は0件なら空状態を出す', async () => {
+        renderWithQuery([newsList({ showViewAll: true })], [[queryKeys.news, []]])
+
+        expect(await screen.findByRole('heading', { name: 'お知らせはまだありません' })).toBeInTheDocument()
+        expect(screen.getByText('運営からのお知らせが投稿されると、ここに表示されます。')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: '再読み込み' })).toBeInTheDocument()
+        expect(screen.queryByRole('list')).not.toBeInTheDocument()
+    })
+
+    it('記事の画像は URL の画像を出し、URL が空なら何も出さない', () => {
+        const { container, rerender } = renderBlocks([
+            componentBlock('coverImage', { imageUrl: 'https://example.com/cover.jpg' }),
+        ])
+        expect(container.querySelector('img')).toHaveAttribute('src', 'https://example.com/cover.jpg')
+
+        rerender(<ArticleRenderer blocks={[componentBlock('coverImage', { imageUrl: '' })]} />)
+        expect(container.querySelector('img')).not.toBeInTheDocument()
+    })
+
+    it('記事のサマリーは表示中の記事の作成者・更新日時（日本時間）・タグを出す', async () => {
+        renderWithQuery([componentBlock('postSummary')])
+
+        expect(await screen.findByText('実行委員会本部')).toBeInTheDocument()
+        expect(screen.getByText('2026年6月6日 11:51')).toHaveAttribute('datetime', '2026-06-06T11:51:00+09:00')
+        expect(screen.getByText('#ステージ')).toBeInTheDocument()
+        expect(screen.getByText('#お知らせ')).toBeInTheDocument()
+    })
+
+    it('記事のサマリーはタグが無ければタグの行を出さない', async () => {
+        renderWithQuery([componentBlock('postSummary')], [[queryKeys.currentPost, newsPost('a', 'タグなし', [])]])
+
+        expect(await screen.findByText('実行委員会本部')).toBeInTheDocument()
+        expect(screen.queryByText(/^#/)).not.toBeInTheDocument()
+    })
+
+    it('前後の記事は前の記事・次の記事へのリンクを出す', async () => {
+        renderWithQuery([componentBlock('adjacentPosts')])
+
+        const nav = await screen.findByRole('navigation', { name: '前後の記事' })
+        const [previous, next] = within(nav).getAllByRole('link')
+        expect(previous).toHaveTextContent('前の記事こまめに水分補給をしてください')
+        expect(previous).toHaveAttribute('href', '/news/news-6')
+        expect(next).toHaveTextContent('次の記事模擬店の整理券について')
+        expect(next).toHaveAttribute('href', '/news/news-8')
+    })
+
+    it('前後の記事は無い方の行を出さず、両方とも無ければ何も出さない', async () => {
+        const { unmount } = renderWithQuery(
+            [componentBlock('adjacentPosts')],
+            [[queryKeys.adjacentPosts, { previous: { id: 'a', title: '古い記事' }, next: null }]],
+        )
+        expect(await screen.findByText('古い記事')).toBeInTheDocument()
+        expect(screen.queryByText('次の記事')).not.toBeInTheDocument()
+        unmount()
+
+        renderWithQuery([componentBlock('adjacentPosts')], [[queryKeys.adjacentPosts, { previous: null, next: null }]])
+        expect(screen.queryByRole('navigation')).not.toBeInTheDocument()
+    })
+
+    it('天気のブロック（今日・週間予報・警報・暑さ指数・概況・更新時刻と出典）を天気のデータから描画する', () => {
+        const queryClient = createTestQueryClient()
+        queryClient.setQueryData(weatherQuery().queryKey, createMockWeather())
+
+        renderWithQueryClient(
+            <ArticleRenderer
+                blocks={(
+                    [
+                        'todayWeather',
+                        'weeklyForecast',
+                        'weatherAlert',
+                        'wbgt',
+                        'weatherOverview',
+                        'weatherCredit',
+                    ] as const
+                ).map((type) => ({ id: type, type, props: {}, children: [] }))}
+            />,
+            queryClient,
+        )
+
+        expect(screen.getByRole('region', { name: '今日の天気' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2, name: '週間予報' })).toBeInTheDocument()
+        expect(screen.getByRole('region', { name: '気象警報・注意報' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2, name: '暑さ指数（WBGT）' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2, name: '今日の天気概況' })).toBeInTheDocument()
+        expect(screen.getByText(/更新 ・ 出典: 気象庁/)).toBeInTheDocument()
     })
 
     it('注意書きは種類ごとの見出し・色の枠に本文を出す', () => {
