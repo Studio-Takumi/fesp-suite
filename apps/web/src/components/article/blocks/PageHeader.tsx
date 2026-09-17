@@ -2,7 +2,7 @@ import type { BlockComponentProps } from '../block-registry'
 
 /**
  * ページ見出し（独自コンポーネント `pageHeader`）。英語ラベルと日本語タイトル。
- * ページタイトルが `h1` なので、日本語タイトルは `h2` にする。両方とも空なら何も出さない
+ * 日本語タイトルがページのタイトル（`h1`）になる。両方とも空なら何も出さない
  */
 export function PageHeader({ block, children }: BlockComponentProps) {
     const label = typeof block.props.label === 'string' ? block.props.label : ''
@@ -17,7 +17,7 @@ export function PageHeader({ block, children }: BlockComponentProps) {
                             {label}
                         </p>
                     )}
-                    {title && <h2 className='font-jp text-[28px] leading-[1.3] font-bold text-slate-900'>{title}</h2>}
+                    {title && <h1 className='font-jp text-[28px] leading-[1.3] font-bold text-slate-900'>{title}</h1>}
                 </header>
             )}
             {children}

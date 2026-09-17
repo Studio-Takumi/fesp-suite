@@ -209,11 +209,11 @@ describe('ArticleRenderer', () => {
         expect(screen.getByText('続きの段落')).toBeInTheDocument()
     })
 
-    it('ページ見出しは英語ラベル（大文字）と日本語タイトル（h2）を header に出す', () => {
+    it('ページ見出しは英語ラベル（大文字）と日本語タイトル（h1）を header に出す', () => {
         renderBlocks([{ id: '1', type: 'pageHeader', props: { label: 'news', title: 'お知らせ' }, children: [] }])
 
         const header = screen.getByRole('banner')
-        expect(header).toContainElement(screen.getByRole('heading', { level: 2, name: 'お知らせ' }))
+        expect(header).toContainElement(screen.getByRole('heading', { level: 1, name: 'お知らせ' }))
         expect(screen.getByText('news')).toHaveClass('uppercase', 'font-en')
     })
 

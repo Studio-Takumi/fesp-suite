@@ -20,7 +20,7 @@ test.beforeEach(async ({ page }) => {
                 published_version: 1,
                 published_at: '2026-09-14T12:00:00+09:00',
                 title: '模擬店のお知らせ',
-                content: [],
+                content: [{ id: '1', type: 'pageHeader', props: { label: 'NEWS', title: 'お知らせ' }, children: [] }],
                 created_at: '2026-09-14T10:00:00+09:00',
                 updated_at: '2026-09-14T12:30:00+09:00',
             },
@@ -39,6 +39,6 @@ test('未ログインで記事を開くとログインに移動し、ログイ�
     await page.getByLabel('パスワード', { exact: true }).fill('password123')
     await page.getByRole('button', { name: 'ログイン', exact: true }).click()
 
-    await expect(page.getByRole('heading', { name: '模擬店のお知らせ', level: 1 })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'お知らせ', level: 1 })).toBeVisible()
     await expect(page).toHaveURL(new RegExp(`/articles/${ARTICLE_ID}$`))
 })

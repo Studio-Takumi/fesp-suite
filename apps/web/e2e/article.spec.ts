@@ -19,6 +19,7 @@ test.beforeEach(async ({ page }) => {
                 event_id: '00000000-0000-4000-8000-000000000000',
                 title: '模擬店のお知らせ',
                 content: [
+                    { id: '0', type: 'pageHeader', props: { label: 'news', title: 'お知らせ' }, children: [] },
                     {
                         id: '1',
                         type: 'heading',
@@ -60,10 +61,12 @@ test.beforeEach(async ({ page }) => {
     )
 })
 
-test('記事ページでタイトルと本文が表示される', async ({ page }) => {
+test('記事ページで本文が表示され、記事のタイトルの代わりにページ見出しがページのタイトルになる', async ({ page }) => {
     await page.goto(`/articles/${ARTICLE_ID}`)
 
-    await expect(page.getByRole('heading', { name: '模擬店のお知らせ', level: 1 })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'お知らせ', level: 1 })).toBeVisible()
+    await expect(page.getByText('news')).toBeVisible()
+    await expect(page.getByText('模擬店のお知らせ')).toHaveCount(0)
     await expect(page.getByRole('heading', { name: '今日の模擬店', level: 2 })).toBeVisible()
     await expect(page.getByRole('listitem').filter({ hasText: 'たこ焼き' })).toBeVisible()
     await expect(page.getByRole('link', { name: '詳しくはこちら' })).toHaveAttribute('target', '_blank')
