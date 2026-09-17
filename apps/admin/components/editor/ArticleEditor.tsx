@@ -27,6 +27,7 @@ import {
     CalendarDays,
     FileText,
     ImageIcon,
+    MapIcon,
     Newspaper,
     PanelTop,
     RefreshCw,
@@ -41,6 +42,7 @@ import type { ArticleDocument } from '@fesp/schema'
 
 import { createAdjacentPostsBlock } from './blocks/AdjacentPostsBlock'
 import { createCoverImageBlock } from './blocks/CoverImageBlock'
+import { createMapBlock } from './blocks/MapBlock'
 import { createNewsListBlock } from './blocks/NewsListBlock'
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
 import { createPostSummaryBlock } from './blocks/PostSummaryBlock'
@@ -96,6 +98,7 @@ export const articleSchema = BlockNoteSchema.create({
         // 独自コンポーネント。中身を持たず、props はサイドパネル（ComponentPropsPanel）で編集する
         pageHeader: createPageHeaderBlock(),
         scheduleTable: createScheduleTableBlock(),
+        map: createMapBlock(),
         newsList: createNewsListBlock(),
         coverImage: createCoverImageBlock(),
         postSummary: createPostSummaryBlock(),
@@ -130,6 +133,13 @@ const componentSlashMenuItems: {
         subtext: '日付タブと会場ごとのタイムテーブル',
         aliases: ['scheduletable', 'schedule', 'timetable', 'sukejuru', 'スケジュール', 'タイムテーブル'],
         icon: <CalendarClock />,
+    },
+    {
+        type: 'map',
+        title: 'マップ',
+        subtext: '会場のマップ（検索・フロア切替・場所の一覧）',
+        aliases: ['map', 'chizu', 'ちず', '地図'],
+        icon: <MapIcon />,
     },
     {
         type: 'newsList',

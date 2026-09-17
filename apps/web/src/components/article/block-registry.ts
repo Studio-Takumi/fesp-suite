@@ -9,6 +9,7 @@ import { CoverImage } from './blocks/CoverImage'
 import { Divider } from './blocks/Divider'
 import { Heading } from './blocks/Heading'
 import { ListItem } from './blocks/ListItem'
+import { Map } from './blocks/Map'
 import { NewsList } from './blocks/NewsList'
 import { PageHeader } from './blocks/PageHeader'
 import { Paragraph } from './blocks/Paragraph'
@@ -50,6 +51,7 @@ export const blockRegistry: BlockRegistry = {
     codeBlock: CodeBlock,
     pageHeader: PageHeader,
     scheduleTable: ScheduleTable,
+    map: Map,
     newsList: NewsList,
     coverImage: CoverImage,
     postSummary: PostSummary,

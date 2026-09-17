@@ -590,6 +590,34 @@ describe('articleDocumentSchema のスケジュール表（scheduleTable）', ()
     })
 })
 
+describe('articleDocumentSchema のマップ（map）', () => {
+    it('props なしのマップを受理する（JSONを経由してcontentキーが消えていてもよい）', () => {
+        expect(
+            articleDocumentSchema.safeParse([{ id: '1', type: 'map', props: {}, content: undefined, children: [] }])
+                .success,
+        ).toBe(true)
+        expect(articleDocumentSchema.safeParse([{ id: '1', type: 'map', props: {}, children: [] }]).success).toBe(true)
+    })
+
+    it('props が無い・知らない props がある・中身（content）を持っていたら拒否する', () => {
+        expect(articleDocumentSchema.safeParse([{ id: '1', type: 'map', children: [] }]).success).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse([{ id: '1', type: 'map', props: { floor: '1F' }, children: [] }]).success,
+        ).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse([
+                {
+                    id: '1',
+                    type: 'map',
+                    props: {},
+                    content: [{ type: 'text', text: 'マップ', styles: {} }],
+                    children: [],
+                },
+            ]).success,
+        ).toBe(false)
+    })
+})
+
 describe('emptyComponentPropsSchema', () => {
     it('空の props だけ受理する', () => {
         expect(emptyComponentPropsSchema.safeParse({}).success).toBe(true)

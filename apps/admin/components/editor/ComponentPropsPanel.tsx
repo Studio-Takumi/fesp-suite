@@ -22,7 +22,7 @@ export type ComponentBlock =
     | { id: string; type: 'scheduleTable'; props: ScheduleTableProps }
     | { id: string; type: 'newsList'; props: NewsListProps }
     | { id: string; type: 'coverImage'; props: CoverImageProps }
-    | { id: string; type: 'postSummary' | 'adjacentPosts'; props: EmptyComponentProps }
+    | { id: string; type: 'map' | 'postSummary' | 'adjacentPosts'; props: EmptyComponentProps }
     | { id: string; type: WeatherComponentType; props: EmptyComponentProps }
 
 /**
@@ -57,6 +57,7 @@ const componentPanels: {
         name: '記事の画像',
         renderForm: (block, onChange) => <CoverImagePropsForm defaultValues={block.props} onValidChange={onChange} />,
     },
+    map: { name: 'マップ' },
     postSummary: { name: '記事のサマリー' },
     adjacentPosts: { name: '前後の記事' },
     todayWeather: { name: '今日の天気' },

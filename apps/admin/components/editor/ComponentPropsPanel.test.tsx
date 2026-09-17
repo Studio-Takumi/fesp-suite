@@ -21,7 +21,15 @@ function render(ui: ReactNode) {
 
 describe('isComponentBlock', () => {
     it('独自コンポーネントのブロックだけを true にする', () => {
-        for (const type of ['pageHeader', 'scheduleTable', 'newsList', 'coverImage', 'postSummary', 'adjacentPosts']) {
+        for (const type of [
+            'pageHeader',
+            'scheduleTable',
+            'map',
+            'newsList',
+            'coverImage',
+            'postSummary',
+            'adjacentPosts',
+        ]) {
             expect(isComponentBlock({ type })).toBe(true)
         }
         for (const type of weatherComponentTypes) expect(isComponentBlock({ type })).toBe(true)
@@ -93,6 +101,17 @@ describe('ComponentPropsPanel（スケジュール表）', () => {
 
         await user.click(screen.getByRole('switch', { name: '日付タブを出す' }))
         expect(onChange).toHaveBeenLastCalledWith({ showDateTabs: false })
+    })
+})
+
+describe('ComponentPropsPanel（マップ）', () => {
+    it('props を持たないので、コンポーネント名の下に「設定する項目はありません」と出し、入力欄を出さない', () => {
+        render(<ComponentPropsPanel block={{ id: '1', type: 'map', props: {} }} onChange={vi.fn()} />)
+
+        const panel = screen.getByRole('complementary', { name: 'コンポーネントの設定' })
+        expect(screen.getByRole('heading', { name: 'マップ' })).toBeInTheDocument()
+        expect(panel).toHaveTextContent('設定する項目はありません')
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
     })
 })
 

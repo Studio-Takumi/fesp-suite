@@ -230,6 +230,7 @@ export type ArticleBlock = {
         | 'table'
         | 'codeBlock'
         | 'pageHeader'
+        | 'map'
         | 'scheduleTable'
         | 'newsList'
         | 'coverImage'
@@ -343,6 +344,7 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             content: z.undefined().optional(),
             children: z.array(articleBlockSchema),
         }),
+        emptyComponentBlockSchema('map'),
         emptyComponentBlockSchema('postSummary'),
         emptyComponentBlockSchema('adjacentPosts'),
         emptyComponentBlockSchema('todayWeather'),

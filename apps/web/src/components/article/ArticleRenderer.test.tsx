@@ -444,6 +444,18 @@ describe('ArticleRenderer', () => {
         )
     })
 
+    it('マップは地図の領域とボトムシートの場所の一覧を出し、そのあとのブロックの描画を続ける', async () => {
+        renderWithQuery([
+            { id: '1', type: 'map', props: {}, children: [] },
+            block('2', 'paragraph', [text('続きの段落')]),
+        ])
+
+        expect(screen.getByRole('region', { name: 'マップ' })).toHaveClass('h-dvh')
+        expect(screen.getByRole('searchbox', { name: '場所・模擬店を検索' })).toBeInTheDocument()
+        expect(await screen.findByRole('list', { name: '場所の一覧' })).toBeInTheDocument()
+        expect(screen.getByText('続きの段落')).toBeInTheDocument()
+    })
+
     it('レジストリを差し替えると、差し替えたコンポーネントで描画する', () => {
         render(
             <ArticleRenderer
