@@ -109,9 +109,11 @@ bun run e2e       ✅（web は chromium・mobile-safari とも）
 
 - **選択中かどうかはブロックの描画の中で `useEditorState` を使い、カーソルのあるブロックの `id` と比べて決める**
 - **カードの文字は `<p>` にしない。** BlockNote の `.bn-default-styles p { font-size: inherit }` がレイヤー外の CSS で、Tailwind の `text-[28px]` より強く、タイトルが本文と同じ大きさになったため `<div>` にした
-- **アイコンには `size-` クラスを付けて渡す。** `@blocknote/shadcn` の CSS が `size-` クラスの無い svg の大きさを元に戻し、24px になったため
+- **アイコンは lucide-react に `size={14}` で大きさを渡す。** `@blocknote/shadcn` の CSS は `size-` クラスの無い svg の大きさを戻すが、`size` の props（`width` / `height` 属性）ならそのまま効くことをブラウザで確かめた
 - **選択中の枠は `border-2` ではなく `ring-1` で太くする。** 枠線の太さが変わるとカードの高さがずれるため
 - **BlockNote の選択の塗り（`::after`）は `!important` で消す。** BlockNote の CSS はレイヤー外なので、`@layer` の中からは `!important` が無いと勝てない
+
+あわせて、レビューの指摘で Tailwind の任意値（`text-[11px]` / `text-[28px]` / `rounded-[10px]` など）と `.5` 刻みの値（`py-3.5` / `gap-1.5`）を、デフォルトスケール（`text-xs` / `text-3xl` / `rounded-lg` / `py-4` / `gap-2` など）に直した。ウェブアプリのページ見出しも同じ。アイコンの大きさを `size` の props で渡すルールは `docs/conventions.md` に追記した。
 
 ## 残課題
 
