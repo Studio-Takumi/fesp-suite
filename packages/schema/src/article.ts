@@ -117,6 +117,63 @@ export const pageHeaderPropsSchema = z
     .strict()
 export type PageHeaderProps = z.infer<typeof pageHeaderPropsSchema>
 
+/**
+ * お知らせ一覧（`newsList`）の props。
+ * BlockNote の props は文字列・数値・真偽値しか持てないので、タブに出すタグは ID をカンマ区切りで並べた文字列で持つ
+ */
+export const newsListPropsSchema = z
+    .object({
+        /** タグのタブを出すか */
+        showTagTabs: z.boolean(),
+        /** タブに出すタグの ID をカンマ区切りで並べた文字列（例: `stage,shop`）。空文字なら選んでいない */
+        tags: z.string().regex(/^([^,]+(,[^,]+)*)?$/, 'タグの指定が正しくありません'),
+        /** 表示件数。無ければ全件。BlockNote は未設定の値を `undefined` にし、JSON を経由するとキーごと消える */
+        limit: z
+            .number('表示件数は1以上の整数で入力してください')
+            .int('表示件数は1以上の整数で入力してください')
+            .min(1, '表示件数は1以上の整数で入力してください')
+            .optional(),
+        /** 「すべて見る」を出すか */
+        showViewAll: z.boolean(),
+    })
+    .strict()
+export type NewsListProps = z.infer<typeof newsListPropsSchema>
+
+/** お知らせ一覧の props の `tags` を、タグの ID の配列にする */
+export function parseNewsListTags(tags: string): string[] {
+    return tags === '' ? [] : tags.split(',')
+}
+
+/** 記事の画像（`coverImage`）の props */
+export const coverImagePropsSchema = z
+    .object({
+        /** 画像の URL。空文字なら画像を出さない */
+        imageUrl: z.union([
+            z.literal(''),
+            z.url({ protocol: /^https?$/, error: 'http:// か https:// で始まる URL を入力してください' }),
+        ]),
+    })
+    .strict()
+export type CoverImageProps = z.infer<typeof coverImagePropsSchema>
+
+/**
+ * props を持たない独自コンポーネント（記事のサマリー・前後の記事・天気の各ブロックなど）の props。
+ * 表示するデータはコンポーネントが自分で読むので、記事には何も持たせない
+ */
+export const emptyComponentPropsSchema = z.object({}).strict()
+export type EmptyComponentProps = z.infer<typeof emptyComponentPropsSchema>
+
+/** 天気の独自コンポーネント。どれも props を持たない（docs/app.md の「天気のブロック」参照） */
+export const weatherComponentTypes = [
+    'todayWeather',
+    'weeklyForecast',
+    'weatherAlert',
+    'wbgt',
+    'weatherOverview',
+    'weatherCredit',
+] as const
+export type WeatherComponentType = (typeof weatherComponentTypes)[number]
+
 /** スケジュール表（`scheduleTable`）の props。管理者サイトのサイドパネルのフォームでもこのスキーマで検証する */
 export const scheduleTablePropsSchema = z
     .object({
@@ -174,6 +231,11 @@ export type ArticleBlock = {
         | 'codeBlock'
         | 'pageHeader'
         | 'scheduleTable'
+        | 'newsList'
+        | 'coverImage'
+        | 'postSummary'
+        | 'adjacentPosts'
+        | WeatherComponentType
     props: Record<string, unknown>
     content?: (ArticleStyledText | ArticleLink)[] | ArticleTableContent
     children: ArticleBlock[]
@@ -267,8 +329,41 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             content: z.undefined().optional(),
             children: z.array(articleBlockSchema),
         }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('newsList'),
+            props: newsListPropsSchema,
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('coverImage'),
+            props: coverImagePropsSchema,
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
+        emptyComponentBlockSchema('postSummary'),
+        emptyComponentBlockSchema('adjacentPosts'),
+        emptyComponentBlockSchema('todayWeather'),
+        emptyComponentBlockSchema('weeklyForecast'),
+        emptyComponentBlockSchema('weatherAlert'),
+        emptyComponentBlockSchema('wbgt'),
+        emptyComponentBlockSchema('weatherOverview'),
+        emptyComponentBlockSchema('weatherCredit'),
     ]),
 )
+
+/** props を持たない独自コンポーネントのブロック。中身も持たない（JSONを経由すると`content`キーごと消える） */
+function emptyComponentBlockSchema<Type extends string>(type: Type) {
+    return z.object({
+        id: z.string().min(1),
+        type: z.literal(type),
+        props: emptyComponentPropsSchema,
+        content: z.undefined().optional(),
+        children: z.array(articleBlockSchema),
+    })
+}
 
 /** 記事ドキュメント全体の形。BlockNoteの `Block[]`（トップレベルは配列で、`doc` のようなルートノードは無い） */
 export const articleDocumentSchema = z.array(articleBlockSchema)

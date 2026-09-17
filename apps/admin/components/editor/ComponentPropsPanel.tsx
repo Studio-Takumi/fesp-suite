@@ -2,8 +2,17 @@
 
 import type { ReactNode } from 'react'
 
-import type { PageHeaderProps, ScheduleTableProps } from '@fesp/schema'
+import type {
+    CoverImageProps,
+    EmptyComponentProps,
+    NewsListProps,
+    PageHeaderProps,
+    ScheduleTableProps,
+    WeatherComponentType,
+} from '@fesp/schema'
 
+import { CoverImagePropsForm } from './CoverImagePropsForm'
+import { NewsListPropsForm } from './NewsListPropsForm'
 import { PageHeaderPropsForm } from './PageHeaderPropsForm'
 import { ScheduleTablePropsForm } from './ScheduleTablePropsForm'
 
@@ -11,15 +20,20 @@ import { ScheduleTablePropsForm } from './ScheduleTablePropsForm'
 export type ComponentBlock =
     | { id: string; type: 'pageHeader'; props: PageHeaderProps }
     | { id: string; type: 'scheduleTable'; props: ScheduleTableProps }
+    | { id: string; type: 'newsList'; props: NewsListProps }
+    | { id: string; type: 'coverImage'; props: CoverImageProps }
+    | { id: string; type: 'postSummary' | 'adjacentPosts'; props: EmptyComponentProps }
+    | { id: string; type: WeatherComponentType; props: EmptyComponentProps }
 
 /**
  * 独自コンポーネントのブロックの `type` → パネルに出す名前とフォーム。
+ * 設定する props が無いコンポーネントは `renderForm` を持たない（パネルに「設定する項目はありません」と出す）。
  * 独自コンポーネントを足すときは、ここ・`ArticleEditor.tsx` のスキーマとスラッシュメニューに足す
  */
 const componentPanels: {
     [Type in ComponentBlock['type']]: {
         name: string
-        renderForm: (
+        renderForm?: (
             block: Extract<ComponentBlock, { type: Type }>,
             onChange: (props: Extract<ComponentBlock, { type: Type }>['props']) => void,
         ) => ReactNode
@@ -35,6 +49,22 @@ const componentPanels: {
             <ScheduleTablePropsForm defaultValues={block.props} onValidChange={onChange} />
         ),
     },
+    newsList: {
+        name: 'お知らせ一覧',
+        renderForm: (block, onChange) => <NewsListPropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
+    coverImage: {
+        name: '記事の画像',
+        renderForm: (block, onChange) => <CoverImagePropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
+    postSummary: { name: '記事のサマリー' },
+    adjacentPosts: { name: '前後の記事' },
+    todayWeather: { name: '今日の天気' },
+    weeklyForecast: { name: '週間予報' },
+    weatherAlert: { name: '気象警報・注意報' },
+    wbgt: { name: '暑さ指数' },
+    weatherOverview: { name: '天気概況' },
+    weatherCredit: { name: '天気の更新時刻・出典' },
 }
 
 export function isComponentBlock(block: { type: string }): block is ComponentBlock {
@@ -48,19 +78,26 @@ export type ComponentPropsPanelProps = {
 
 /** 選択中の独自コンポーネントのブロックの props を編集するサイドパネル */
 export function ComponentPropsPanel({ block, onChange }: ComponentPropsPanelProps) {
-    const panel = componentPanels[block.type]
-    // `type` と props の組み合わせは `componentPanels` の型で保証しているが、TypeScript は union を対応づけて
-    // 絞り込めないので、ここだけ型を外す
-    const form = panel.renderForm(block as never, onChange)
-
     return (
         <aside
             aria-label='コンポーネントの設定'
             className='w-72 shrink-0 space-y-4 rounded-md border border-border p-4'
         >
-            <h2 className='text-sm font-semibold'>{panel.name}</h2>
+            <h2 className='text-sm font-semibold'>{componentPanels[block.type].name}</h2>
             {/* ブロックが変わったらフォームを作り直す（入力中の値・エラーを持ち越さない） */}
-            <div key={block.id}>{form}</div>
+            <div key={block.id}>{renderPanelForm(block, onChange)}</div>
         </aside>
+    )
+}
+
+function renderPanelForm(block: ComponentBlock, onChange: (props: ComponentBlock['props']) => void): ReactNode {
+    // `type` ごとに対応表を引くと TypeScript が block と renderForm の対応を追えないため、ここで型を合わせる
+    const renderForm = componentPanels[block.type].renderForm as
+        ((block: ComponentBlock, onChange: (props: ComponentBlock['props']) => void) => ReactNode) | undefined
+
+    return renderForm ? (
+        renderForm(block, onChange)
+    ) : (
+        <p className='text-sm text-muted-foreground'>設定する項目はありません</p>
     )
 }
