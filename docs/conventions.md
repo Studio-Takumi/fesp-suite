@@ -40,3 +40,11 @@ dateFormatter(article.updated_at, 'MM/DD(EEE)') // '09/14(月)'
 理由をコメントで残した上で任意値を使う。
 
 `p-3.5` のような `.5` 刻みの値も避け、`p-3` / `p-4` など整数の値を使う。
+
+## アイコン
+
+アイコンは lucide-react を使い、大きさは `size-4` などのクラスではなく `size` の props で数値を渡す。
+
+```tsx
+<Mail size={16} className='text-slate-400' />
+```
