@@ -43,8 +43,9 @@ app/
 └─ page.tsx                     配線確認用ページ（実装時に置き換える）
 components/
 ├─ ui/                          shadcn/ui 相当のプリミティブ（button/input/label/table）
+├─ data-table/
+│  └─ DataTable.tsx             TanStack Table の汎用テーブル（並べ替え・絞り込み・ページ送り）
 ├─ example/
-│  ├─ DataTable.tsx             TanStack Table の汎用テーブル（ソート・フィルタ）
 │  └─ ExampleForm.tsx           React Hook Form + 共有zod のフォーム
 └─ editor/
    ├─ CollaborativeEditor.tsx   TipTap + Collaboration + 保存ボタン

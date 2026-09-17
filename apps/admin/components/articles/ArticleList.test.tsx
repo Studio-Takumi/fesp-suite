@@ -137,6 +137,196 @@ describe('ArticleList', () => {
         expect(within(publishedRow).getByText('公開中（更新予約あり）')).toBeInTheDocument()
     })
 
+    it('公開状態は、状態ごとに色を分けたバッジで出す', async () => {
+        adminFetch.mockResolvedValue({
+            items: [
+                {
+                    ...listItem,
+                    id: DRAFT_ARTICLE_ID,
+                    title: '書きかけの記事',
+                    status: 'draft',
+                    published_version: null,
+                    published_at: null,
+                },
+                listItem,
+            ],
+            limit: 100,
+            offset: 0,
+        })
+
+        renderWithQueryClient(<ArticleList />)
+
+        const draftBadge = await screen.findByText('下書き')
+        const publishedBadge = screen.getByText('公開中')
+        expect(draftBadge).toHaveAttribute('data-slot', 'badge')
+        expect(publishedBadge).toHaveAttribute('data-slot', 'badge')
+        expect(draftBadge.className).not.toBe(publishedBadge.className)
+    })
+
+    describe('並べ替え・絞り込み・ページ送り', () => {
+        const SCHEDULE = {
+            version: 2,
+            publish_at: '2099-09-20T00:00:00+00:00',
+            created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
+            created_at: '2026-09-14T05:00:00+00:00',
+            updated_at: '2026-09-14T05:00:00+00:00',
+        }
+
+        /** 公開状態が4種類そろった記事。API と同じく更新日時の新しい順 */
+        const items = [
+            {
+                ...listItem,
+                id: '00000000-0000-4000-8000-000000000001',
+                title: 'いちごの記事',
+                updated_at: '2026-09-14T04:00:00+00:00',
+                schedule: SCHEDULE,
+            },
+            {
+                ...listItem,
+                id: '00000000-0000-4000-8000-000000000002',
+                title: 'ぶどうの記事',
+                status: 'draft',
+                published_version: null,
+                published_at: null,
+                updated_at: '2026-09-14T03:00:00+00:00',
+            },
+            {
+                ...listItem,
+                id: '00000000-0000-4000-8000-000000000003',
+                title: 'あんずのお知らせ',
+                updated_at: '2026-09-14T02:00:00+00:00',
+            },
+            {
+                ...listItem,
+                id: '00000000-0000-4000-8000-000000000004',
+                title: 'みかんのお知らせ',
+                status: 'draft',
+                published_version: null,
+                published_at: null,
+                updated_at: '2026-09-14T01:00:00+00:00',
+                schedule: SCHEDULE,
+            },
+        ]
+
+        const bodyRows = () => within(screen.getAllByRole('rowgroup')[1]!).getAllByRole('row')
+        const titles = () => bodyRows().map((row) => within(row).queryByRole('link')?.textContent)
+
+        async function selectState(label: string) {
+            await userEvent.click(screen.getByRole('combobox', { name: '公開状態で絞り込み' }))
+            await userEvent.click(await screen.findByRole('option', { name: label }))
+        }
+
+        beforeEach(() => {
+            adminFetch.mockResolvedValue({ items, limit: 100, offset: 0 })
+        })
+
+        it('初めは更新日時の新しい順に並べる', async () => {
+            // 読み込んだ順に依らず更新日時で並べることを見るため、逆順で返す
+            adminFetch.mockResolvedValue({ items: [...items].reverse(), limit: 100, offset: 0 })
+
+            renderWithQueryClient(<ArticleList />)
+            await screen.findByRole('link', { name: 'いちごの記事' })
+
+            expect(titles()).toEqual(['いちごの記事', 'ぶどうの記事', 'あんずのお知らせ', 'みかんのお知らせ'])
+            expect(screen.getByRole('columnheader', { name: /更新日時/ })).toHaveAttribute('aria-sort', 'descending')
+        })
+
+        it('タイトルの見出しで昇順・降順に並べ替える', async () => {
+            renderWithQueryClient(<ArticleList />)
+            await screen.findByRole('link', { name: 'いちごの記事' })
+
+            await userEvent.click(screen.getByRole('button', { name: /タイトル/ }))
+            expect(titles()).toEqual(['あんずのお知らせ', 'いちごの記事', 'ぶどうの記事', 'みかんのお知らせ'])
+
+            await userEvent.click(screen.getByRole('button', { name: /タイトル/ }))
+            expect(titles()).toEqual(['みかんのお知らせ', 'ぶどうの記事', 'いちごの記事', 'あんずのお知らせ'])
+        })
+
+        it('公開状態の昇順は 下書き → 予約中 → 公開中（更新予約あり）→ 公開中', async () => {
+            renderWithQueryClient(<ArticleList />)
+            await screen.findByRole('link', { name: 'いちごの記事' })
+
+            await userEvent.click(screen.getByRole('button', { name: /公開状態/ }))
+
+            expect(titles()).toEqual(['ぶどうの記事', 'みかんのお知らせ', 'いちごの記事', 'あんずのお知らせ'])
+        })
+
+        it('更新日時の見出しは、最初のクリックで古い順に入れ替わる（初めが新しい順のため）', async () => {
+            renderWithQueryClient(<ArticleList />)
+            await screen.findByRole('link', { name: 'いちごの記事' })
+
+            await userEvent.click(screen.getByRole('button', { name: /更新日時/ }))
+
+            expect(titles()).toEqual(['みかんのお知らせ', 'あんずのお知らせ', 'ぶどうの記事', 'いちごの記事'])
+        })
+
+        it.each([
+            ['下書き', ['ぶどうの記事']],
+            ['予約中', ['みかんのお知らせ']],
+            ['公開中（更新予約あり）', ['いちごの記事']],
+            ['公開中', ['あんずのお知らせ']],
+        ])('公開状態「%s」で絞り込む', async (label, expected) => {
+            renderWithQueryClient(<ArticleList />)
+            await screen.findByRole('link', { name: 'いちごの記事' })
+
+            await selectState(label)
+
+            expect(titles()).toEqual(expected)
+        })
+
+        it('「すべて」に戻すと絞り込みを外す', async () => {
+            renderWithQueryClient(<ArticleList />)
+            await screen.findByRole('link', { name: 'いちごの記事' })
+
+            await selectState('下書き')
+            await selectState('すべて')
+
+            expect(bodyRows()).toHaveLength(4)
+        })
+
+        it('タイトルの部分一致検索と公開状態の絞り込みを一緒に使える', async () => {
+            renderWithQueryClient(<ArticleList />)
+            await screen.findByRole('link', { name: 'いちごの記事' })
+
+            await userEvent.type(screen.getByLabelText('タイトルで検索'), 'お知らせ')
+            expect(titles()).toEqual(['あんずのお知らせ', 'みかんのお知らせ'])
+
+            await selectState('予約中')
+            expect(titles()).toEqual(['みかんのお知らせ'])
+        })
+
+        it('絞り込んで0件なら「条件に合う記事がありません」と出す', async () => {
+            renderWithQueryClient(<ArticleList />)
+            await screen.findByRole('link', { name: 'いちごの記事' })
+
+            await userEvent.type(screen.getByLabelText('タイトルで検索'), '存在しない')
+
+            expect(screen.getByText('条件に合う記事がありません')).toBeInTheDocument()
+            expect(screen.queryByText('記事がありません')).not.toBeInTheDocument()
+        })
+
+        it('1ページに50件まで出し、「次へ」で続きを出す', async () => {
+            const many = Array.from({ length: 51 }, (_, index) => ({
+                ...listItem,
+                id: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+                title: `記事${index + 1}`,
+                updated_at: new Date(Date.UTC(2026, 8, 14, 0, 0) - index * 60_000).toISOString(),
+            }))
+            adminFetch.mockResolvedValue({ items: many, limit: 100, offset: 0 })
+
+            renderWithQueryClient(<ArticleList />)
+            await screen.findByRole('link', { name: '記事1' })
+
+            expect(bodyRows()).toHaveLength(50)
+            expect(screen.getByText('全51件中 1〜50件')).toBeInTheDocument()
+
+            await userEvent.click(screen.getByRole('button', { name: '次へ' }))
+
+            expect(titles()).toEqual(['記事51'])
+            expect(screen.getByText('全51件中 51〜51件')).toBeInTheDocument()
+        })
+    })
+
     it('0件なら「記事がありません」と出す', async () => {
         adminFetch.mockResolvedValue({ items: [], limit: 100, offset: 0 })
 
