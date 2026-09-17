@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { type ReactElement, useCallback } from 'react'
 
 import {
     BlockNoteSchema,
@@ -13,6 +13,7 @@ import { ja } from '@blocknote/core/locales'
 import {
     BlockNoteViewRaw,
     ComponentsContext,
+    type DefaultReactSuggestionItem,
     getDefaultReactSlashMenuItems,
     SuggestionMenuController,
     useCreateBlockNote,
@@ -20,12 +21,28 @@ import {
 } from '@blocknote/react'
 import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultComponents } from '@blocknote/shadcn'
 import '@blocknote/shadcn/style.css'
-import { CalendarDays, FileText, PanelTop, RefreshCw, Sun, Thermometer, TriangleAlert } from 'lucide-react'
+import {
+    ArrowLeftRight,
+    CalendarDays,
+    FileText,
+    ImageIcon,
+    Newspaper,
+    PanelTop,
+    RefreshCw,
+    Sun,
+    Thermometer,
+    TriangleAlert,
+    UserRound,
+} from 'lucide-react'
 import { createHighlighter } from 'shiki'
 
 import type { ArticleDocument } from '@fesp/schema'
 
+import { createAdjacentPostsBlock } from './blocks/AdjacentPostsBlock'
+import { createCoverImageBlock } from './blocks/CoverImageBlock'
+import { createNewsListBlock } from './blocks/NewsListBlock'
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
+import { createPostSummaryBlock } from './blocks/PostSummaryBlock'
 import { createTodayWeatherBlock } from './blocks/TodayWeatherBlock'
 import { createWbgtBlock } from './blocks/WbgtBlock'
 import { createWeatherAlertBlock } from './blocks/WeatherAlertBlock'
@@ -76,6 +93,10 @@ export const articleSchema = BlockNoteSchema.create({
         codeBlock: defaultBlockSpecs.codeBlock,
         // 独自コンポーネント。中身を持たず、props はサイドパネル（ComponentPropsPanel）で編集する
         pageHeader: createPageHeaderBlock(),
+        newsList: createNewsListBlock(),
+        coverImage: createCoverImageBlock(),
+        postSummary: createPostSummaryBlock(),
+        adjacentPosts: createAdjacentPostsBlock(),
         todayWeather: createTodayWeatherBlock(),
         weeklyForecast: createWeeklyForecastBlock(),
         weatherAlert: createWeatherAlertBlock(),
@@ -86,13 +107,47 @@ export const articleSchema = BlockNoteSchema.create({
 })
 
 /** スラッシュメニューの「コンポーネント」グループに出す、独自コンポーネントのブロック */
-const componentSlashMenuItems = [
+const componentSlashMenuItems: {
+    type: ComponentBlock['type']
+    title: string
+    subtext: string
+    aliases: string[]
+    icon: ReactElement
+}[] = [
     {
         type: 'pageHeader',
         title: 'ページ見出し',
         subtext: '英語ラベルと日本語タイトルの見出し',
         aliases: ['pageheader', 'midashi', 'みだし'],
         icon: <PanelTop />,
+    },
+    {
+        type: 'newsList',
+        title: 'お知らせ一覧',
+        subtext: 'タグで絞り込めるお知らせの一覧',
+        aliases: ['newslist', 'news', 'oshirase', 'おしらせ'],
+        icon: <Newspaper />,
+    },
+    {
+        type: 'coverImage',
+        title: '記事の画像',
+        subtext: '記事の先頭に出す画像',
+        aliases: ['coverimage', 'image', 'gazou', 'がぞう'],
+        icon: <ImageIcon />,
+    },
+    {
+        type: 'postSummary',
+        title: '記事のサマリー',
+        subtext: '表示中の記事の作成者・日時・ハッシュタグ',
+        aliases: ['postsummary', 'summary', 'sama', 'さまりー'],
+        icon: <UserRound />,
+    },
+    {
+        type: 'adjacentPosts',
+        title: '前後の記事',
+        subtext: '前の記事・次の記事へのリンク',
+        aliases: ['adjacentposts', 'zengo', 'ぜんご'],
+        icon: <ArrowLeftRight />,
     },
     {
         type: 'todayWeather',
@@ -136,7 +191,7 @@ const componentSlashMenuItems = [
         aliases: ['weathercredit', 'weather', 'tenki', 'てんき', 'syutten', 'しゅってん'],
         icon: <RefreshCw />,
     },
-] as const
+]
 
 export type ArticleEditorProps = {
     content?: ArticleDocument
@@ -175,9 +230,8 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
             return filterSuggestionItems(
                 [
                     ...items.filter((item) => (item as { key?: string }).key !== 'code_block'),
-                    ...componentSlashMenuItems.map(({ type, aliases, ...item }) => ({
+                    ...componentSlashMenuItems.map(({ type, ...item }): DefaultReactSuggestionItem => ({
                         ...item,
-                        aliases: [...aliases],
                         group: 'コンポーネント',
                         onItemClick: () => {
                             // 中身の無いブロックを入れるとカーソルが次のブロックに移るので、サイドパネルを開くために戻す
@@ -197,7 +251,7 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
         editor,
         selector: ({ editor }): ComponentBlock | null => {
             const { block } = editor.getTextCursorPosition()
-            // `type` と `props` を分けて取り出すと組み合わせの型が消えるので、ComponentBlock に戻す
+            // BlockNote のブロックの型は type と props の対応を持たないので、ComponentBlock に合わせる
             return isComponentBlock(block)
                 ? ({ id: block.id, type: block.type, props: block.props } as ComponentBlock)
                 : null

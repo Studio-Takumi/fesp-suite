@@ -15,6 +15,7 @@ import {
 
 import { adminFetch } from './api'
 import { env } from './env'
+import { mockNewsTags } from './mock/news'
 
 /**
  * サーバー状態は TanStack Query が担当する。
@@ -24,6 +25,7 @@ export const queryKeys = {
     example: ['example'] as const,
     articles: ['articles'] as const,
     article: (id: string) => ['articles', id] as const,
+    newsTags: ['news', 'tags'] as const,
 }
 
 export const exampleQuery = () =>
@@ -60,6 +62,13 @@ export const articleQuery = (id: string) =>
         queryKey: queryKeys.article(id),
         queryFn: ({ signal }) =>
             adminFetch(`/api/articles/${id}`, articleResponseSchema, { signal, authenticated: true }),
+    })
+
+/** お知らせのタグ。API ができるまで仮データ（lib/mock/news.ts）を返す。API ができたら queryFn を差し替える（#56） */
+export const newsTagsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.newsTags,
+        queryFn: () => Promise.resolve(mockNewsTags),
     })
 
 export function useCreateArticle() {
