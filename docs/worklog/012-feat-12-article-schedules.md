@@ -24,7 +24,7 @@ date: 2026-09-16
 | `apps/api/src/routes/articles.ts`                                             | 予約の埋め込み、`PUT` / `DELETE /:id/schedule`。関数が `false` のときに 403 / 404 を分ける読み直しを `readWrittenArticle` にまとめた                                                                                             |
 | `apps/admin/components/ui/{calendar,popover}.tsx` / `apps/admin/package.json` | 追加。shadcn CLI で calendar / popover を足した（`react-day-picker` / `date-fns` が入る）                                                                                                                                        |
 | `apps/admin/lib/queries.ts`                                                   | `useScheduleArticle`（保存 → 予約）、`useCancelArticleSchedule`                                                                                                                                                                  |
-| `apps/admin/components/articles/ArticleScheduleDialog.tsx`                    | 新規。予約ダイアログ（shadcn の Date Picker（Popover + Calendar）と時刻の入力欄。選んだ日時は日本時間として扱う）                                                                                                                |
+| `apps/admin/components/articles/ArticleScheduleDialog.tsx`                    | 新規。予約ダイアログ（shadcn の Date Picker（Popover + Calendar）と時刻の入力欄。カレンダーは日本語、選んだ日時は日本時間として扱う）                                                                                            |
 | `apps/admin/components/articles/ArticleEditView.tsx` / `ArticleList.tsx`      | 予約ボタン・公開予定と取り消し・予約のあとの変更の注意書き。一覧の「予約中」「公開中（更新予約あり）」                                                                                                                           |
 
 ## 実装メモ
@@ -42,6 +42,7 @@ date: 2026-09-16
 - **エディタの予約は「公開」のスイッチを使わない。** 公開中の記事は一時保存、下書きは下書きの保存をしてから予約する。予約の保存では「保存しました」を出さず「予約しました」だけを出すよう、保存と予約を1つの mutation にした。保存だけ成功して予約に失敗したときも最新の記事を出すよう、成否にかかわらず記事を読み直す
 - **予約ダイアログのフォームは記事のフォームの外に置いた。** Radix のダイアログは portal で描画されるが、React のイベントは React のツリーを伝わるので、中に置くと予約の送信が記事の保存にもなってしまうため
 - **日時の入力は shadcn の Date Picker（Popover + Calendar）と時刻の入力欄にした**（発注者と合意。はじめは `datetime-local` で作り、あとで置き換えた）。本家に日時をまとめて選ぶ部品は無いので、日付はカレンダー・時刻は `<input type="time">` に分けている。`react-day-picker` と `date-fns` が増えた（発注者の許可を取って追加）
+- **カレンダーは date-fns の `ja` ロケールで出し、見出しだけ `formatters` で上書きした。** ロケールの既定の見出しは `9月 2099` なので、`2099年9月` にした。曜日（日〜土）と読み上げ用のラベルはロケールのままでよい
 - **カレンダーが返す日は端末のタイムゾーンの0時なので、年月日だけを取り出して日本時間の日時に組み立てる。** 端末のタイムゾーンによらず、選んだ見た目どおりの日時になる
 - **ウェブアプリ用の形（`articleViewResponseSchema`）からは `schedule` を除いた。** 表示に使わず、ウェブアプリのテストのフィクスチャを増やさずに済む
 - マイグレーションの適用（`db push`）と型の再生成は、発注者の許可を取ってから fesp-dev に実行した。pg_cron の拡張はマイグレーションで有効にできた
@@ -53,7 +54,7 @@ date: 2026-09-16
 | `packages/schema/src/article.test.ts`                     | 予約つきの記事を受理、`schedule` が無い・版の番号が不正なら拒否。予約のボディは現在以前・オフセットなし・版の番号が不正なら拒否。ウェブアプリ用の形は予約を持たない                                                                                                                                                                                                                       |
 | `apps/api/src/routes/articles.test.ts`                    | 予約の埋め込みの列、`PUT /:id/schedule` の関数の引数・`PT409` で 409・403 / 404 / 500・過去の日時と不足で 400、`DELETE /:id/schedule` の引数と 403 / 404 / 500、401                                                                                                                                                                                                                       |
 | `apps/api/rls/article-schedules.test.ts`                  | 予約は staff だけ読める・埋め込みは読めなければ `null`、直接の作成・削除の権限、`schedule_article` の上書き・`updated_at` の照合（`PT409`）・staff 以外は `false`、予約中の版は `save_article` でも直接でも上書きされない、一時保存では消えず公開・下書きに戻す・取り消しで消える、公開の関数は日時を過ぎた予約だけ公開して `published_at` を `publish_at` にする・ユーザーからは呼べない |
-| `apps/admin/components/articles/ArticleEditView.test.tsx` | 公開予定と取り消しの表示・予約のあとの変更の注意書き、取り消しの DELETE、予約ダイアログでカレンダーから日付・時刻を選び、`status` なしの保存 → 保存した版の予約（スイッチは使わない）、未入力・現在以前のエラー、予約の日付・時刻の初期値、409 のエラー、タイトルが長いとダイアログを閉じてエラー                                                                                         |
+| `apps/admin/components/articles/ArticleEditView.test.tsx` | 公開予定と取り消しの表示・予約のあとの変更の注意書き、取り消しの DELETE、予約ダイアログでカレンダーから日付・時刻を選び、`status` なしの保存 → 保存した版の予約（スイッチは使わない）、未入力・現在以前のエラー、予約の日付・時刻の初期値、カレンダーの日本語表示（曜日・見出し）、409 のエラー、タイトルが長いとダイアログを閉じてエラー                                                 |
 | `apps/admin/components/articles/ArticleList.test.tsx`     | 予約があると「予約中」「公開中（更新予約あり）」                                                                                                                                                                                                                                                                                                                                          |
 
 ```
