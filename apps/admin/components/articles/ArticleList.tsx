@@ -4,28 +4,70 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 import { useQuery } from '@tanstack/react-query'
+import type { ColumnDef } from '@tanstack/react-table'
 
-import type { ArticleListItem, ArticleStatus } from '@fesp/schema'
+import type { ArticleListItem } from '@fesp/schema'
 import { dateFormatter } from '@fesp/ui'
 
+import { DataTable } from '~/components/data-table/DataTable'
 import { Button } from '~/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table'
+import { Input } from '~/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select'
 import { articlesQuery, useCreateArticle } from '~/lib/queries'
 
-const articleStatusLabels: Record<ArticleStatus, string> = {
+/** 一覧に出す公開状態。status と予約の有無の組み合わせで、並べ替えの昇順に並べてある */
+const articleListStates = ['draft', 'scheduled', 'published_scheduled', 'published'] as const
+type ArticleListState = (typeof articleListStates)[number]
+
+/** 予約は、下書きなら公開の予約、公開中なら中身を差し替える予約 */
+const articleListStateLabels: Record<ArticleListState, string> = {
     draft: '下書き',
+    scheduled: '予約中',
+    published_scheduled: '公開中（更新予約あり）',
     published: '公開中',
 }
 
-/** 予約がある記事の公開状態の表示。下書きなら公開の予約、公開中なら中身を差し替える予約 */
-const scheduledArticleStatusLabels: Record<ArticleStatus, string> = {
-    draft: '予約中',
-    published: '公開中（更新予約あり）',
+function stateOf(article: ArticleListItem): ArticleListState {
+    if (article.status === 'draft') return article.schedule ? 'scheduled' : 'draft'
+    return article.schedule ? 'published_scheduled' : 'published'
 }
 
-function statusLabelOf(article: ArticleListItem): string {
-    return (article.schedule ? scheduledArticleStatusLabels : articleStatusLabels)[article.status]
-}
+/** 公開状態のセレクトで「すべて」を表す値（Radix の Select は空文字を値にできない） */
+const ALL_STATES = 'all'
+
+const columns: ColumnDef<ArticleListItem>[] = [
+    {
+        id: 'title',
+        accessorFn: (article) => article.title,
+        header: 'タイトル',
+        sortingFn: 'text',
+        filterFn: 'includesString',
+        cell: ({ row }) => (
+            <Link href={`/articles/${row.original.id}`} className='underline'>
+                {row.original.title || '（無題）'}
+            </Link>
+        ),
+    },
+    {
+        id: 'state',
+        accessorFn: stateOf,
+        header: '公開状態',
+        sortingFn: (a, b) =>
+            articleListStates.indexOf(a.getValue<ArticleListState>('state')) -
+            articleListStates.indexOf(b.getValue<ArticleListState>('state')),
+        filterFn: 'equals',
+        cell: ({ getValue }) => articleListStateLabels[getValue<ArticleListState>()],
+    },
+    {
+        id: 'updated_at',
+        accessorFn: (article) => new Date(article.updated_at),
+        header: '更新日時',
+        sortingFn: 'datetime',
+        sortDescFirst: true,
+        enableColumnFilter: false,
+        cell: ({ row }) => dateFormatter(row.original.updated_at, 'YYYY/MM/DD HH:mm'),
+    },
+]
 
 export function ArticleList() {
     const router = useRouter()
@@ -63,28 +105,43 @@ export function ArticleList() {
             ) : articles.data.items.length === 0 ? (
                 <p className='text-sm text-muted-foreground'>記事がありません</p>
             ) : (
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>タイトル</TableHead>
-                            <TableHead>公開状態</TableHead>
-                            <TableHead>更新日時</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {articles.data.items.map((article) => (
-                            <TableRow key={article.id}>
-                                <TableCell>
-                                    <Link href={`/articles/${article.id}`} className='underline'>
-                                        {article.title || '（無題）'}
-                                    </Link>
-                                </TableCell>
-                                <TableCell>{statusLabelOf(article)}</TableCell>
-                                <TableCell>{dateFormatter(article.updated_at, 'YYYY/MM/DD HH:mm')}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                <DataTable
+                    data={articles.data.items}
+                    columns={columns}
+                    initialSorting={[{ id: 'updated_at', desc: true }]}
+                    pageSize={50}
+                    emptyMessage='条件に合う記事がありません'
+                    toolbar={(table) => (
+                        <>
+                            <Input
+                                type='search'
+                                placeholder='タイトルで検索'
+                                aria-label='タイトルで検索'
+                                value={(table.getColumn('title')?.getFilterValue() as string | undefined) ?? ''}
+                                onChange={(event) => table.getColumn('title')?.setFilterValue(event.target.value)}
+                                className='max-w-xs'
+                            />
+                            <Select
+                                value={(table.getColumn('state')?.getFilterValue() as string | undefined) ?? ALL_STATES}
+                                onValueChange={(value) =>
+                                    table.getColumn('state')?.setFilterValue(value === ALL_STATES ? undefined : value)
+                                }
+                            >
+                                <SelectTrigger aria-label='公開状態で絞り込み'>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value={ALL_STATES}>すべて</SelectItem>
+                                    {articleListStates.map((state) => (
+                                        <SelectItem key={state} value={state}>
+                                            {articleListStateLabels[state]}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </>
+                    )}
+                />
             )}
         </div>
     )

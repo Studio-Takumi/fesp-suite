@@ -39,6 +39,17 @@ if (typeof globalThis.ResizeObserver !== 'function') {
     }
 }
 
+/** jsdomは pointer capture と scrollIntoView を実装しないため、Radix UI の Select を開くところでエラーになる */
+if (typeof Element.prototype.hasPointerCapture !== 'function') {
+    Element.prototype.hasPointerCapture = () => false
+}
+if (typeof Element.prototype.releasePointerCapture !== 'function') {
+    Element.prototype.releasePointerCapture = () => {}
+}
+if (typeof Element.prototype.scrollIntoView !== 'function') {
+    Element.prototype.scrollIntoView = () => {}
+}
+
 afterEach(() => {
     cleanup()
 })
