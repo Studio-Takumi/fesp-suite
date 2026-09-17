@@ -2,17 +2,27 @@ import type { ComponentType, ReactNode } from 'react'
 
 import type { ArticleBlock } from '@fesp/schema'
 
+import { AdjacentPosts } from './blocks/AdjacentPosts'
 import { CheckListItem } from './blocks/CheckListItem'
 import { CodeBlock } from './blocks/CodeBlock'
+import { CoverImage } from './blocks/CoverImage'
 import { Divider } from './blocks/Divider'
 import { Heading } from './blocks/Heading'
 import { ListItem } from './blocks/ListItem'
 import { Map } from './blocks/Map'
+import { NewsList } from './blocks/NewsList'
 import { PageHeader } from './blocks/PageHeader'
 import { Paragraph } from './blocks/Paragraph'
+import { PostSummary } from './blocks/PostSummary'
 import { Quote } from './blocks/Quote'
 import { Table } from './blocks/Table'
+import { TodayWeather } from './blocks/TodayWeather'
 import { ToggleListItem } from './blocks/ToggleListItem'
+import { Wbgt } from './blocks/Wbgt'
+import { WeatherAlert } from './blocks/WeatherAlert'
+import { WeatherCredit } from './blocks/WeatherCredit'
+import { WeatherOverview } from './blocks/WeatherOverview'
+import { WeeklyForecast } from './blocks/WeeklyForecast'
 
 export type BlockComponentProps = {
     block: ArticleBlock
@@ -24,7 +34,7 @@ export type BlockRegistry = Partial<Record<ArticleBlock['type'], ComponentType<B
 
 /**
  * ブロックの `type` → 描画するコンポーネント。ここに無い `type` は描画しない。
- * 独自コンポーネント（`pageHeader` / `map` など）もここに足す。足すときは `packages/schema` の記事ドキュメントと
+ * 独自コンポーネント（`pageHeader` など）もここに足す。足すときは `packages/schema` の記事ドキュメントと
  * 管理者サイトのブロック定義も同時に足すこと（docs/article-system.md 参照）
  */
 export const blockRegistry: BlockRegistry = {
@@ -40,4 +50,14 @@ export const blockRegistry: BlockRegistry = {
     codeBlock: CodeBlock,
     pageHeader: PageHeader,
     map: Map,
+    newsList: NewsList,
+    coverImage: CoverImage,
+    postSummary: PostSummary,
+    adjacentPosts: AdjacentPosts,
+    todayWeather: TodayWeather,
+    weeklyForecast: WeeklyForecast,
+    weatherAlert: WeatherAlert,
+    wbgt: Wbgt,
+    weatherOverview: WeatherOverview,
+    weatherCredit: WeatherCredit,
 }

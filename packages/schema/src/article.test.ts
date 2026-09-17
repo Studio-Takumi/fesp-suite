@@ -8,9 +8,13 @@ import {
     articleResponseSchema,
     articleScheduleInputSchema,
     articleViewResponseSchema,
-    mapPropsSchema,
+    coverImagePropsSchema,
+    emptyComponentPropsSchema,
+    newsListPropsSchema,
     pageHeaderPropsSchema,
     parseArticleDocument,
+    parseNewsListTags,
+    weatherComponentTypes,
 } from './article'
 
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
@@ -374,6 +378,146 @@ describe('pageHeaderPropsSchema', () => {
     })
 })
 
+const componentBlock = (type: string, props: Record<string, unknown>) => [{ id: '1', type, props, children: [] }]
+
+describe('articleDocumentSchema のお知らせ一覧（newsList）', () => {
+    const props = { showTagTabs: true, tags: 'stage,shop', limit: 3, showViewAll: true }
+
+    it('タグタブ・タグ・表示件数・「すべて見る」を受理する', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('newsList', props)).success).toBe(true)
+    })
+
+    it('挿入した直後（タグ未選択・表示件数なし）を受理する。JSONを経由して limit のキーが消えていてもよい', () => {
+        expect(
+            articleDocumentSchema.safeParse(
+                componentBlock('newsList', { showTagTabs: true, tags: '', limit: undefined, showViewAll: false }),
+            ).success,
+        ).toBe(true)
+        expect(
+            articleDocumentSchema.safeParse(
+                componentBlock('newsList', { showTagTabs: false, tags: '', showViewAll: false }),
+            ).success,
+        ).toBe(true)
+    })
+
+    it('表示件数が1以上の整数でなければ拒否する', () => {
+        for (const limit of [0, -1, 1.5, '3', null]) {
+            expect(articleDocumentSchema.safeParse(componentBlock('newsList', { ...props, limit })).success).toBe(false)
+        }
+    })
+
+    it('タグが空の ID を含む（カンマが続く・端にある）と拒否する', () => {
+        for (const tags of [',', 'stage,', ',stage', 'stage,,shop']) {
+            expect(articleDocumentSchema.safeParse(componentBlock('newsList', { ...props, tags })).success).toBe(false)
+        }
+    })
+
+    it('props が欠けている・型が違う・知らない props があれば拒否する', () => {
+        expect(
+            articleDocumentSchema.safeParse(componentBlock('newsList', { ...props, showViewAll: undefined })).success,
+        ).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse(componentBlock('newsList', { ...props, showTagTabs: 'true' })).success,
+        ).toBe(false)
+        expect(articleDocumentSchema.safeParse(componentBlock('newsList', { ...props, tags: ['stage'] })).success).toBe(
+            false,
+        )
+        expect(articleDocumentSchema.safeParse(componentBlock('newsList', { ...props, sort: 'new' })).success).toBe(
+            false,
+        )
+    })
+})
+
+describe('newsListPropsSchema', () => {
+    it('表示件数が1以上の整数でなければ入力欄に出すエラーメッセージを返す', () => {
+        const result = newsListPropsSchema.safeParse({ showTagTabs: true, tags: '', limit: 0, showViewAll: false })
+
+        expect(result.error?.issues.map((issue) => issue.message)).toEqual(['表示件数は1以上の整数で入力してください'])
+    })
+})
+
+describe('parseNewsListTags', () => {
+    it('カンマ区切りのタグを ID の配列にし、空文字なら空の配列にする', () => {
+        expect(parseNewsListTags('stage,shop')).toEqual(['stage', 'shop'])
+        expect(parseNewsListTags('')).toEqual([])
+    })
+})
+
+describe('articleDocumentSchema の記事の画像（coverImage）', () => {
+    it('http / https の URL と空文字を受理する', () => {
+        for (const imageUrl of ['https://example.com/cover.jpg', 'http://localhost:8787/cover.png', '']) {
+            expect(articleDocumentSchema.safeParse(componentBlock('coverImage', { imageUrl })).success).toBe(true)
+        }
+    })
+
+    it('URL でない・http / https 以外の URL・props の形が違えば拒否する', () => {
+        for (const imageUrl of ['cover.jpg', 'javascript:alert(1)', 'ftp://example.com/cover.jpg', null]) {
+            expect(articleDocumentSchema.safeParse(componentBlock('coverImage', { imageUrl })).success).toBe(false)
+        }
+        expect(articleDocumentSchema.safeParse(componentBlock('coverImage', {})).success).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse(componentBlock('coverImage', { imageUrl: '', alt: '表紙' })).success,
+        ).toBe(false)
+    })
+})
+
+describe('articleDocumentSchema の天気のブロック', () => {
+    it.each(weatherComponentTypes)(
+        '%s を props なしで受理する（JSONを経由してcontentキーが消えていてもよい）',
+        (type) => {
+            expect(
+                articleDocumentSchema.safeParse([{ id: '1', type, props: {}, content: undefined, children: [] }])
+                    .success,
+            ).toBe(true)
+            expect(articleDocumentSchema.safeParse([{ id: '1', type, props: {}, children: [] }]).success).toBe(true)
+        },
+    )
+
+    it.each(weatherComponentTypes)('%s に props があれば拒否する', (type) => {
+        expect(articleDocumentSchema.safeParse([{ id: '1', type, props: { day: 1 }, children: [] }]).success).toBe(
+            false,
+        )
+        expect(articleDocumentSchema.safeParse([{ id: '1', type, children: [] }]).success).toBe(false)
+    })
+
+    it.each(weatherComponentTypes)('%s が中身（content）を持っていたら拒否する', (type) => {
+        expect(
+            articleDocumentSchema.safeParse([
+                { id: '1', type, props: {}, content: [{ type: 'text', text: '晴れ', styles: {} }], children: [] },
+            ]).success,
+        ).toBe(false)
+    })
+})
+
+describe('coverImagePropsSchema', () => {
+    it('URL の形でなければ入力欄に出すエラーメッセージを返す', () => {
+        const result = coverImagePropsSchema.safeParse({ imageUrl: 'cover.jpg' })
+
+        expect(result.error?.issues.map((issue) => issue.message)).toEqual([
+            'http:// か https:// で始まる URL を入力してください',
+        ])
+    })
+})
+
+describe('articleDocumentSchema の props を持たない独自コンポーネント（postSummary / adjacentPosts）', () => {
+    it('props が空なら受理し、props があれば拒否する', () => {
+        for (const type of ['postSummary', 'adjacentPosts']) {
+            expect(articleDocumentSchema.safeParse(componentBlock(type, {})).success).toBe(true)
+            expect(articleDocumentSchema.safeParse(componentBlock(type, { id: 'x' })).success).toBe(false)
+        }
+    })
+
+    it('中身（content）を持っていたら拒否する', () => {
+        for (const type of ['newsList', 'coverImage', 'postSummary', 'adjacentPosts']) {
+            expect(
+                articleDocumentSchema.safeParse([
+                    { id: '1', type, props: {}, content: [{ type: 'text', text: 'x', styles: {} }], children: [] },
+                ]).success,
+            ).toBe(false)
+        }
+    })
+})
+
 describe('articleDocumentSchema のマップ（map）', () => {
     it('props なしのマップを受理する（JSONを経由してcontentキーが消えていてもよい）', () => {
         expect(
@@ -402,10 +546,10 @@ describe('articleDocumentSchema のマップ（map）', () => {
     })
 })
 
-describe('mapPropsSchema', () => {
-    it('空のオブジェクトだけを受理する', () => {
-        expect(mapPropsSchema.safeParse({}).success).toBe(true)
-        expect(mapPropsSchema.safeParse({ label: '' }).success).toBe(false)
+describe('emptyComponentPropsSchema', () => {
+    it('空の props だけ受理する', () => {
+        expect(emptyComponentPropsSchema.safeParse({}).success).toBe(true)
+        expect(emptyComponentPropsSchema.safeParse({ label: 'NEWS' }).success).toBe(false)
     })
 })
 
