@@ -112,20 +112,35 @@ describe('ArticleEditor', () => {
         await user.clear(titleInput)
         await user.type(titleInput, 'ブログ')
 
-        expect(await screen.findByText('ブログ', { selector: 'p' })).toBeInTheDocument()
+        expect(await screen.findByText('ブログ', { selector: 'div' })).toBeInTheDocument()
         expect(onChange).toHaveBeenLastCalledWith([
             expect.objectContaining({ id: '1', type: 'pageHeader', props: { label: 'NEWS', title: 'ブログ' } }),
         ])
     })
 
-    it('英語ラベル・日本語タイトルとも空のページ見出しは、入力を促す文言を出す', async () => {
+    it('英語ラベル・日本語タイトルとも空のページ見出しは、スケルトンと入力を促す文言を出す', async () => {
         const content: ArticleDocument = [
             { id: '1', type: 'pageHeader', props: { label: '', title: '' }, children: [] },
         ]
 
         render(<ArticleEditor content={content} />)
 
-        expect(await screen.findByText('ページ見出し（右のパネルで入力）')).toBeInTheDocument()
+        expect(await screen.findByTestId('page-header-skeleton')).toBeInTheDocument()
+        expect(screen.getByText('右のパネルで入力してください')).toBeInTheDocument()
+    })
+
+    it('ページ見出しはカードで出し、カーソルがあるときだけ「編集中」にする', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'pageHeader', props: { label: 'NEWS', title: 'お知らせ' }, children: [] },
+            { id: '2', type: 'pageHeader', props: { label: 'BLOG', title: 'ブログ' }, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        // 開いた直後はカーソルが先頭のブロックにある
+        expect(await screen.findByText('編集中')).toBeInTheDocument()
+        expect(screen.getAllByText('ページ見出し', { selector: 'span' })).toHaveLength(2)
+        expect(screen.getByText('設定')).toBeInTheDocument()
     })
 
     it('コードブロック（裏機能）の中身を<pre><code>で表示する', async () => {
