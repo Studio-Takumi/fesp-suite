@@ -23,6 +23,7 @@ import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultC
 import '@blocknote/shadcn/style.css'
 import {
     ArrowLeftRight,
+    CalendarClock,
     CalendarDays,
     FileText,
     ImageIcon,
@@ -43,6 +44,7 @@ import { createCoverImageBlock } from './blocks/CoverImageBlock'
 import { createNewsListBlock } from './blocks/NewsListBlock'
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
 import { createPostSummaryBlock } from './blocks/PostSummaryBlock'
+import { createScheduleTableBlock } from './blocks/ScheduleTableBlock'
 import { createTodayWeatherBlock } from './blocks/TodayWeatherBlock'
 import { createWbgtBlock } from './blocks/WbgtBlock'
 import { createWeatherAlertBlock } from './blocks/WeatherAlertBlock'
@@ -93,6 +95,7 @@ export const articleSchema = BlockNoteSchema.create({
         codeBlock: defaultBlockSpecs.codeBlock,
         // 独自コンポーネント。中身を持たず、props はサイドパネル（ComponentPropsPanel）で編集する
         pageHeader: createPageHeaderBlock(),
+        scheduleTable: createScheduleTableBlock(),
         newsList: createNewsListBlock(),
         coverImage: createCoverImageBlock(),
         postSummary: createPostSummaryBlock(),
@@ -120,6 +123,13 @@ const componentSlashMenuItems: {
         subtext: '英語ラベルと日本語タイトルの見出し',
         aliases: ['pageheader', 'midashi', 'みだし'],
         icon: <PanelTop />,
+    },
+    {
+        type: 'scheduleTable',
+        title: 'スケジュール表',
+        subtext: '日付タブと会場ごとのタイムテーブル',
+        aliases: ['scheduletable', 'schedule', 'timetable', 'sukejuru', 'スケジュール', 'タイムテーブル'],
+        icon: <CalendarClock />,
     },
     {
         type: 'newsList',
