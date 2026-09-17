@@ -7,6 +7,7 @@ import { ComponentPropsPanel, isComponentBlock } from './ComponentPropsPanel'
 describe('isComponentBlock', () => {
     it('独自コンポーネントのブロックだけを true にする', () => {
         expect(isComponentBlock({ type: 'pageHeader' })).toBe(true)
+        expect(isComponentBlock({ type: 'scheduleTable' })).toBe(true)
         expect(isComponentBlock({ type: 'paragraph' })).toBe(false)
     })
 })
@@ -52,5 +53,28 @@ describe('ComponentPropsPanel（ページ見出し）', () => {
         expect(await screen.findByText('日本語タイトルは50文字以内で入力してください')).toBeInTheDocument()
 
         expect(onChange).not.toHaveBeenCalled()
+    })
+})
+
+describe('ComponentPropsPanel（スケジュール表）', () => {
+    const block = { id: '1', type: 'scheduleTable', props: { showDateTabs: false } } as const
+
+    it('コンポーネント名と、ブロックの props を初期値にしたスイッチを出す', () => {
+        render(<ComponentPropsPanel block={block} onChange={vi.fn()} />)
+
+        expect(screen.getByRole('heading', { name: 'スケジュール表' })).toBeInTheDocument()
+        expect(screen.getByRole('switch', { name: '日付タブを出す' })).not.toBeChecked()
+    })
+
+    it('スイッチを切り替えるたびに props を渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        await user.click(screen.getByRole('switch', { name: '日付タブを出す' }))
+        expect(onChange).toHaveBeenLastCalledWith({ showDateTabs: true })
+
+        await user.click(screen.getByRole('switch', { name: '日付タブを出す' }))
+        expect(onChange).toHaveBeenLastCalledWith({ showDateTabs: false })
     })
 })

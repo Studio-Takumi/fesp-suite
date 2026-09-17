@@ -9,7 +9,7 @@ import { ArticleEditor, articleSchema } from './ArticleEditor'
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
 
 describe('articleSchema', () => {
-    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・区切り線・表・コードブロックと、独自コンポーネントのページ見出しだけを許可する（画像・動画等は含まない）', () => {
+    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・区切り線・表・コードブロックと、独自コンポーネントのページ見出し・スケジュール表だけを許可する（画像・動画等は含まない）', () => {
         expect(Object.keys(articleSchema.blockSchema).sort()).toEqual(
             [
                 'bulletListItem',
@@ -21,6 +21,7 @@ describe('articleSchema', () => {
                 'pageHeader',
                 'paragraph',
                 'quote',
+                'scheduleTable',
                 'table',
                 'toggleListItem',
             ].sort(),
@@ -141,6 +142,38 @@ describe('ArticleEditor', () => {
         expect(await screen.findByText('編集中')).toBeInTheDocument()
         expect(screen.getAllByText('ページ見出し', { selector: 'span' })).toHaveLength(2)
         expect(screen.getByText('設定')).toBeInTheDocument()
+    })
+
+    it('スケジュール表はカードに設定の要約（日付タブの有無）だけを出す', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'scheduleTable', props: { showDateTabs: true }, children: [] },
+            { id: '2', type: 'scheduleTable', props: { showDateTabs: false }, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('日付タブ: あり')).toBeInTheDocument()
+        expect(screen.getByText('日付タブ: なし')).toBeInTheDocument()
+        expect(screen.getAllByText('スケジュール表', { selector: 'span' }).length).toBeGreaterThanOrEqual(2)
+    })
+
+    it('スケジュール表のサイドパネルでスイッチを切り替えると、ブロックの props を変えて onChange に渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        const content: ArticleDocument = [
+            { id: '1', type: 'scheduleTable', props: { showDateTabs: true }, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} onChange={onChange} />)
+
+        const toggle = await screen.findByRole('switch', { name: '日付タブを出す' })
+        expect(toggle).toBeChecked()
+        await user.click(toggle)
+
+        expect(await screen.findByText('日付タブ: なし')).toBeInTheDocument()
+        expect(onChange).toHaveBeenLastCalledWith([
+            expect.objectContaining({ id: '1', type: 'scheduleTable', props: { showDateTabs: false } }),
+        ])
     })
 
     it('コードブロック（裏機能）の中身を<pre><code>で表示する', async () => {

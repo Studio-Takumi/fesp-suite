@@ -20,12 +20,13 @@ import {
 } from '@blocknote/react'
 import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultComponents } from '@blocknote/shadcn'
 import '@blocknote/shadcn/style.css'
-import { PanelTop } from 'lucide-react'
+import { CalendarClock, PanelTop } from 'lucide-react'
 import { createHighlighter } from 'shiki'
 
 import type { ArticleDocument } from '@fesp/schema'
 
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
+import { createScheduleTableBlock } from './blocks/ScheduleTableBlock'
 import { type ComponentBlock, ComponentPropsPanel, isComponentBlock } from './ComponentPropsPanel'
 import { EmojiGridRoot } from './EmojiGridRoot'
 import { SlashMenuItem } from './SlashMenuItem'
@@ -70,6 +71,7 @@ export const articleSchema = BlockNoteSchema.create({
         codeBlock: defaultBlockSpecs.codeBlock,
         // 独自コンポーネント。中身を持たず、props はサイドパネル（ComponentPropsPanel）で編集する
         pageHeader: createPageHeaderBlock(),
+        scheduleTable: createScheduleTableBlock(),
     },
 })
 
@@ -122,6 +124,24 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
                             editor.setTextCursorPosition(block)
                         },
                     },
+                    {
+                        title: 'スケジュール表',
+                        subtext: '日付タブと会場ごとのタイムテーブル',
+                        aliases: [
+                            'scheduletable',
+                            'schedule',
+                            'timetable',
+                            'sukejuru',
+                            'スケジュール',
+                            'タイムテーブル',
+                        ],
+                        group: 'コンポーネント',
+                        icon: <CalendarClock />,
+                        onItemClick: () => {
+                            const block = insertOrUpdateBlockForSlashMenu(editor, { type: 'scheduleTable' })
+                            editor.setTextCursorPosition(block)
+                        },
+                    },
                 ],
                 query,
             )
@@ -134,7 +154,9 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
         editor,
         selector: ({ editor }): ComponentBlock | null => {
             const { block } = editor.getTextCursorPosition()
-            return isComponentBlock(block) ? { id: block.id, type: block.type, props: block.props } : null
+            return isComponentBlock(block)
+                ? ({ id: block.id, type: block.type, props: block.props } as ComponentBlock)
+                : null
         },
     })
 

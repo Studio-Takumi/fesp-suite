@@ -10,6 +10,7 @@ import { ListItem } from './blocks/ListItem'
 import { PageHeader } from './blocks/PageHeader'
 import { Paragraph } from './blocks/Paragraph'
 import { Quote } from './blocks/Quote'
+import { ScheduleTable } from './blocks/ScheduleTable'
 import { Table } from './blocks/Table'
 import { ToggleListItem } from './blocks/ToggleListItem'
 
@@ -38,4 +39,5 @@ export const blockRegistry: BlockRegistry = {
     table: Table,
     codeBlock: CodeBlock,
     pageHeader: PageHeader,
+    scheduleTable: ScheduleTable,
 }

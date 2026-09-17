@@ -3,6 +3,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { articleViewResponseSchema, exampleResponseSchema } from '@fesp/schema'
 
 import { apiFetch } from './api'
+import { scheduleDays } from './mock/schedule'
 
 /**
  * サーバー状態は必ずここ（TanStack Query）で扱う。
@@ -13,6 +14,7 @@ import { apiFetch } from './api'
 export const queryKeys = {
     example: ['example'] as const,
     article: (id: string) => ['articles', id] as const,
+    schedules: ['schedules'] as const,
 }
 
 export const exampleQuery = () =>
@@ -26,4 +28,11 @@ export const articleQuery = (id: string) =>
         queryKey: queryKeys.article(id),
         queryFn: ({ signal }) =>
             apiFetch(`/api/articles/${id}`, articleViewResponseSchema, { signal, authenticated: true }),
+    })
+
+/** スケジュール（日付 → 会場 → 項目）。API ができるまでは仮データを返す */
+export const scheduleQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.schedules,
+        queryFn: () => Promise.resolve(scheduleDays),
     })
