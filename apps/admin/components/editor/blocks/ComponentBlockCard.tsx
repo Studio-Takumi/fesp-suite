@@ -7,7 +7,7 @@ import { Settings2 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 export type ComponentBlockCardProps = {
-    /** BlockNote の CSS が `size-` クラスの無い svg の大きさを戻すので、`size-3.5` を付けて渡す */
+    /** lucide-react のアイコン。大きさは `size={14}` で渡す */
     icon: ReactNode
     name: string
     /** カーソルがこのブロックにある（サイドパネルで編集中）か */
@@ -27,13 +27,13 @@ export function ComponentBlockCard({ icon, name, isSelected, children }: Compone
             data-component-block=''
             data-selected={isSelected || undefined}
             className={cn(
-                'w-full overflow-hidden rounded-[10px] border bg-white',
+                'w-full overflow-hidden rounded-lg border bg-white',
                 isSelected ? 'border-sky-400 ring-1 ring-sky-400' : 'border-slate-200',
             )}
         >
             <div
                 className={cn(
-                    'flex items-center gap-1.5 px-3 py-2 text-xs',
+                    'flex items-center gap-2 px-3 py-2 text-xs',
                     isSelected ? 'bg-sky-50 text-sky-500' : 'bg-slate-50 text-slate-700',
                 )}
             >
@@ -41,15 +41,15 @@ export function ComponentBlockCard({ icon, name, isSelected, children }: Compone
                 <span className='font-bold'>{name}</span>
                 <span
                     className={cn(
-                        'ml-auto flex items-center gap-1 text-[11px]',
+                        'ml-auto flex items-center gap-1 text-xs',
                         isSelected ? 'text-sky-500' : 'text-slate-400',
                     )}
                 >
-                    <Settings2 className='size-3.5' />
+                    <Settings2 size={14} />
                     {isSelected ? '編集中' : '設定'}
                 </span>
             </div>
-            <div className='px-4 py-3.5'>{children}</div>
+            <div className='px-4 py-4'>{children}</div>
         </div>
     )
 }

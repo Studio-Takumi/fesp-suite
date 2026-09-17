@@ -7,7 +7,7 @@ import { ComponentBlockCard } from './ComponentBlockCard'
 describe('ComponentBlockCard', () => {
     it('ヘッダーに名前と「設定」を出し、その下に中身を出す', () => {
         render(
-            <ComponentBlockCard icon={<PanelTop className='size-3.5' />} name='ページ見出し' isSelected={false}>
+            <ComponentBlockCard icon={<PanelTop size={14} />} name='ページ見出し' isSelected={false}>
                 <p>中身</p>
             </ComponentBlockCard>,
         )
@@ -20,7 +20,7 @@ describe('ComponentBlockCard', () => {
 
     it('選択している間は「編集中」にし、水色の枠にする', () => {
         render(
-            <ComponentBlockCard icon={<PanelTop className='size-3.5' />} name='ページ見出し' isSelected>
+            <ComponentBlockCard icon={<PanelTop size={14} />} name='ページ見出し' isSelected>
                 <p>中身</p>
             </ComponentBlockCard>,
         )

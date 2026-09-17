@@ -11,13 +11,11 @@ export function PageHeader({ block, children }: BlockComponentProps) {
     return (
         <>
             {(label || title) && (
-                <header className='flex flex-col gap-0.75'>
+                <header className='flex flex-col gap-1'>
                     {label && (
-                        <p className='font-en text-[11px] leading-[1.4] font-bold tracking-[2px] text-sky-500 uppercase'>
-                            {label}
-                        </p>
+                        <p className='font-en text-xs font-bold tracking-widest text-sky-500 uppercase'>{label}</p>
                     )}
-                    {title && <h1 className='font-jp text-[28px] leading-[1.3] font-bold text-slate-900'>{title}</h1>}
+                    {title && <h1 className='font-jp text-3xl leading-snug font-bold text-slate-900'>{title}</h1>}
                 </header>
             )}
             {children}

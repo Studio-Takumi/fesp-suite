@@ -28,13 +28,9 @@ export const createPageHeaderBlock = createReactBlockSpec(
             const { label, title } = block.props
 
             return (
-                <ComponentBlockCard
-                    icon={<PanelTop className='size-3.5' />}
-                    name='ページ見出し'
-                    isSelected={isSelected}
-                >
+                <ComponentBlockCard icon={<PanelTop size={14} />} name='ページ見出し' isSelected={isSelected}>
                     {!label && !title ? (
-                        <div className='flex flex-col gap-1.5' data-testid='page-header-skeleton'>
+                        <div className='flex flex-col gap-2' data-testid='page-header-skeleton'>
                             <div className='h-2 w-12 rounded-full bg-slate-200' />
                             <div className='h-5 w-40 rounded-md bg-slate-200' />
                             <div className='text-xs text-slate-400'>右のパネルで入力してください</div>
@@ -42,11 +38,9 @@ export const createPageHeaderBlock = createReactBlockSpec(
                     ) : (
                         <div className='flex flex-col gap-1'>
                             {label && (
-                                <div className='text-[11px] font-bold tracking-[0.18em] text-sky-500 uppercase'>
-                                    {label}
-                                </div>
+                                <div className='text-xs font-bold tracking-widest text-sky-500 uppercase'>{label}</div>
                             )}
-                            {title && <div className='text-[28px] leading-tight font-bold text-slate-900'>{title}</div>}
+                            {title && <div className='text-3xl leading-tight font-bold text-slate-900'>{title}</div>}
                         </div>
                     )}
                 </ComponentBlockCard>
