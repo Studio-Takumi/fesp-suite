@@ -8,6 +8,7 @@ import {
     articleResponseSchema,
     articleScheduleInputSchema,
     articleViewResponseSchema,
+    pageHeaderPropsSchema,
     parseArticleDocument,
 } from './article'
 
@@ -99,7 +100,7 @@ describe('articleDocumentSchema', () => {
         expect(result.success).toBe(true)
     })
 
-    it('未対応のブロック種別（独自コンポーネントは#24で対応）は拒否する', () => {
+    it('未対応のブロック種別は拒否する', () => {
         const result = articleDocumentSchema.safeParse([
             { id: '1', type: 'shopList', props: { day: 1 }, content: undefined, children: [] },
         ])
@@ -308,6 +309,67 @@ describe('articleDocumentSchema', () => {
         ])
 
         expect(result.success).toBe(false)
+    })
+})
+
+describe('articleDocumentSchema のページ見出し（pageHeader）', () => {
+    const pageHeader = (props: Record<string, unknown>) => [
+        { id: '1', type: 'pageHeader', props, content: undefined, children: [] },
+    ]
+
+    it('英語ラベル・日本語タイトルを受理する（JSONを経由してcontentキーが消えていてもよい）', () => {
+        expect(articleDocumentSchema.safeParse(pageHeader({ label: 'NEWS', title: 'お知らせ' })).success).toBe(true)
+        expect(
+            articleDocumentSchema.safeParse([
+                { id: '1', type: 'pageHeader', props: { label: 'NEWS', title: 'お知らせ' }, children: [] },
+            ]).success,
+        ).toBe(true)
+    })
+
+    it('英語ラベル・日本語タイトルとも空でも受理する（挿入した直後）', () => {
+        expect(articleDocumentSchema.safeParse(pageHeader({ label: '', title: '' })).success).toBe(true)
+    })
+
+    it('英語ラベルは30文字、日本語タイトルは50文字まで受理し、超えたら拒否する', () => {
+        expect(
+            articleDocumentSchema.safeParse(pageHeader({ label: 'A'.repeat(30), title: 'あ'.repeat(50) })).success,
+        ).toBe(true)
+        expect(articleDocumentSchema.safeParse(pageHeader({ label: 'A'.repeat(31), title: '' })).success).toBe(false)
+        expect(articleDocumentSchema.safeParse(pageHeader({ label: '', title: 'あ'.repeat(51) })).success).toBe(false)
+    })
+
+    it('props が欠けている・文字列でない・知らない props があれば拒否する', () => {
+        expect(articleDocumentSchema.safeParse(pageHeader({ title: 'お知らせ' })).success).toBe(false)
+        expect(articleDocumentSchema.safeParse(pageHeader({ label: 1, title: 'お知らせ' })).success).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse(pageHeader({ label: 'NEWS', title: 'お知らせ', textColor: 'red' })).success,
+        ).toBe(false)
+    })
+
+    it('中身（content）を持っていたら拒否する', () => {
+        expect(
+            articleDocumentSchema.safeParse([
+                {
+                    id: '1',
+                    type: 'pageHeader',
+                    props: { label: 'NEWS', title: 'お知らせ' },
+                    content: [{ type: 'text', text: 'お知らせ', styles: {} }],
+                    children: [],
+                },
+            ]).success,
+        ).toBe(false)
+    })
+})
+
+describe('pageHeaderPropsSchema', () => {
+    it('文字数を超えたら入力欄に出すエラーメッセージを返す', () => {
+        const result = pageHeaderPropsSchema.safeParse({ label: 'A'.repeat(31), title: 'あ'.repeat(51) })
+
+        expect(result.success).toBe(false)
+        expect(result.error?.issues.map((issue) => issue.message)).toEqual([
+            '英語ラベルは30文字以内で入力してください',
+            '日本語タイトルは50文字以内で入力してください',
+        ])
     })
 })
 
@@ -592,6 +654,23 @@ describe('parseArticleDocument', () => {
         const result = parseArticleDocument(JSON.parse(JSON.stringify(document)))
 
         expect(result.map((block) => block.type)).toEqual(['divider', 'table'])
+    })
+
+    it('props の形が合わないページ見出しだけ取り除き、JSONを経由したページ見出しは残す', () => {
+        const document = [
+            {
+                id: '1',
+                type: 'pageHeader',
+                props: { label: 'NEWS', title: 'お知らせ' },
+                content: undefined,
+                children: [],
+            },
+            { id: '2', type: 'pageHeader', props: { label: 'NEWS', title: 'あ'.repeat(51) }, children: [] },
+        ]
+
+        const result = parseArticleDocument(JSON.parse(JSON.stringify(document)))
+
+        expect(result.map((block) => block.id)).toEqual(['1'])
     })
 })
 

@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
 
 import type { ArticleDocument } from '@fesp/schema'
 
@@ -8,7 +9,7 @@ import { ArticleEditor, articleSchema } from './ArticleEditor'
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
 
 describe('articleSchema', () => {
-    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・区切り線・表・コードブロックだけを許可する（画像・動画等は含まない）', () => {
+    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・区切り線・表・コードブロックと、独自コンポーネントのページ見出しだけを許可する（画像・動画等は含まない）', () => {
         expect(Object.keys(articleSchema.blockSchema).sort()).toEqual(
             [
                 'bulletListItem',
@@ -17,6 +18,7 @@ describe('articleSchema', () => {
                 'divider',
                 'heading',
                 'numberedListItem',
+                'pageHeader',
                 'paragraph',
                 'quote',
                 'table',
@@ -71,6 +73,59 @@ describe('ArticleEditor', () => {
         expect(await screen.findByText('たこ焼き')).toBeInTheDocument()
         expect(await screen.findByText('設営完了')).toBeInTheDocument()
         expect(await screen.findByText('雨天でも開催します')).toBeInTheDocument()
+    })
+
+    it('ページ見出しの英語ラベル（大文字）・日本語タイトルを表示し、カーソルが別のブロックにあればサイドパネルを出さない', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'paragraph', props: defaultBlockProps, content: [], children: [] },
+            { id: '2', type: 'pageHeader', props: { label: 'news', title: 'お知らせ' }, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('お知らせ')).toBeInTheDocument()
+        expect(screen.getByText('news')).toHaveClass('uppercase')
+        expect(screen.queryByRole('complementary', { name: 'コンポーネントの設定' })).not.toBeInTheDocument()
+    })
+
+    it('カーソルがページ見出しにあれば、サイドパネルにその props を出す', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'pageHeader', props: { label: 'NEWS', title: 'お知らせ' }, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByRole('complementary', { name: 'コンポーネントの設定' })).toBeInTheDocument()
+        expect(screen.getByLabelText('日本語タイトル')).toHaveValue('お知らせ')
+    })
+
+    it('サイドパネルで入力すると、ブロックの props を変えて onChange に渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        const content: ArticleDocument = [
+            { id: '1', type: 'pageHeader', props: { label: 'NEWS', title: 'お知らせ' }, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} onChange={onChange} />)
+
+        const titleInput = await screen.findByLabelText('日本語タイトル')
+        await user.clear(titleInput)
+        await user.type(titleInput, 'ブログ')
+
+        expect(await screen.findByText('ブログ', { selector: 'p' })).toBeInTheDocument()
+        expect(onChange).toHaveBeenLastCalledWith([
+            expect.objectContaining({ id: '1', type: 'pageHeader', props: { label: 'NEWS', title: 'ブログ' } }),
+        ])
+    })
+
+    it('英語ラベル・日本語タイトルとも空のページ見出しは、入力を促す文言を出す', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'pageHeader', props: { label: '', title: '' }, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('ページ見出し（右のパネルで入力）')).toBeInTheDocument()
     })
 
     it('コードブロック（裏機能）の中身を<pre><code>で表示する', async () => {

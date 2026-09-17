@@ -8,7 +8,7 @@ import { paginationQuerySchema, timestampSchema, uuidSchema } from './common'
  * `#5` 時点ではテキスト系ブロック（paragraph/heading/bulletListItem/numberedListItem/
  * checkListItem/toggleListItem/quote/divider/table/codeBlock）のみを対象にする。
  * codeBlockはスラッシュメニューには出さない裏機能（ArticleEditor.tsx参照）。
- * 独自コンポーネントブロックは `#24` で追加する（docs/article-system.md 参照）。
+ * 独自コンポーネントブロック（`pageHeader` など）は props だけを持つ（docs/article-system.md 参照）。
  * ブロックの形はBlockNoteの `Block` 型（@blocknote/core）に合わせている。
  */
 
@@ -103,6 +103,20 @@ const codeBlockPropsSchema = z
     })
     .strict()
 
+/**
+ * ページ見出し（`pageHeader`）の props。管理者サイトのサイドパネルのフォームでもこのスキーマで検証する。
+ * BlockNote の props にそのまま入る値なので、trim などの変換はかけない
+ */
+export const pageHeaderPropsSchema = z
+    .object({
+        /** 英語ラベル（例: `NEWS`）。表示時に大文字にする */
+        label: z.string().max(30, '英語ラベルは30文字以内で入力してください'),
+        /** 日本語タイトル（例: `お知らせ`） */
+        title: z.string().max(50, '日本語タイトルは50文字以内で入力してください'),
+    })
+    .strict()
+export type PageHeaderProps = z.infer<typeof pageHeaderPropsSchema>
+
 /** コードブロックの中身はスタイル（太字等）を持たない「プレーンテキスト」 */
 const plainTextSchema = z.object({
     type: z.literal('text'),
@@ -149,6 +163,7 @@ export type ArticleBlock = {
         | 'divider'
         | 'table'
         | 'codeBlock'
+        | 'pageHeader'
     props: Record<string, unknown>
     content?: (ArticleStyledText | ArticleLink)[] | ArticleTableContent
     children: ArticleBlock[]
@@ -225,6 +240,14 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             type: z.literal('codeBlock'),
             props: codeBlockPropsSchema,
             content: plainContentSchema,
+            children: z.array(articleBlockSchema),
+        }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('pageHeader'),
+            props: pageHeaderPropsSchema,
+            /** 独自コンポーネントは中身を持たない。JSONを経由すると`content`キーごと消える */
+            content: z.undefined().optional(),
             children: z.array(articleBlockSchema),
         }),
     ]),
