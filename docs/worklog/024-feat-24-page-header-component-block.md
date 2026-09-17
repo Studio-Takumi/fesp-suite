@@ -95,6 +95,24 @@ bun run build     ✅
 bun run e2e       ✅（web は chromium・mobile-safari とも）
 ```
 
+## 追記: エディタ上の表示をカードにする
+
+レビューで、エディタ上の独自コンポーネントの見た目を `ui-design.pen` に4案出して検討し、B案（ヘッダー付きのカード）に決まった。未入力のときだけC案のスケルトンにした。検討用のフレームは `ui-design.pen` から消した。
+
+| ファイル                                                     | 変更内容                                                                              |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| `docs/admin.md`                                              | カードの見た目・選択中・未入力のスケルトンを追記（別コミット）                        |
+| `apps/admin/components/editor/blocks/ComponentBlockCard.tsx` | 追加。独自コンポーネント共通のカード（ヘッダーにアイコン・名前・「設定」/「編集中」） |
+| `apps/admin/components/editor/blocks/PageHeaderBlock.tsx`    | カードの中にプレビューを出す。未入力はスケルトン＋「右のパネルで入力してください」    |
+| `apps/admin/app/globals.css`                                 | カードでは BlockNote が選択中のブロックに重ねる青い塗りを消す                         |
+| `apps/admin/components/editor/**/*.test.tsx`                 | カードの「設定」/「編集中」、未入力のスケルトンのテスト                               |
+
+- **選択中かどうかはブロックの描画の中で `useEditorState` を使い、カーソルのあるブロックの `id` と比べて決める**
+- **カードの文字は `<p>` にしない。** BlockNote の `.bn-default-styles p { font-size: inherit }` がレイヤー外の CSS で、Tailwind の `text-[28px]` より強く、タイトルが本文と同じ大きさになったため `<div>` にした
+- **アイコンには `size-` クラスを付けて渡す。** `@blocknote/shadcn` の CSS が `size-` クラスの無い svg の大きさを元に戻し、24px になったため
+- **選択中の枠は `border-2` ではなく `ring-1` で太くする。** 枠線の太さが変わるとカードの高さがずれるため
+- **BlockNote の選択の塗り（`::after`）は `!important` で消す。** BlockNote の CSS はレイヤー外なので、`@layer` の中からは `!important` が無いと勝てない
+
 ## 残課題
 
 - [ ] テンプレートによるロック（#64）
