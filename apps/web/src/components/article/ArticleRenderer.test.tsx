@@ -456,6 +456,58 @@ describe('ArticleRenderer', () => {
         expect(screen.getByText('続きの段落')).toBeInTheDocument()
     })
 
+    it('注意書きは種類ごとの見出し・色の枠に本文を出す', () => {
+        const callout = (id: string, variant: string, value: string): ArticleBlock => ({
+            id,
+            type: 'callout',
+            props: { variant },
+            content: [text(value)],
+            children: [],
+        })
+        renderBlocks([
+            callout('1', 'info', '入場は無料です'),
+            callout('2', 'caution', '現金のみです'),
+            callout('3', 'warning', '火気厳禁です'),
+        ])
+
+        const info = screen.getByRole('note', { name: '情報' })
+        expect(info).toHaveClass('bg-emerald-50', 'border-emerald-300')
+        expect(within(info).getByText('情報')).toHaveClass('font-bold', 'text-emerald-800')
+        expect(info).toHaveTextContent('入場は無料です')
+
+        const caution = screen.getByRole('note', { name: '注意' })
+        expect(caution).toHaveClass('bg-amber-50', 'border-amber-300')
+        expect(within(caution).getByText('注意')).toHaveClass('text-amber-800')
+        expect(caution).toHaveTextContent('現金のみです')
+
+        const warning = screen.getByRole('note', { name: '警告' })
+        expect(warning).toHaveClass('bg-red-50', 'border-red-300')
+        expect(within(warning).getByText('警告')).toHaveClass('text-red-800')
+        expect(warning).toHaveTextContent('火気厳禁です')
+    })
+
+    it('注意書きの子ブロックは1段下げずに枠の中に出し、本文が空なら本文の行を出さない', () => {
+        renderBlocks([
+            {
+                id: '1',
+                type: 'callout',
+                props: { variant: 'caution' },
+                content: [],
+                children: [
+                    block('1-1', 'bulletListItem', [text('整理券を配ることがあります')]),
+                    block('1-2', 'bulletListItem', [text('値段が変わることがあります')]),
+                ],
+            },
+            block('2', 'paragraph', [text('枠の外')]),
+        ])
+
+        const note = screen.getByRole('note', { name: '注意' })
+        expect(within(note).getAllByRole('listitem')).toHaveLength(2)
+        expect(within(note).getByRole('list').parentElement).not.toHaveClass('pl-6')
+        expect(note.querySelector('p')).not.toBeInTheDocument()
+        expect(note).not.toHaveTextContent('枠の外')
+    })
+
     it('レジストリを差し替えると、差し替えたコンポーネントで描画する', () => {
         render(
             <ArticleRenderer

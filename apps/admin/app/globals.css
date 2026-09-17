@@ -63,6 +63,21 @@
     display: none !important;
   }
 
+  /* 注意書き（CalloutBlock）。子ブロック（.bn-block-group）はブロックの描画の外に入るので、
+     枠はブロック全体（.bn-block）に付けて、Tab で入れた子ブロックも枠の中に出す */
+  .bn-block:has(> .react-renderer > .bn-block-content > [data-callout-variant]) {
+    @apply my-1 rounded-xl border px-3 py-2 text-sm;
+  }
+  .bn-block:has(> .react-renderer > .bn-block-content > [data-callout-variant='info']) {
+    @apply border-emerald-300 bg-emerald-50 text-emerald-800;
+  }
+  .bn-block:has(> .react-renderer > .bn-block-content > [data-callout-variant='caution']) {
+    @apply border-amber-300 bg-amber-50 text-amber-800;
+  }
+  .bn-block:has(> .react-renderer > .bn-block-content > [data-callout-variant='warning']) {
+    @apply border-red-300 bg-red-50 text-red-800;
+  }
+
   /* 他ユーザーのカーソル（CollaborationCaret） */
   .collaboration-carets__caret {
     border-inline: 1px solid;

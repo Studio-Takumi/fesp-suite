@@ -3,6 +3,7 @@ import type { ComponentType, ReactNode } from 'react'
 import type { ArticleBlock } from '@fesp/schema'
 
 import { AdjacentPosts } from './blocks/AdjacentPosts'
+import { Callout } from './blocks/Callout'
 import { CheckListItem } from './blocks/CheckListItem'
 import { CodeBlock } from './blocks/CodeBlock'
 import { CoverImage } from './blocks/CoverImage'
@@ -46,6 +47,7 @@ export const blockRegistry: BlockRegistry = {
     checkListItem: CheckListItem,
     toggleListItem: ToggleListItem,
     quote: Quote,
+    callout: Callout,
     divider: Divider,
     table: Table,
     codeBlock: CodeBlock,

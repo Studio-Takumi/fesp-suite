@@ -41,6 +41,7 @@ import { createHighlighter } from 'shiki'
 import type { ArticleDocument } from '@fesp/schema'
 
 import { createAdjacentPostsBlock } from './blocks/AdjacentPostsBlock'
+import { createCalloutBlock } from './blocks/CalloutBlock'
 import { createCoverImageBlock } from './blocks/CoverImageBlock'
 import { createMapBlock } from './blocks/MapBlock'
 import { createNewsListBlock } from './blocks/NewsListBlock'
@@ -95,6 +96,7 @@ export const articleSchema = BlockNoteSchema.create({
         table: defaultBlockSpecs.table,
         // 裏機能。バッククォート3つ（```）で誰でも作れるが、スラッシュメニューには出さない
         codeBlock: defaultBlockSpecs.codeBlock,
+        callout: createCalloutBlock(),
         // 独自コンポーネント。中身を持たず、props はサイドパネル（ComponentPropsPanel）で編集する
         pageHeader: createPageHeaderBlock(),
         scheduleTable: createScheduleTableBlock(),
@@ -247,9 +249,19 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
     const getSlashMenuItems = useCallback(
         async (query: string) => {
             const items = await getDefaultReactSlashMenuItems(editor)
+            const calloutItem = {
+                title: '注意書き',
+                subtext: '読み飛ばされたくない文章を色付きの枠で囲む',
+                aliases: ['callout', 'chuui', 'ちゅうい', '注意'],
+                group: items.find((item) => (item as { key?: string }).key === 'quote')?.group ?? '基本ブロック',
+                icon: <TriangleAlert />,
+                onItemClick: () => insertOrUpdateBlockForSlashMenu(editor, { type: 'callout' }),
+            }
             return filterSuggestionItems(
                 [
-                    ...items.filter((item) => (item as { key?: string }).key !== 'code_block'),
+                    ...items
+                        .filter((item) => (item as { key?: string }).key !== 'code_block')
+                        .flatMap((item) => ((item as { key?: string }).key === 'quote' ? [item, calloutItem] : [item])),
                     ...componentSlashMenuItems.map(({ type, ...item }): DefaultReactSuggestionItem => ({
                         ...item,
                         group: 'コンポーネント',
