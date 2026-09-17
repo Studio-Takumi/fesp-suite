@@ -137,6 +137,32 @@ describe('ArticleList', () => {
         expect(within(publishedRow).getByText('公開中（更新予約あり）')).toBeInTheDocument()
     })
 
+    it('公開状態は、状態ごとに色を分けたバッジで出す', async () => {
+        adminFetch.mockResolvedValue({
+            items: [
+                {
+                    ...listItem,
+                    id: DRAFT_ARTICLE_ID,
+                    title: '書きかけの記事',
+                    status: 'draft',
+                    published_version: null,
+                    published_at: null,
+                },
+                listItem,
+            ],
+            limit: 100,
+            offset: 0,
+        })
+
+        renderWithQueryClient(<ArticleList />)
+
+        const draftBadge = await screen.findByText('下書き')
+        const publishedBadge = screen.getByText('公開中')
+        expect(draftBadge).toHaveAttribute('data-slot', 'badge')
+        expect(publishedBadge).toHaveAttribute('data-slot', 'badge')
+        expect(draftBadge.className).not.toBe(publishedBadge.className)
+    })
+
     describe('並べ替え・絞り込み・ページ送り', () => {
         const SCHEDULE = {
             version: 2,

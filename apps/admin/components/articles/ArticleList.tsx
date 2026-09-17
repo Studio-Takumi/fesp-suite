@@ -10,6 +10,7 @@ import type { ArticleListItem } from '@fesp/schema'
 import { dateFormatter } from '@fesp/ui'
 
 import { DataTable } from '~/components/data-table/DataTable'
+import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select'
@@ -30,6 +31,14 @@ const articleListStateLabels: Record<ArticleListState, string> = {
 function stateOf(article: ArticleListItem): ArticleListState {
     if (article.status === 'draft') return article.schedule ? 'scheduled' : 'draft'
     return article.schedule ? 'published_scheduled' : 'published'
+}
+
+/** 公開状態のバッジの色 */
+const articleListStateBadgeClassNames: Record<ArticleListState, string> = {
+    draft: 'bg-muted text-muted-foreground',
+    scheduled: 'bg-amber-100 text-amber-800',
+    published_scheduled: 'bg-sky-100 text-sky-700',
+    published: 'bg-emerald-100 text-emerald-700',
 }
 
 /** 公開状態のセレクトで「すべて」を表す値（Radix の Select は空文字を値にできない） */
@@ -56,7 +65,10 @@ const columns: ColumnDef<ArticleListItem>[] = [
             articleListStates.indexOf(a.getValue<ArticleListState>('state')) -
             articleListStates.indexOf(b.getValue<ArticleListState>('state')),
         filterFn: 'equals',
-        cell: ({ getValue }) => articleListStateLabels[getValue<ArticleListState>()],
+        cell: ({ getValue }) => {
+            const state = getValue<ArticleListState>()
+            return <Badge className={articleListStateBadgeClassNames[state]}>{articleListStateLabels[state]}</Badge>
+        },
     },
     {
         id: 'updated_at',

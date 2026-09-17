@@ -14,7 +14,7 @@ import {
     type Table as TanStackTable,
     useReactTable,
 } from '@tanstack/react-table'
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react'
 
 import { Button } from '~/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table'
@@ -135,14 +135,21 @@ export function DataTable<TData, TValue>({
                 </p>
                 <Button
                     variant='outline'
-                    size='sm'
+                    size='icon-sm'
+                    aria-label='前へ'
                     onClick={() => table.previousPage()}
                     disabled={!table.getCanPreviousPage()}
                 >
-                    前へ
+                    <ChevronLeft aria-hidden />
                 </Button>
-                <Button variant='outline' size='sm' onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-                    次へ
+                <Button
+                    variant='outline'
+                    size='icon-sm'
+                    aria-label='次へ'
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
+                >
+                    <ChevronRight aria-hidden />
                 </Button>
             </div>
         </div>
