@@ -156,13 +156,23 @@ export const coverImagePropsSchema = z
     .strict()
 export type CoverImageProps = z.infer<typeof coverImagePropsSchema>
 
-/** 記事のサマリー（`postSummary`）の props。表示中の記事の情報を出すので props を持たない */
-export const postSummaryPropsSchema = z.object({}).strict()
-export type PostSummaryProps = z.infer<typeof postSummaryPropsSchema>
+/**
+ * props を持たない独自コンポーネント（記事のサマリー・前後の記事・天気の各ブロックなど）の props。
+ * 表示するデータはコンポーネントが自分で読むので、記事には何も持たせない
+ */
+export const emptyComponentPropsSchema = z.object({}).strict()
+export type EmptyComponentProps = z.infer<typeof emptyComponentPropsSchema>
 
-/** 前後の記事（`adjacentPosts`）の props。表示中の記事の前後を出すので props を持たない */
-export const adjacentPostsPropsSchema = z.object({}).strict()
-export type AdjacentPostsProps = z.infer<typeof adjacentPostsPropsSchema>
+/** 天気の独自コンポーネント。どれも props を持たない（docs/app.md の「天気のブロック」参照） */
+export const weatherComponentTypes = [
+    'todayWeather',
+    'weeklyForecast',
+    'weatherAlert',
+    'wbgt',
+    'weatherOverview',
+    'weatherCredit',
+] as const
+export type WeatherComponentType = (typeof weatherComponentTypes)[number]
 
 /** コードブロックの中身はスタイル（太字等）を持たない「プレーンテキスト」 */
 const plainTextSchema = z.object({
@@ -215,6 +225,7 @@ export type ArticleBlock = {
         | 'coverImage'
         | 'postSummary'
         | 'adjacentPosts'
+        | WeatherComponentType
     props: Record<string, unknown>
     content?: (ArticleStyledText | ArticleLink)[] | ArticleTableContent
     children: ArticleBlock[]
@@ -315,22 +326,27 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             content: z.undefined().optional(),
             children: z.array(articleBlockSchema),
         }),
-        z.object({
-            id: z.string().min(1),
-            type: z.literal('postSummary'),
-            props: postSummaryPropsSchema,
-            content: z.undefined().optional(),
-            children: z.array(articleBlockSchema),
-        }),
-        z.object({
-            id: z.string().min(1),
-            type: z.literal('adjacentPosts'),
-            props: adjacentPostsPropsSchema,
-            content: z.undefined().optional(),
-            children: z.array(articleBlockSchema),
-        }),
+        emptyComponentBlockSchema('postSummary'),
+        emptyComponentBlockSchema('adjacentPosts'),
+        emptyComponentBlockSchema('todayWeather'),
+        emptyComponentBlockSchema('weeklyForecast'),
+        emptyComponentBlockSchema('weatherAlert'),
+        emptyComponentBlockSchema('wbgt'),
+        emptyComponentBlockSchema('weatherOverview'),
+        emptyComponentBlockSchema('weatherCredit'),
     ]),
 )
+
+/** props を持たない独自コンポーネントのブロック。中身も持たない（JSONを経由すると`content`キーごと消える） */
+function emptyComponentBlockSchema<Type extends string>(type: Type) {
+    return z.object({
+        id: z.string().min(1),
+        type: z.literal(type),
+        props: emptyComponentPropsSchema,
+        content: z.undefined().optional(),
+        children: z.array(articleBlockSchema),
+    })
+}
 
 /** 記事ドキュメント全体の形。BlockNoteの `Block[]`（トップレベルは配列で、`doc` のようなルートノードは無い） */
 export const articleDocumentSchema = z.array(articleBlockSchema)

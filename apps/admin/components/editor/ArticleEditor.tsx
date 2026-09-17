@@ -21,7 +21,19 @@ import {
 } from '@blocknote/react'
 import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultComponents } from '@blocknote/shadcn'
 import '@blocknote/shadcn/style.css'
-import { ArrowLeftRight, ImageIcon, Newspaper, PanelTop, UserRound } from 'lucide-react'
+import {
+    ArrowLeftRight,
+    CalendarDays,
+    FileText,
+    ImageIcon,
+    Newspaper,
+    PanelTop,
+    RefreshCw,
+    Sun,
+    Thermometer,
+    TriangleAlert,
+    UserRound,
+} from 'lucide-react'
 import { createHighlighter } from 'shiki'
 
 import type { ArticleDocument } from '@fesp/schema'
@@ -31,6 +43,12 @@ import { createCoverImageBlock } from './blocks/CoverImageBlock'
 import { createNewsListBlock } from './blocks/NewsListBlock'
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
 import { createPostSummaryBlock } from './blocks/PostSummaryBlock'
+import { createTodayWeatherBlock } from './blocks/TodayWeatherBlock'
+import { createWbgtBlock } from './blocks/WbgtBlock'
+import { createWeatherAlertBlock } from './blocks/WeatherAlertBlock'
+import { createWeatherCreditBlock } from './blocks/WeatherCreditBlock'
+import { createWeatherOverviewBlock } from './blocks/WeatherOverviewBlock'
+import { createWeeklyForecastBlock } from './blocks/WeeklyForecastBlock'
 import { type ComponentBlock, ComponentPropsPanel, isComponentBlock } from './ComponentPropsPanel'
 import { EmojiGridRoot } from './EmojiGridRoot'
 import { SlashMenuItem } from './SlashMenuItem'
@@ -79,12 +97,18 @@ export const articleSchema = BlockNoteSchema.create({
         coverImage: createCoverImageBlock(),
         postSummary: createPostSummaryBlock(),
         adjacentPosts: createAdjacentPostsBlock(),
+        todayWeather: createTodayWeatherBlock(),
+        weeklyForecast: createWeeklyForecastBlock(),
+        weatherAlert: createWeatherAlertBlock(),
+        wbgt: createWbgtBlock(),
+        weatherOverview: createWeatherOverviewBlock(),
+        weatherCredit: createWeatherCreditBlock(),
     },
 })
 
-/** スラッシュメニューの「コンポーネント」グループの項目 */
+/** スラッシュメニューの「コンポーネント」グループに出す、独自コンポーネントのブロック */
 const componentSlashMenuItems: {
-    type: 'pageHeader' | 'newsList' | 'coverImage' | 'postSummary' | 'adjacentPosts'
+    type: ComponentBlock['type']
     title: string
     subtext: string
     aliases: string[]
@@ -124,6 +148,48 @@ const componentSlashMenuItems: {
         subtext: '前の記事・次の記事へのリンク',
         aliases: ['adjacentposts', 'zengo', 'ぜんご'],
         icon: <ArrowLeftRight />,
+    },
+    {
+        type: 'todayWeather',
+        title: '今日の天気',
+        subtext: '今日の天気と気温',
+        aliases: ['todayweather', 'weather', 'tenki', 'てんき'],
+        icon: <Sun />,
+    },
+    {
+        type: 'weeklyForecast',
+        title: '週間予報',
+        subtext: '1週間分の天気と気温',
+        aliases: ['weeklyforecast', 'weather', 'tenki', 'てんき', 'yohou', 'よほう'],
+        icon: <CalendarDays />,
+    },
+    {
+        type: 'weatherAlert',
+        title: '気象警報・注意報',
+        subtext: '発表中の警報・注意報',
+        aliases: ['weatheralert', 'weather', 'keihou', 'けいほう', 'tyuuihou', 'ちゅういほう'],
+        icon: <TriangleAlert />,
+    },
+    {
+        type: 'wbgt',
+        title: '暑さ指数',
+        subtext: '暑さ指数（WBGT）と段階',
+        aliases: ['wbgt', 'weather', 'atusa', 'あつさ', 'nettyuusyou', 'ねっちゅうしょう'],
+        icon: <Thermometer />,
+    },
+    {
+        type: 'weatherOverview',
+        title: '天気概況',
+        subtext: '気象台の天気概況の文章',
+        aliases: ['weatheroverview', 'weather', 'tenki', 'てんき', 'gaikyou', 'がいきょう'],
+        icon: <FileText />,
+    },
+    {
+        type: 'weatherCredit',
+        title: '天気の更新時刻・出典',
+        subtext: '天気の更新時刻と出典（気象庁）',
+        aliases: ['weathercredit', 'weather', 'tenki', 'てんき', 'syutten', 'しゅってん'],
+        icon: <RefreshCw />,
     },
 ]
 

@@ -3,11 +3,11 @@
 import type { ReactNode } from 'react'
 
 import type {
-    AdjacentPostsProps,
     CoverImageProps,
+    EmptyComponentProps,
     NewsListProps,
     PageHeaderProps,
-    PostSummaryProps,
+    WeatherComponentType,
 } from '@fesp/schema'
 
 import { CoverImagePropsForm } from './CoverImagePropsForm'
@@ -19,8 +19,8 @@ export type ComponentBlock =
     | { id: string; type: 'pageHeader'; props: PageHeaderProps }
     | { id: string; type: 'newsList'; props: NewsListProps }
     | { id: string; type: 'coverImage'; props: CoverImageProps }
-    | { id: string; type: 'postSummary'; props: PostSummaryProps }
-    | { id: string; type: 'adjacentPosts'; props: AdjacentPostsProps }
+    | { id: string; type: 'postSummary' | 'adjacentPosts'; props: EmptyComponentProps }
+    | { id: string; type: WeatherComponentType; props: EmptyComponentProps }
 
 /**
  * 独自コンポーネントのブロックの `type` → パネルに出す名前とフォーム。
@@ -50,6 +50,12 @@ const componentPanels: {
     },
     postSummary: { name: '記事のサマリー' },
     adjacentPosts: { name: '前後の記事' },
+    todayWeather: { name: '今日の天気' },
+    weeklyForecast: { name: '週間予報' },
+    weatherAlert: { name: '気象警報・注意報' },
+    wbgt: { name: '暑さ指数' },
+    weatherOverview: { name: '天気概況' },
+    weatherCredit: { name: '天気の更新時刻・出典' },
 }
 
 export function isComponentBlock(block: { type: string }): block is ComponentBlock {

@@ -4,6 +4,7 @@ import { articleViewResponseSchema, exampleResponseSchema } from '@fesp/schema'
 
 import { apiFetch } from './api'
 import { mockAdjacentPosts, mockCurrentPost, mockNewsPosts, mockNewsTags } from './mock/news'
+import { createMockWeather } from './mock/weather'
 
 /**
  * サーバー状態は必ずここ（TanStack Query）で扱う。
@@ -18,6 +19,7 @@ export const queryKeys = {
     newsTags: ['news', 'tags'] as const,
     currentPost: ['posts', 'current'] as const,
     adjacentPosts: ['posts', 'current', 'adjacent'] as const,
+    weather: ['weather'] as const,
 }
 
 export const exampleQuery = () =>
@@ -61,4 +63,14 @@ export const adjacentPostsQuery = () =>
     queryOptions({
         queryKey: queryKeys.adjacentPosts,
         queryFn: () => Promise.resolve(mockAdjacentPosts),
+    })
+
+/**
+ * 天気（今日・週間予報・警報・暑さ指数・概況・更新時刻）。天気の独自コンポーネントはどれもこれを読む。
+ * 天気の API ができるまでは仮データ（`lib/mock/weather.ts`）を返す
+ */
+export const weatherQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.weather,
+        queryFn: () => Promise.resolve(createMockWeather()),
     })

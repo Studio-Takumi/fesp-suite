@@ -5,6 +5,8 @@ import { render as rtlRender, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
+import { weatherComponentTypes } from '@fesp/schema'
+
 import { ComponentPropsPanel, isComponentBlock } from './ComponentPropsPanel'
 
 // お知らせ一覧のフォームが lib/queries.ts を読むので、env と API クライアントを差し替える
@@ -22,6 +24,7 @@ describe('isComponentBlock', () => {
         for (const type of ['pageHeader', 'newsList', 'coverImage', 'postSummary', 'adjacentPosts']) {
             expect(isComponentBlock({ type })).toBe(true)
         }
+        for (const type of weatherComponentTypes) expect(isComponentBlock({ type })).toBe(true)
         expect(isComponentBlock({ type: 'paragraph' })).toBe(false)
     })
 })
@@ -162,4 +165,22 @@ describe('ComponentPropsPanel（props を持たないコンポーネント）', 
         expect(screen.getByRole('heading', { name: '前後の記事' })).toBeInTheDocument()
         expect(screen.getByText('設定する項目はありません')).toBeInTheDocument()
     })
+
+    it.each([
+        ['todayWeather', '今日の天気'],
+        ['weeklyForecast', '週間予報'],
+        ['weatherAlert', '気象警報・注意報'],
+        ['wbgt', '暑さ指数'],
+        ['weatherOverview', '天気概況'],
+        ['weatherCredit', '天気の更新時刻・出典'],
+    ] as const)(
+        '%s はコンポーネント名「%s」の下に「設定する項目はありません」と出し、入力欄を出さない',
+        (type, name) => {
+            render(<ComponentPropsPanel block={{ id: '1', type, props: {} }} onChange={vi.fn()} />)
+
+            expect(screen.getByRole('heading', { name })).toBeInTheDocument()
+            expect(screen.getByText('設定する項目はありません')).toBeInTheDocument()
+            expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+        },
+    )
 })

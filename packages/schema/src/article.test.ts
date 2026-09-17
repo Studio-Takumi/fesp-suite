@@ -9,10 +9,12 @@ import {
     articleScheduleInputSchema,
     articleViewResponseSchema,
     coverImagePropsSchema,
+    emptyComponentPropsSchema,
     newsListPropsSchema,
     pageHeaderPropsSchema,
     parseArticleDocument,
     parseNewsListTags,
+    weatherComponentTypes,
 } from './article'
 
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
@@ -459,6 +461,34 @@ describe('articleDocumentSchema の記事の画像（coverImage）', () => {
     })
 })
 
+describe('articleDocumentSchema の天気のブロック', () => {
+    it.each(weatherComponentTypes)(
+        '%s を props なしで受理する（JSONを経由してcontentキーが消えていてもよい）',
+        (type) => {
+            expect(
+                articleDocumentSchema.safeParse([{ id: '1', type, props: {}, content: undefined, children: [] }])
+                    .success,
+            ).toBe(true)
+            expect(articleDocumentSchema.safeParse([{ id: '1', type, props: {}, children: [] }]).success).toBe(true)
+        },
+    )
+
+    it.each(weatherComponentTypes)('%s に props があれば拒否する', (type) => {
+        expect(articleDocumentSchema.safeParse([{ id: '1', type, props: { day: 1 }, children: [] }]).success).toBe(
+            false,
+        )
+        expect(articleDocumentSchema.safeParse([{ id: '1', type, children: [] }]).success).toBe(false)
+    })
+
+    it.each(weatherComponentTypes)('%s が中身（content）を持っていたら拒否する', (type) => {
+        expect(
+            articleDocumentSchema.safeParse([
+                { id: '1', type, props: {}, content: [{ type: 'text', text: '晴れ', styles: {} }], children: [] },
+            ]).success,
+        ).toBe(false)
+    })
+})
+
 describe('coverImagePropsSchema', () => {
     it('URL の形でなければ入力欄に出すエラーメッセージを返す', () => {
         const result = coverImagePropsSchema.safeParse({ imageUrl: 'cover.jpg' })
@@ -485,6 +515,13 @@ describe('articleDocumentSchema の props を持たない独自コンポーネ�
                 ]).success,
             ).toBe(false)
         }
+    })
+})
+
+describe('emptyComponentPropsSchema', () => {
+    it('空の props だけ受理する', () => {
+        expect(emptyComponentPropsSchema.safeParse({}).success).toBe(true)
+        expect(emptyComponentPropsSchema.safeParse({ label: 'NEWS' }).success).toBe(false)
     })
 })
 
