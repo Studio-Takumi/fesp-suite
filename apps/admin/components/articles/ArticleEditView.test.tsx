@@ -476,7 +476,7 @@ describe('ArticleEditView', () => {
             await userEvent.click(screen.getByRole('switch', { name: '公開' }))
             await userEvent.click(screen.getByRole('button', { name: '予約' }))
             const dialog = await screen.findByRole('alertdialog', { name: '予約投稿' })
-            await pickPublishAt(dialog, /September 20th, 2099/, '09:00')
+            await pickPublishAt(dialog, /2099年9月20日/, '09:00')
             await userEvent.click(within(dialog).getByRole('button', { name: '予約する' }))
 
             expect(await screen.findByText('予約しました')).toBeInTheDocument()
@@ -507,11 +507,22 @@ describe('ArticleEditView', () => {
         it('日時が現在以前なら、入力欄の下にエラーを出し、保存も予約もしない', async () => {
             const dialog = await openScheduleDialog()
 
-            await pickPublishAt(dialog, /September 10th, 2099/, '09:00')
+            await pickPublishAt(dialog, /2099年9月10日/, '09:00')
             await userEvent.click(within(dialog).getByRole('button', { name: '予約する' }))
 
             expect(await within(dialog).findByRole('alert')).toHaveTextContent('現在より後の日時を指定してください')
             expect(putCalls()).toHaveLength(0)
+        })
+
+        it('カレンダーを日本語で出す（曜日は 日〜土、見出しは YYYY年M月）', async () => {
+            const dialog = await openScheduleDialog()
+
+            await userEvent.click(within(dialog).getByLabelText('公開する日付'))
+
+            expect(await screen.findByText('2099年9月')).toBeInTheDocument()
+            // 曜日の行は aria-hidden の thead に描画されるので、DOM から直接見る
+            const calendar = document.querySelector('[data-slot="popover-content"]')
+            expect(calendar?.querySelector('thead')?.textContent).toBe('日月火水木金土')
         })
 
         it('予約があれば、予約の日付・時刻（日本時間）を初期値にする', async () => {
@@ -533,7 +544,7 @@ describe('ArticleEditView', () => {
             await screen.findByText('現金のみです。')
             await userEvent.click(screen.getByRole('button', { name: '予約' }))
             const dialog = await screen.findByRole('alertdialog', { name: '予約投稿' })
-            await pickPublishAt(dialog, /September 20th, 2099/, '09:00')
+            await pickPublishAt(dialog, /2099年9月20日/, '09:00')
             await userEvent.click(within(dialog).getByRole('button', { name: '予約する' }))
 
             expect(await within(dialog).findByRole('alert')).toHaveTextContent(message)
@@ -551,7 +562,7 @@ describe('ArticleEditView', () => {
             await userEvent.paste('あ'.repeat(101))
             await userEvent.click(screen.getByRole('button', { name: '予約' }))
             const dialog = await screen.findByRole('alertdialog', { name: '予約投稿' })
-            await pickPublishAt(dialog, /September 20th, 2099/, '09:00')
+            await pickPublishAt(dialog, /2099年9月20日/, '09:00')
             await userEvent.click(within(dialog).getByRole('button', { name: '予約する' }))
 
             expect(await screen.findByRole('alert')).toHaveTextContent('タイトルは100文字以内で入力してください')

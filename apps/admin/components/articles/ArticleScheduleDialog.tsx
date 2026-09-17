@@ -2,6 +2,8 @@
 
 import { type FormEvent, useState } from 'react'
 
+import { ja } from 'date-fns/locale'
+
 import { articlePublishAtSchema } from '@fesp/schema'
 import { dateFormatter } from '@fesp/ui'
 
@@ -22,6 +24,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover
 
 /** 日本時間のオフセット。入力した日時は、見ている端末のタイムゾーンによらず日本時間として扱う */
 const JST_OFFSET = '+09:00'
+
+/** カレンダーの見出し。ロケールの既定（`9月 2026`）ではなく `2026年9月` で出す */
+function formatCalendarCaption(date: Date): string {
+    return `${date.getFullYear()}年${date.getMonth() + 1}月`
+}
 
 /** カレンダーで選んだ日（端末のタイムゾーンの0時）を `YYYY-MM-DD` にする */
 function toDateValue(date: Date): string {
@@ -98,6 +105,9 @@ function ScheduleForm({ defaultPublishAt, isPending, errorMessage, onSubmit }: S
                             <PopoverContent className='w-auto p-0'>
                                 <Calendar
                                     mode='single'
+                                    // 曜日・読み上げ用のラベルを日本語にする（曜日は 日〜土）
+                                    locale={ja}
+                                    formatters={{ formatCaption: formatCalendarCaption }}
                                     selected={date ? toCalendarDate(date) : undefined}
                                     defaultMonth={date ? toCalendarDate(date) : undefined}
                                     onSelect={(selected) => {
