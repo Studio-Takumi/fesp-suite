@@ -8,7 +8,6 @@ import {
     type ArticleInput,
     articleListResponseSchema,
     articleResponseSchema,
-    type ArticleScheduleInput,
     type ExampleInput,
     exampleInputSchema,
     exampleResponseSchema,
@@ -78,47 +77,43 @@ export function useCreateArticle() {
     })
 }
 
-export function useUpdateArticle(id: string) {
+/** 保存の入力。`publish_at` を入れると予約、`null` にすると予約の取り消しになる */
+export type SaveArticleInput = ArticleInput & {
+    publish_at: string | null
+}
+
+export function useSaveArticle(id: string) {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: (input: ArticleInput) =>
-            adminFetch(`/api/articles/${id}`, articleResponseSchema, {
+        // 保存 → 予約（または予約の取り消し）の順に呼ぶ。docs/admin.md の「記事エディタ」
+        mutationFn: async ({ publish_at, ...input }: SaveArticleInput) => {
+            const saved = await adminFetch(`/api/articles/${id}`, articleResponseSchema, {
                 method: 'PUT',
                 body: input,
                 authenticated: true,
-            }),
-        onSuccess: (article) => {
-            queryClient.setQueryData(queryKeys.article(id), article)
-            return queryClient.invalidateQueries({ queryKey: queryKeys.articles, exact: true })
-        },
-    })
-}
-
-/** 予約するときの入力。今のタイトル・本文と、公開する日時 */
-export type ScheduleArticleInput = Pick<ArticleInput, 'title' | 'content'> & Pick<ArticleScheduleInput, 'publish_at'>
-
-export function useScheduleArticle(id: string) {
-    const queryClient = useQueryClient()
-
-    return useMutation({
-        // 今の中身を保存してから（status を送らないので、公開中の記事なら一時保存）、保存した最新の版を予約する。
-        // 版の更新日時も送り、そのあとの保存で版が上書きされていたら API が 409 で断る
-        mutationFn: async ({ title, content, publish_at }: ScheduleArticleInput) => {
-            const saved = await adminFetch(`/api/articles/${id}`, articleResponseSchema, {
-                method: 'PUT',
-                body: { title, content },
-                authenticated: true,
             })
-            if (!saved.latest_history) throw new Error('保存した版が読み込めませんでした')
+
+            if (publish_at) {
+                // 版の更新日時も送り、保存のあとに版が上書きされていたら API が 409 で断る
+                if (!saved.latest_history) throw new Error('保存した版が読み込めませんでした')
+
+                return adminFetch(`/api/articles/${id}/schedule`, articleResponseSchema, {
+                    method: 'PUT',
+                    body: {
+                        version: saved.latest_history.version,
+                        version_updated_at: saved.latest_history.updated_at,
+                        publish_at,
+                    },
+                    authenticated: true,
+                })
+            }
+
+            // 公開中の版が変わると予約は DB のトリガーで消えるので、残っているときだけ取り消す
+            if (!saved.schedule) return saved
 
             return adminFetch(`/api/articles/${id}/schedule`, articleResponseSchema, {
-                method: 'PUT',
-                body: {
-                    version: saved.latest_history.version,
-                    version_updated_at: saved.latest_history.updated_at,
-                    publish_at,
-                },
+                method: 'DELETE',
                 authenticated: true,
             })
         },
@@ -129,21 +124,5 @@ export function useScheduleArticle(id: string) {
                 queryClient.invalidateQueries({ queryKey: queryKeys.article(id), exact: true }),
                 queryClient.invalidateQueries({ queryKey: queryKeys.articles, exact: true }),
             ]),
-    })
-}
-
-export function useCancelArticleSchedule(id: string) {
-    const queryClient = useQueryClient()
-
-    return useMutation({
-        mutationFn: () =>
-            adminFetch(`/api/articles/${id}/schedule`, articleResponseSchema, {
-                method: 'DELETE',
-                authenticated: true,
-            }),
-        onSuccess: (article) => {
-            queryClient.setQueryData(queryKeys.article(id), article)
-            return queryClient.invalidateQueries({ queryKey: queryKeys.articles, exact: true })
-        },
     })
 }

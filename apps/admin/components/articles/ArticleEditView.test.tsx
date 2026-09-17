@@ -365,7 +365,7 @@ describe('ArticleEditView', () => {
         expect(await screen.findByRole('alert')).toHaveTextContent(message)
     })
 
-    describe('予約', () => {
+    describe('公開日時と予約', () => {
         /** 下書きの記事の版1を、2099/09/20 09:00（日本時間）に公開する予約がある */
         const scheduledArticle: ArticleResponse = {
             ...article,
@@ -389,9 +389,14 @@ describe('ArticleEditView', () => {
         }
 
         const schedulePath = `${articlePath}/schedule`
+        const scheduleBody = {
+            version: 2,
+            version_updated_at: '2026-09-14T06:00:00.123456+00:00',
+            publish_at: '2099-09-20T09:00:00+09:00',
+        }
 
         beforeEach(() => {
-            // カレンダーは今月を出すので、現在時刻を予約の日付（2099/09/20）と同じ月に固定する
+            // カレンダーは今月を出すので、現在時刻を予約する日付（2099/09/20）と同じ月に固定する
             vi.useFakeTimers({ toFake: ['Date'] })
             vi.setSystemTime(new Date('2099-09-15T00:00:00+09:00'))
         })
@@ -400,71 +405,63 @@ describe('ArticleEditView', () => {
             vi.useRealTimers()
         })
 
-        /** ダイアログのカレンダーで日付を選び、時刻を入れる（日付のラベルは react-day-picker の aria-label） */
-        async function pickPublishAt(dialog: HTMLElement, dayLabel: RegExp, time: string) {
-            await userEvent.click(within(dialog).getByLabelText('公開する日付'))
-            // カレンダーは popover で本体の外に描画されるので、画面全体から探す
-            await userEvent.click(await screen.findByRole('button', { name: dayLabel }))
-            fireEvent.change(within(dialog).getByLabelText('公開する時刻'), { target: { value: time } })
-        }
-
-        async function openScheduleDialog(fixture: ArticleResponse = article) {
+        async function renderEditor(fixture: ArticleResponse = article) {
             adminFetch.mockResolvedValue(fixture)
 
             renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
             await screen.findByText('現金のみです。')
-            await userEvent.click(screen.getByRole('button', { name: '予約' }))
-
-            return screen.findByRole('alertdialog', { name: '予約投稿' })
         }
 
-        it('予約があると、公開予定の日時（日本時間）と「予約を取り消す」を出す', async () => {
-            adminFetch.mockResolvedValue(scheduledArticle)
+        /** カレンダーから日付を選び、時刻を入れる（日付のラベルは react-day-picker の aria-label） */
+        async function pickPublishAt(dayLabel: RegExp, time: string) {
+            await userEvent.click(screen.getByLabelText('公開日時'))
+            // カレンダーは popover で本体の外に描画されるので、画面全体から探す
+            await userEvent.click(await screen.findByRole('button', { name: dayLabel }))
+            fireEvent.change(screen.getByLabelText('公開する時刻'), { target: { value: time } })
+        }
 
-            renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+        it('タイトル・公開日時・本文にラベルを出す', async () => {
+            await renderEditor()
 
-            expect(await screen.findByText('2099/09/20 09:00 に公開予定')).toBeInTheDocument()
-            expect(screen.getByRole('button', { name: '予約を取り消す' })).toBeInTheDocument()
-            expect(screen.queryByText('予約した版のあとに保存した変更があります（予約には入りません）')).toBeNull()
+            expect(screen.getByLabelText('タイトル')).toBeInTheDocument()
+            expect(screen.getByLabelText('公開日時')).toBeInTheDocument()
+            expect(screen.getByText('本文')).toBeInTheDocument()
         })
 
-        it('予約が無ければ、公開予定と「予約を取り消す」を出さない', async () => {
-            adminFetch.mockResolvedValue(article)
+        it('予約があると、公開日時に予約の日付・時刻を入れ、公開予定を出す', async () => {
+            await renderEditor(scheduledArticle)
 
-            renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
-            await screen.findByText('現金のみです。')
+            expect(screen.getByLabelText('公開日時')).toHaveTextContent('2099/09/20')
+            expect(screen.getByLabelText('公開する時刻')).toHaveValue('09:00')
+            expect(screen.getByText('2099/09/20 09:00 に公開予定')).toBeInTheDocument()
+        })
 
+        it('予約が無ければ、公開日時は空で公開予定も出さない', async () => {
+            await renderEditor()
+
+            expect(screen.getByLabelText('公開日時')).toHaveTextContent('日付を選ぶ')
+            expect(screen.getByLabelText('公開する時刻')).toHaveValue('')
             expect(screen.queryByText(/に公開予定/)).not.toBeInTheDocument()
-            expect(screen.queryByRole('button', { name: '予約を取り消す' })).not.toBeInTheDocument()
         })
 
         it('最新の版が予約した版と違うと、予約のあとに保存した変更があると出す', async () => {
-            adminFetch.mockResolvedValue({ ...savedArticle, schedule: scheduledArticle.schedule })
-
-            renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+            await renderEditor({ ...savedArticle, schedule: scheduledArticle.schedule })
 
             expect(
-                await screen.findByText('予約した版のあとに保存した変更があります（予約には入りません）'),
+                screen.getByText('予約した版のあとに保存した変更があります（予約には入りません）'),
             ).toBeInTheDocument()
         })
 
-        it('「予約を取り消す」で予約を DELETE し、「予約を取り消しました」と出す', async () => {
-            adminFetch.mockImplementation(async (_path: string, _schema: unknown, options?: FetchOptions) =>
-                options?.method === 'DELETE' ? article : scheduledArticle,
-            )
+        it('公開日時が入っている間は、公開のスイッチを無効にする', async () => {
+            await renderEditor()
+            expect(screen.getByRole('switch', { name: '公開' })).toBeEnabled()
 
-            renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
-            await userEvent.click(await screen.findByRole('button', { name: '予約を取り消す' }))
+            await pickPublishAt(/2099年9月20日/, '09:00')
 
-            expect(await screen.findByText('予約を取り消しました')).toBeInTheDocument()
-            expect(adminFetch).toHaveBeenCalledWith(schedulePath, expect.anything(), {
-                method: 'DELETE',
-                authenticated: true,
-            })
-            expect(screen.queryByText(/に公開予定/)).not.toBeInTheDocument()
+            expect(screen.getByRole('switch', { name: '公開' })).toBeDisabled()
         })
 
-        it('日付と時刻を選んで「予約する」と、公開状態を送らずに保存してから、保存した最新の版を予約する', async () => {
+        it('下書きで日時を入れて保存すると、ダイアログを出さずに保存してから予約する', async () => {
             adminFetch.mockImplementation(async (path: string, _schema: unknown, options?: FetchOptions) => {
                 if (options?.method !== 'PUT') return article
                 return path === schedulePath ? { ...savedArticle, schedule: scheduledArticle.schedule } : savedArticle
@@ -472,52 +469,62 @@ describe('ArticleEditView', () => {
 
             renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
             await screen.findByText('現金のみです。')
-            // 公開のスイッチの状態は予約に使わない
-            await userEvent.click(screen.getByRole('switch', { name: '公開' }))
-            await userEvent.click(screen.getByRole('button', { name: '予約' }))
-            const dialog = await screen.findByRole('alertdialog', { name: '予約投稿' })
-            await pickPublishAt(dialog, /2099年9月20日/, '09:00')
-            await userEvent.click(within(dialog).getByRole('button', { name: '予約する' }))
+            await pickPublishAt(/2099年9月20日/, '09:00')
+            await userEvent.click(screen.getByRole('button', { name: '保存' }))
 
-            expect(await screen.findByText('予約しました')).toBeInTheDocument()
+            expect(await screen.findByText('保存して予約しました')).toBeInTheDocument()
             expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
             expect(putCalls().map(([path, , options]) => [path, (options as FetchOptions).body])).toEqual([
-                [articlePath, { title: '模擬店のお知らせ', content: article.content }],
-                [
-                    schedulePath,
-                    {
-                        version: 2,
-                        version_updated_at: '2026-09-14T06:00:00.123456+00:00',
-                        publish_at: '2099-09-20T09:00:00+09:00',
-                    },
-                ],
+                [articlePath, { title: '模擬店のお知らせ', content: article.content, status: 'draft' }],
+                [schedulePath, scheduleBody],
             ])
         })
 
-        it('日付・時刻が未入力なら、入力欄の下にエラーを出し、保存も予約もしない', async () => {
-            const dialog = await openScheduleDialog()
+        it('日時をクリアして保存すると、保存してから予約を取り消す', async () => {
+            adminFetch.mockImplementation(async (_path: string, _schema: unknown, options?: FetchOptions) => {
+                if (options?.method === 'PUT') return scheduledArticle
+                if (options?.method === 'DELETE') return article
+                return scheduledArticle
+            })
 
-            await userEvent.click(within(dialog).getByRole('button', { name: '予約する' }))
+            renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+            await screen.findByText('現金のみです。')
+            await userEvent.click(screen.getByRole('button', { name: '日時をクリア' }))
+            await userEvent.click(screen.getByRole('button', { name: '保存' }))
 
-            expect(await within(dialog).findByRole('alert')).toHaveTextContent('現在より後の日時を指定してください')
-            expect(within(dialog).getByLabelText('公開する日付')).toHaveTextContent('日付を選ぶ')
+            expect(await screen.findByText('保存して予約を取り消しました')).toBeInTheDocument()
+            expect(screen.getByLabelText('公開日時')).toHaveTextContent('日付を選ぶ')
+            expect(adminFetch).toHaveBeenCalledWith(schedulePath, expect.anything(), {
+                method: 'DELETE',
+                authenticated: true,
+            })
+        })
+
+        it('日付だけ・時刻だけなら、両方を指定するよう出して保存しない', async () => {
+            await renderEditor()
+
+            await userEvent.click(screen.getByLabelText('公開日時'))
+            await userEvent.click(await screen.findByRole('button', { name: /2099年9月20日/ }))
+            await userEvent.click(screen.getByRole('button', { name: '保存' }))
+
+            expect(await screen.findByRole('alert')).toHaveTextContent('日付と時刻の両方を指定してください')
             expect(putCalls()).toHaveLength(0)
         })
 
-        it('日時が現在以前なら、入力欄の下にエラーを出し、保存も予約もしない', async () => {
-            const dialog = await openScheduleDialog()
+        it('日時が現在以前なら、エラーを出して保存しない', async () => {
+            await renderEditor()
 
-            await pickPublishAt(dialog, /2099年9月10日/, '09:00')
-            await userEvent.click(within(dialog).getByRole('button', { name: '予約する' }))
+            await pickPublishAt(/2099年9月10日/, '09:00')
+            await userEvent.click(screen.getByRole('button', { name: '保存' }))
 
-            expect(await within(dialog).findByRole('alert')).toHaveTextContent('現在より後の日時を指定してください')
+            expect(await screen.findByRole('alert')).toHaveTextContent('現在より後の日時を指定してください')
             expect(putCalls()).toHaveLength(0)
         })
 
         it('カレンダーを日本語で出す（曜日は 日〜土、見出しは YYYY年M月）', async () => {
-            const dialog = await openScheduleDialog()
+            await renderEditor()
 
-            await userEvent.click(within(dialog).getByLabelText('公開する日付'))
+            await userEvent.click(screen.getByLabelText('公開日時'))
 
             expect(await screen.findByText('2099年9月')).toBeInTheDocument()
             // 曜日の行は aria-hidden の thead に描画されるので、DOM から直接見る
@@ -525,14 +532,57 @@ describe('ArticleEditView', () => {
             expect(calendar?.querySelector('thead')?.textContent).toBe('日月火水木金土')
         })
 
-        it('予約があれば、予約の日付・時刻（日本時間）を初期値にする', async () => {
-            const dialog = await openScheduleDialog(scheduledArticle)
+        describe('公開中の記事で日時を入れて保存', () => {
+            async function openDialog() {
+                adminFetch.mockImplementation(async (path: string, _schema: unknown, options?: FetchOptions) => {
+                    if (options?.method !== 'PUT') return publishedArticle
+                    return path === schedulePath
+                        ? { ...savedArticle, schedule: scheduledArticle.schedule }
+                        : { ...savedArticle, status: 'published', published_version: 1 }
+                })
 
-            expect(within(dialog).getByLabelText('公開する日付')).toHaveTextContent('2099/09/20')
-            expect(within(dialog).getByLabelText('公開する時刻')).toHaveValue('09:00')
+                renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
+                await screen.findByText('現金のみです。')
+                await pickPublishAt(/2099年9月20日/, '09:00')
+                await userEvent.click(screen.getByRole('button', { name: '保存' }))
+
+                return screen.findByRole('alertdialog', { name: '公開中の記事です' })
+            }
+
+            it('ダイアログに反映される日時を出す', async () => {
+                const dialog = await openDialog()
+
+                expect(within(dialog).getByText(/2099\/09\/20 09:00 に公開へ反映されます。/)).toBeInTheDocument()
+                expect(putCalls()).toHaveLength(0)
+            })
+
+            it('「一時保存する」で、公開状態を送らずに保存してから予約する', async () => {
+                const dialog = await openDialog()
+
+                await userEvent.click(within(dialog).getByRole('button', { name: '一時保存する' }))
+
+                expect(await screen.findByText('保存して予約しました')).toBeInTheDocument()
+                expect(putCalls().map(([path, , options]) => [path, (options as FetchOptions).body])).toEqual([
+                    [articlePath, { title: '模擬店のお知らせ', content: publishedArticle.content }],
+                    [schedulePath, scheduleBody],
+                ])
+            })
+
+            it('「公開に反映する」で、予約せずに今すぐ反映し、公開日時を空にする', async () => {
+                const dialog = await openDialog()
+
+                await userEvent.click(within(dialog).getByRole('button', { name: '公開に反映する' }))
+
+                expect(await screen.findByText('保存しました')).toBeInTheDocument()
+                expect(putBodies()).toEqual([
+                    { title: '模擬店のお知らせ', content: publishedArticle.content, status: 'published' },
+                ])
+                expect(screen.getByLabelText('公開日時')).toHaveTextContent('日付を選ぶ')
+                expect(screen.getByLabelText('公開する時刻')).toHaveValue('')
+            })
         })
 
-        it('予約に失敗したら（409）、ダイアログの中にエラーメッセージを出す', async () => {
+        it('予約に失敗したら（409）、エラーメッセージを出す', async () => {
             const message = '予約しようとした版が、そのあとの保存で更新されています。もう一度予約してください'
             adminFetch.mockImplementation(async (path: string, _schema: unknown, options?: FetchOptions) => {
                 if (options?.method !== 'PUT') return article
@@ -542,31 +592,24 @@ describe('ArticleEditView', () => {
 
             renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
             await screen.findByText('現金のみです。')
-            await userEvent.click(screen.getByRole('button', { name: '予約' }))
-            const dialog = await screen.findByRole('alertdialog', { name: '予約投稿' })
-            await pickPublishAt(dialog, /2099年9月20日/, '09:00')
-            await userEvent.click(within(dialog).getByRole('button', { name: '予約する' }))
+            await pickPublishAt(/2099年9月20日/, '09:00')
+            await userEvent.click(screen.getByRole('button', { name: '保存' }))
 
-            expect(await within(dialog).findByRole('alert')).toHaveTextContent(message)
-            expect(screen.queryByText('予約しました')).not.toBeInTheDocument()
+            expect(await screen.findByRole('alert')).toHaveTextContent(message)
+            expect(screen.queryByText('保存して予約しました')).not.toBeInTheDocument()
         })
 
-        it('タイトルが100文字を超えていたら、ダイアログを閉じてタイトルのエラーを出し、予約しない', async () => {
-            adminFetch.mockResolvedValue(article)
-
-            renderWithQueryClient(<ArticleEditView id={ARTICLE_ID} />)
-            await screen.findByText('現金のみです。')
+        it('タイトルが100文字を超えていたら、タイトルのエラーを出して保存しない', async () => {
+            await renderEditor()
             const titleInput = screen.getByRole('textbox', { name: 'タイトル' })
+
             await userEvent.clear(titleInput)
             await userEvent.click(titleInput)
             await userEvent.paste('あ'.repeat(101))
-            await userEvent.click(screen.getByRole('button', { name: '予約' }))
-            const dialog = await screen.findByRole('alertdialog', { name: '予約投稿' })
-            await pickPublishAt(dialog, /2099年9月20日/, '09:00')
-            await userEvent.click(within(dialog).getByRole('button', { name: '予約する' }))
+            await pickPublishAt(/2099年9月20日/, '09:00')
+            await userEvent.click(screen.getByRole('button', { name: '保存' }))
 
             expect(await screen.findByRole('alert')).toHaveTextContent('タイトルは100文字以内で入力してください')
-            expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
             expect(putCalls()).toHaveLength(0)
         })
     })
