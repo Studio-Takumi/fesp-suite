@@ -20,11 +20,12 @@ import {
 } from '@blocknote/react'
 import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultComponents } from '@blocknote/shadcn'
 import '@blocknote/shadcn/style.css'
-import { PanelTop } from 'lucide-react'
+import { PanelTop, TriangleAlert } from 'lucide-react'
 import { createHighlighter } from 'shiki'
 
 import type { ArticleDocument } from '@fesp/schema'
 
+import { createCalloutBlock } from './blocks/CalloutBlock'
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
 import { type ComponentBlock, ComponentPropsPanel, isComponentBlock } from './ComponentPropsPanel'
 import { EmojiGridRoot } from './EmojiGridRoot'
@@ -64,6 +65,8 @@ export const articleSchema = BlockNoteSchema.create({
         checkListItem: defaultBlockSpecs.checkListItem,
         toggleListItem: defaultBlockSpecs.toggleListItem,
         quote: defaultBlockSpecs.quote,
+        // 注意書き。BlockNote 標準には無いが、見出し・引用と同じく中身を直接編集するテキスト系のブロック
+        callout: createCalloutBlock(),
         divider: defaultBlockSpecs.divider,
         table: defaultBlockSpecs.table,
         // 裏機能。バッククォート3つ（```）で誰でも作れるが、スラッシュメニューには出さない
@@ -79,7 +82,7 @@ export type ArticleEditorProps = {
 }
 
 /**
- * 記事本文の編集（テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・区切り線・表）。
+ * 記事本文の編集（テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・注意書き・区切り線・表）。
  * BlockNote（Notionライクなブロックエディタ）ベース。
  *
  * ツールバーはBlockNote標準のもの（テキスト選択時のフローティングツールバー・
@@ -102,14 +105,25 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
     })
 
     // コードブロックは裏機能（```で作れる）なのでスラッシュメニューには出さない。
+    // 注意書きは見出し・引用と同じ「基本ブロック」グループの、引用のすぐ後ろに出す（グループの項目は続けて並べないと見出しが分かれる）。
     // `key` はロケールに依存しない識別子（BlockNoteのi18n辞書のキー名）。
     // `DefaultReactSuggestionItem` の型定義は`key`を持たないが、実体には残っている
     const getSlashMenuItems = useCallback(
         async (query: string) => {
             const items = await getDefaultReactSlashMenuItems(editor)
+            const calloutItem = {
+                title: '注意書き',
+                subtext: '読み飛ばされたくない文章を色付きの枠で囲む',
+                aliases: ['callout', 'chuui', 'ちゅうい', '注意'],
+                group: items.find((item) => (item as { key?: string }).key === 'quote')?.group ?? '基本ブロック',
+                icon: <TriangleAlert />,
+                onItemClick: () => insertOrUpdateBlockForSlashMenu(editor, { type: 'callout' }),
+            }
             return filterSuggestionItems(
                 [
-                    ...items.filter((item) => (item as { key?: string }).key !== 'code_block'),
+                    ...items
+                        .filter((item) => (item as { key?: string }).key !== 'code_block')
+                        .flatMap((item) => ((item as { key?: string }).key === 'quote' ? [item, calloutItem] : [item])),
                     {
                         title: 'ページ見出し',
                         subtext: '英語ラベルと日本語タイトルの見出し',

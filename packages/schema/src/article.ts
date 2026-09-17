@@ -5,8 +5,9 @@ import { paginationQuerySchema, timestampSchema, uuidSchema } from './common'
 /**
  * 記事ドキュメント（BlockNoteのブロック配列JSON）のzodスキーマ。
  *
- * `#5` 時点ではテキスト系ブロック（paragraph/heading/bulletListItem/numberedListItem/
- * checkListItem/toggleListItem/quote/divider/table/codeBlock）のみを対象にする。
+ * テキスト系ブロック（paragraph/heading/bulletListItem/numberedListItem/
+ * checkListItem/toggleListItem/quote/callout/divider/table/codeBlock）を対象にする。
+ * callout は BlockNote 標準ではなく管理者サイトで定義したブロックだが、中身を直接編集するテキスト系として扱う。
  * codeBlockはスラッシュメニューには出さない裏機能（ArticleEditor.tsx参照）。
  * 独自コンポーネントブロック（`pageHeader` など）は props だけを持つ（docs/article-system.md 参照）。
  * ブロックの形はBlockNoteの `Block` 型（@blocknote/core）に合わせている。
@@ -75,6 +76,20 @@ const quotePropsSchema = z
     .object({
         backgroundColor: colorSchema,
         textColor: colorSchema,
+    })
+    .strict()
+
+/** 注意書き（`callout`）の種類。情報 / 注意 / 警告 */
+export const calloutVariantSchema = z.enum(['info', 'caution', 'warning'])
+export type CalloutVariant = z.infer<typeof calloutVariantSchema>
+
+/**
+ * 注意書き（`callout`）の props。色は `variant` で決まるので、文字色・背景色・配置の props は持たない
+ * （管理者サイトのブロック定義 `CalloutBlock.tsx` の propSchema と揃える）
+ */
+const calloutPropsSchema = z
+    .object({
+        variant: calloutVariantSchema,
     })
     .strict()
 
@@ -160,6 +175,7 @@ export type ArticleBlock = {
         | 'checkListItem'
         | 'toggleListItem'
         | 'quote'
+        | 'callout'
         | 'divider'
         | 'table'
         | 'codeBlock'
@@ -217,6 +233,13 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             id: z.string().min(1),
             type: z.literal('quote'),
             props: quotePropsSchema,
+            content: inlineContentSchema,
+            children: z.array(articleBlockSchema),
+        }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('callout'),
+            props: calloutPropsSchema,
             content: inlineContentSchema,
             children: z.array(articleBlockSchema),
         }),

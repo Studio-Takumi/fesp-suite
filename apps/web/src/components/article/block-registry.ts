@@ -2,6 +2,7 @@ import type { ComponentType, ReactNode } from 'react'
 
 import type { ArticleBlock } from '@fesp/schema'
 
+import { Callout } from './blocks/Callout'
 import { CheckListItem } from './blocks/CheckListItem'
 import { CodeBlock } from './blocks/CodeBlock'
 import { Divider } from './blocks/Divider'
@@ -34,6 +35,7 @@ export const blockRegistry: BlockRegistry = {
     checkListItem: CheckListItem,
     toggleListItem: ToggleListItem,
     quote: Quote,
+    callout: Callout,
     divider: Divider,
     table: Table,
     codeBlock: CodeBlock,

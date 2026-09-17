@@ -11,6 +11,9 @@ const lists: Partial<Record<ArticleBlock['type'], { tag: 'ul' | 'ol'; className:
     checkListItem: { tag: 'ul', className: 'space-y-1' },
 }
 
+/** 子ブロックを1段下げずに、ブロックの中にそのまま並べるブロック（注意書きは枠の中に子ブロックを出す） */
+const unindentedChildren: ReadonlySet<ArticleBlock['type']> = new Set(['callout'])
+
 type ArticleRendererProps = {
     blocks: ArticleDocument
     /** ブロックの `type` → 描画するコンポーネント。テストで差し替えるとき以外は既定のまま使う */
@@ -65,7 +68,9 @@ function renderBlock(block: ArticleBlock, registry: BlockRegistry): ReactNode {
     return (
         <Component key={block.id} block={block}>
             {block.children.length > 0 ? (
-                <div className='mt-2 space-y-2 pl-6'>{renderBlocks(block.children, registry)}</div>
+                <div className={unindentedChildren.has(block.type) ? 'space-y-2' : 'mt-2 space-y-2 pl-6'}>
+                    {renderBlocks(block.children, registry)}
+                </div>
             ) : null}
         </Component>
     )

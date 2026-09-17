@@ -361,6 +361,68 @@ describe('articleDocumentSchema のページ見出し（pageHeader）', () => {
     })
 })
 
+describe('articleDocumentSchema の注意書き（callout）', () => {
+    const callout = (props: Record<string, unknown>, children: unknown[] = []) => [
+        {
+            id: '1',
+            type: 'callout',
+            props,
+            content: [{ type: 'text', text: '現金のみです', styles: { bold: true } }],
+            children,
+        },
+    ]
+
+    it('info / caution / warning を受理する', () => {
+        for (const variant of ['info', 'caution', 'warning']) {
+            expect(articleDocumentSchema.safeParse(callout({ variant })).success).toBe(true)
+        }
+    })
+
+    it('中身が空でも、子ブロック（箇条書き）を持っていても受理する', () => {
+        expect(
+            articleDocumentSchema.safeParse([
+                {
+                    id: '1',
+                    type: 'callout',
+                    props: { variant: 'caution' },
+                    content: [],
+                    children: [
+                        {
+                            id: '2',
+                            type: 'bulletListItem',
+                            props: defaultBlockProps,
+                            content: [{ type: 'text', text: '整理券を配ることがあります', styles: {} }],
+                            children: [],
+                        },
+                    ],
+                },
+            ]).success,
+        ).toBe(true)
+    })
+
+    it('JSONを経由しても受理する', () => {
+        const json = JSON.parse(JSON.stringify(callout({ variant: 'warning' })))
+        expect(articleDocumentSchema.safeParse(json).success).toBe(true)
+    })
+
+    it('variant が欠けている・知らない値なら拒否する', () => {
+        expect(articleDocumentSchema.safeParse(callout({})).success).toBe(false)
+        expect(articleDocumentSchema.safeParse(callout({ variant: 'danger' })).success).toBe(false)
+    })
+
+    it('文字色・背景色・配置など知らない props があれば拒否する', () => {
+        expect(articleDocumentSchema.safeParse(callout({ variant: 'info', textColor: 'default' })).success).toBe(false)
+        expect(articleDocumentSchema.safeParse(callout({ variant: 'info', textAlignment: 'left' })).success).toBe(false)
+    })
+
+    it('中身が無い（content が無い）なら拒否する', () => {
+        expect(
+            articleDocumentSchema.safeParse([{ id: '1', type: 'callout', props: { variant: 'info' }, children: [] }])
+                .success,
+        ).toBe(false)
+    })
+})
+
 describe('pageHeaderPropsSchema', () => {
     it('文字数を超えたら入力欄に出すエラーメッセージを返す', () => {
         const result = pageHeaderPropsSchema.safeParse({ label: 'A'.repeat(31), title: 'あ'.repeat(51) })

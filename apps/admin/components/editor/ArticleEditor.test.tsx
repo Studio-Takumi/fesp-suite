@@ -9,10 +9,11 @@ import { ArticleEditor, articleSchema } from './ArticleEditor'
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
 
 describe('articleSchema', () => {
-    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・区切り線・表・コードブロックと、独自コンポーネントのページ見出しだけを許可する（画像・動画等は含まない）', () => {
+    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・注意書き・区切り線・表・コードブロックと、独自コンポーネントのページ見出しだけを許可する（画像・動画等は含まない）', () => {
         expect(Object.keys(articleSchema.blockSchema).sort()).toEqual(
             [
                 'bulletListItem',
+                'callout',
                 'checkListItem',
                 'codeBlock',
                 'divider',
@@ -141,6 +142,62 @@ describe('ArticleEditor', () => {
         expect(await screen.findByText('編集中')).toBeInTheDocument()
         expect(screen.getAllByText('ページ見出し', { selector: 'span' })).toHaveLength(2)
         expect(screen.getByText('設定')).toBeInTheDocument()
+    })
+
+    it('注意書きは種類の見出しと本文を出し、子ブロックも同じブロックの中に出す', async () => {
+        const content: ArticleDocument = [
+            {
+                id: '1',
+                type: 'callout',
+                props: { variant: 'info' },
+                content: [{ type: 'text', text: '入場は無料です', styles: {} }],
+                children: [
+                    {
+                        id: '2',
+                        type: 'bulletListItem',
+                        props: defaultBlockProps,
+                        content: [{ type: 'text', text: '再入場できます', styles: {} }],
+                        children: [],
+                    },
+                ],
+            },
+        ]
+
+        const { container } = render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('入場は無料です')).toBeInTheDocument()
+        const callout = container.querySelector('[data-callout-variant="info"]')
+        expect(callout).toHaveTextContent('情報')
+        // 子ブロックは同じ .bn-block の中（枠を付ける要素の中）に入る
+        expect(callout?.closest('.bn-block')).toHaveTextContent('再入場できます')
+    })
+
+    it('注意書きのアイコンのメニューで種類を選ぶと、variant を変えて onChange に渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        const content: ArticleDocument = [
+            {
+                id: '1',
+                type: 'callout',
+                props: { variant: 'caution' },
+                content: [{ type: 'text', text: '現金のみです', styles: {} }],
+                children: [],
+            },
+        ]
+
+        render(<ArticleEditor content={content} onChange={onChange} />)
+
+        expect(await screen.findByText('注意', { selector: 'span' })).toBeInTheDocument()
+        await user.click(screen.getByRole('button', { name: '注意書きの種類' }))
+        // いまの種類にだけチェックを付ける
+        expect((await screen.findByRole('menuitem', { name: '注意' })).querySelector('.lucide-check')).not.toBeNull()
+        expect(screen.getByRole('menuitem', { name: '警告' }).querySelector('.lucide-check')).toBeNull()
+        await user.click(screen.getByRole('menuitem', { name: '警告' }))
+
+        expect(await screen.findByText('警告', { selector: 'span' })).toBeInTheDocument()
+        expect(onChange).toHaveBeenLastCalledWith([
+            expect.objectContaining({ id: '1', type: 'callout', props: { variant: 'warning' } }),
+        ])
     })
 
     it('コードブロック（裏機能）の中身を<pre><code>で表示する', async () => {
