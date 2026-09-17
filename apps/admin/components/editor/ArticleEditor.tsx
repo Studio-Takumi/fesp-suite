@@ -20,11 +20,12 @@ import {
 } from '@blocknote/react'
 import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultComponents } from '@blocknote/shadcn'
 import '@blocknote/shadcn/style.css'
-import { PanelTop } from 'lucide-react'
+import { MapIcon, PanelTop } from 'lucide-react'
 import { createHighlighter } from 'shiki'
 
 import type { ArticleDocument } from '@fesp/schema'
 
+import { createMapBlock } from './blocks/MapBlock'
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
 import { type ComponentBlock, ComponentPropsPanel, isComponentBlock } from './ComponentPropsPanel'
 import { EmojiGridRoot } from './EmojiGridRoot'
@@ -70,6 +71,7 @@ export const articleSchema = BlockNoteSchema.create({
         codeBlock: defaultBlockSpecs.codeBlock,
         // 独自コンポーネント。中身を持たず、props はサイドパネル（ComponentPropsPanel）で編集する
         pageHeader: createPageHeaderBlock(),
+        map: createMapBlock(),
     },
 })
 
@@ -122,6 +124,17 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
                             editor.setTextCursorPosition(block)
                         },
                     },
+                    {
+                        title: 'マップ',
+                        subtext: '会場のマップ（検索・フロア切替・場所の一覧）',
+                        aliases: ['map', 'chizu', 'ちず', '地図'],
+                        group: 'コンポーネント',
+                        icon: <MapIcon />,
+                        onItemClick: () => {
+                            const block = insertOrUpdateBlockForSlashMenu(editor, { type: 'map' })
+                            editor.setTextCursorPosition(block)
+                        },
+                    },
                 ],
                 query,
             )
@@ -134,7 +147,10 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
         editor,
         selector: ({ editor }): ComponentBlock | null => {
             const { block } = editor.getTextCursorPosition()
-            return isComponentBlock(block) ? { id: block.id, type: block.type, props: block.props } : null
+            // 取り出した id / type / props の組み合わせは TypeScript が追えないので、ComponentBlock として扱う
+            return isComponentBlock(block)
+                ? ({ id: block.id, type: block.type, props: block.props } as ComponentBlock)
+                : null
         },
     })
 

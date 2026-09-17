@@ -3,6 +3,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { articleViewResponseSchema, exampleResponseSchema } from '@fesp/schema'
 
 import { apiFetch } from './api'
+import { mapMock } from './mock/map'
 
 /**
  * サーバー状態は必ずここ（TanStack Query）で扱う。
@@ -13,6 +14,7 @@ import { apiFetch } from './api'
 export const queryKeys = {
     example: ['example'] as const,
     article: (id: string) => ['articles', id] as const,
+    map: ['map'] as const,
 }
 
 export const exampleQuery = () =>
@@ -26,4 +28,11 @@ export const articleQuery = (id: string) =>
         queryKey: queryKeys.article(id),
         queryFn: ({ signal }) =>
             apiFetch(`/api/articles/${id}`, articleViewResponseSchema, { signal, authenticated: true }),
+    })
+
+/** マップ（独自コンポーネント `map`）のフロアと場所の一覧。本物の API ができるまでは仮データを返す */
+export const mapQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.map,
+        queryFn: () => Promise.resolve(mapMock),
     })

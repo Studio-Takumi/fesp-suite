@@ -8,7 +8,7 @@ import { paginationQuerySchema, timestampSchema, uuidSchema } from './common'
  * `#5` 時点ではテキスト系ブロック（paragraph/heading/bulletListItem/numberedListItem/
  * checkListItem/toggleListItem/quote/divider/table/codeBlock）のみを対象にする。
  * codeBlockはスラッシュメニューには出さない裏機能（ArticleEditor.tsx参照）。
- * 独自コンポーネントブロック（`pageHeader` など）は props だけを持つ（docs/article-system.md 参照）。
+ * 独自コンポーネントブロック（`pageHeader` / `map` など）は props だけを持つ（docs/article-system.md 参照）。
  * ブロックの形はBlockNoteの `Block` 型（@blocknote/core）に合わせている。
  */
 
@@ -117,6 +117,10 @@ export const pageHeaderPropsSchema = z
     .strict()
 export type PageHeaderProps = z.infer<typeof pageHeaderPropsSchema>
 
+/** マップ（`map`）の props。会場のマップを1ページ分出すブロックで、設定する項目は無い */
+export const mapPropsSchema = z.object({}).strict()
+export type MapProps = z.infer<typeof mapPropsSchema>
+
 /** コードブロックの中身はスタイル（太字等）を持たない「プレーンテキスト」 */
 const plainTextSchema = z.object({
     type: z.literal('text'),
@@ -164,6 +168,7 @@ export type ArticleBlock = {
         | 'table'
         | 'codeBlock'
         | 'pageHeader'
+        | 'map'
     props: Record<string, unknown>
     content?: (ArticleStyledText | ArticleLink)[] | ArticleTableContent
     children: ArticleBlock[]
@@ -247,6 +252,13 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             type: z.literal('pageHeader'),
             props: pageHeaderPropsSchema,
             /** 独自コンポーネントは中身を持たない。JSONを経由すると`content`キーごと消える */
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('map'),
+            props: mapPropsSchema,
             content: z.undefined().optional(),
             children: z.array(articleBlockSchema),
         }),

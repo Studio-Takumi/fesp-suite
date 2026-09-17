@@ -9,7 +9,7 @@ import { ArticleEditor, articleSchema } from './ArticleEditor'
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
 
 describe('articleSchema', () => {
-    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・区切り線・表・コードブロックと、独自コンポーネントのページ見出しだけを許可する（画像・動画等は含まない）', () => {
+    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・区切り線・表・コードブロックと、独自コンポーネントのページ見出し・マップだけを許可する（画像・動画等は含まない）', () => {
         expect(Object.keys(articleSchema.blockSchema).sort()).toEqual(
             [
                 'bulletListItem',
@@ -17,6 +17,7 @@ describe('articleSchema', () => {
                 'codeBlock',
                 'divider',
                 'heading',
+                'map',
                 'numberedListItem',
                 'pageHeader',
                 'paragraph',
@@ -141,6 +142,31 @@ describe('ArticleEditor', () => {
         expect(await screen.findByText('編集中')).toBeInTheDocument()
         expect(screen.getAllByText('ページ見出し', { selector: 'span' })).toHaveLength(2)
         expect(screen.getByText('設定')).toBeInTheDocument()
+    })
+
+    it('マップはカードに説明の一文を出し、カーソルがあればサイドパネルに「設定する項目はありません」と出す', async () => {
+        const content: ArticleDocument = [{ id: '1', type: 'map', props: {}, children: [] }]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('会場のマップを出します')).toBeInTheDocument()
+        expect(screen.getByText('マップ', { selector: 'span' })).toBeInTheDocument()
+        const panel = await screen.findByRole('complementary', { name: 'コンポーネントの設定' })
+        expect(panel).toHaveTextContent('マップ')
+        expect(panel).toHaveTextContent('設定する項目はありません')
+    })
+
+    it('カーソルが別のブロックにあれば、マップのサイドパネルを出さない', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'paragraph', props: defaultBlockProps, content: [], children: [] },
+            { id: '2', type: 'map', props: {}, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('会場のマップを出します')).toBeInTheDocument()
+        expect(screen.getByText('設定')).toBeInTheDocument()
+        expect(screen.queryByRole('complementary', { name: 'コンポーネントの設定' })).not.toBeInTheDocument()
     })
 
     it('コードブロック（裏機能）の中身を<pre><code>で表示する', async () => {
