@@ -261,6 +261,19 @@ export const articleHistorySchema = z.object({
 })
 export type ArticleHistory = z.infer<typeof articleHistorySchema>
 
+/** 記事の予約（`article_schedules` の1行）。時間が来たら、予約した版を公開中の版にする */
+export const articleScheduleSchema = z.object({
+    /** 公開する版の番号 */
+    version: z.number().int().min(1),
+    /** 公開する日時 */
+    publish_at: timestampSchema,
+    /** 予約したユーザー。`service_role` から予約したときは `null` */
+    created_by: uuidSchema.nullable(),
+    created_at: timestampSchema,
+    updated_at: timestampSchema,
+})
+export type ArticleSchedule = z.infer<typeof articleScheduleSchema>
+
 /** 記事オブジェクト（GET /api/articles/:id などのレスポンス） */
 export const articleResponseSchema = z.object({
     id: uuidSchema,
@@ -280,6 +293,8 @@ export const articleResponseSchema = z.object({
     updated_at: timestampSchema,
     /** 最新の版。公開中の記事を一時保存した変更はここにだけ入る。イベントの `staff` でなければ `null` */
     latest_history: articleHistorySchema.nullable(),
+    /** 予約。予約が無い、またはイベントの `staff` でなければ `null` */
+    schedule: articleScheduleSchema.nullable(),
 })
 export type ArticleResponse = z.infer<typeof articleResponseSchema>
 
@@ -304,9 +319,10 @@ export function parseArticleDocument(blocks: unknown[]): ArticleDocument {
 
 /**
  * ウェブアプリで表示するときの記事オブジェクト。本文は `parseArticleDocument` で描画できるブロックだけにする。
- * 最新の版（`latest_history`）は表示に使わないので持たない（staff が開いたときに、版の本文の検証で落とさないため）
+ * 最新の版（`latest_history`）は表示に使わないので持たない（staff が開いたときに、版の本文の検証で落とさないため）。
+ * 予約（`schedule`）も表示に使わないので持たない
  */
-export const articleViewResponseSchema = articleResponseSchema.omit({ latest_history: true }).extend({
+export const articleViewResponseSchema = articleResponseSchema.omit({ latest_history: true, schedule: true }).extend({
     content: z.array(z.unknown()).transform(parseArticleDocument),
 })
 export type ArticleViewResponse = z.infer<typeof articleViewResponseSchema>
@@ -350,3 +366,20 @@ export type ArticleInput = z.infer<typeof articleInputSchema>
 /** POST /api/articles のリクエストボディ。記事は下書きで作るので `status` を持たない */
 export const articleCreateInputSchema = articleInputSchema.omit({ status: true }).extend(articleEventQuerySchema.shape)
 export type ArticleCreateInput = z.infer<typeof articleCreateInputSchema>
+
+/** 予約する日時。現在より後だけ受け付ける */
+export const articlePublishAtSchema = timestampSchema.refine(
+    (value) => new Date(value).getTime() > Date.now(),
+    '現在より後の日時を指定してください',
+)
+
+/** PUT /api/articles/:id/schedule のリクエストボディ */
+export const articleScheduleInputSchema = z.object({
+    /** 公開する版の番号 */
+    version: z.number().int().min(1),
+    /** その版の `updated_at`。読み込んだ値をそのまま送る（そのあとの保存で版が上書きされていたら 409） */
+    version_updated_at: timestampSchema,
+    /** 公開する日時 */
+    publish_at: articlePublishAtSchema,
+})
+export type ArticleScheduleInput = z.infer<typeof articleScheduleInputSchema>

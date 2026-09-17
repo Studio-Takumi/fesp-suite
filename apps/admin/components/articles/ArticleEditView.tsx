@@ -8,9 +8,11 @@ import { useQuery } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
 import type { z } from 'zod'
 
-import { type ArticleDocument, articleInputSchema, type ArticleResponse } from '@fesp/schema'
+import { type ArticleDocument, articleInputSchema, type ArticleResponse, type ArticleStatus } from '@fesp/schema'
 import { ApiError } from '@fesp/types'
+import { dateFormatter } from '@fesp/ui'
 
+import { ArticlePublishAtField, publishAtFieldsOf, resolvePublishAt } from '~/components/articles/ArticlePublishAtField'
 import { ArticleEditor } from '~/components/editor/ArticleEditor'
 import {
     AlertDialog,
@@ -26,14 +28,17 @@ import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { Switch } from '~/components/ui/switch'
-import { articleQuery, useUpdateArticle } from '~/lib/queries'
+import { articleQuery, useSaveArticle } from '~/lib/queries'
 
-/** 本文は BlockNote の変更を state で持つので、フォームで扱うのはタイトルと公開状態 */
+/** 本文は BlockNote の変更を、公開日時は入力欄の値を state で持つので、フォームで扱うのはタイトルと公開状態 */
 const articleFormSchema = articleInputSchema.pick({ title: true, status: true }).required()
 
 /** zod の .trim() があるため、フォームの入力型（input）と送信型（output）は別物になる */
 type ArticleFormValues = z.input<typeof articleFormSchema>
 type ArticleFormOutput = z.output<typeof articleFormSchema>
+
+/** 保存したときに出す表示。予約したか、予約を取り消したかで変える */
+type SaveInput = { title: string; status?: ArticleStatus; publishAt: string | null }
 
 export type ArticleEditViewProps = {
     id: string
@@ -74,10 +79,16 @@ export function ArticleEditView({ id }: ArticleEditViewProps) {
 function ArticleForm({ article }: { article: ArticleResponse }) {
     // 公開中の記事を一時保存した変更は最新の版にだけ入るので、最新の版から編集を始める
     const initial = article.latest_history ?? article
+    const initialPublishAt = publishAtFieldsOf(article.schedule?.publish_at ?? null)
     const [articleDocument, setArticleDocument] = useState<ArticleDocument>(initial.content)
-    /** 公開中の記事を公開のまま保存しようとしたときのタイトル。ダイアログを開いている間だけ入る */
-    const [pendingTitle, setPendingTitle] = useState<string | null>(null)
-    const updateArticle = useUpdateArticle(article.id)
+    const [publishDate, setPublishDate] = useState(initialPublishAt.date)
+    const [publishTime, setPublishTime] = useState(initialPublishAt.time)
+    const [publishAtError, setPublishAtError] = useState<string | null>(null)
+    /** 公開中の記事を公開のまま保存しようとしたときの入力。ダイアログを開いている間だけ入る */
+    const [pendingSave, setPendingSave] = useState<SaveInput | null>(null)
+    /** 保存できたときに出す文言。予約したか、予約を取り消したかで変わる */
+    const [savedNotice, setSavedNotice] = useState('保存しました')
+    const saveArticle = useSaveArticle(article.id)
     const {
         register,
         control,
@@ -93,39 +104,73 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
         article.latest_history !== null &&
         article.latest_history.version !== article.published_version
 
-    const clearSavedStatus = () => {
-        if (updateArticle.isSuccess) updateArticle.reset()
+    /** 予約した版のあとに保存した変更（予約には入らない）があるか */
+    const hasChangesAfterSchedule =
+        article.schedule !== null &&
+        article.latest_history !== null &&
+        article.latest_history.version !== article.schedule.version
+
+    /** 公開日時が入っている間は、今すぐ公開・下書きに戻すはできない（日時を空にしてもらう） */
+    const isScheduling = Boolean(publishDate || publishTime)
+
+    const clearNotice = () => {
+        if (saveArticle.isSuccess) saveArticle.reset()
     }
 
     const handleDocumentChange = (nextDocument: ArticleDocument) => {
         setArticleDocument(nextDocument)
-        clearSavedStatus()
+        clearNotice()
+    }
+
+    /** 保存する。公開日時が入っていれば予約、空で予約があれば取り消しまで行う（lib/queries.ts） */
+    const save = ({ title, status, publishAt }: SaveInput) => {
+        setSavedNotice(
+            publishAt
+                ? '保存して予約しました'
+                : article.schedule && status !== 'published'
+                  ? '保存して予約を取り消しました'
+                  : '保存しました',
+        )
+        saveArticle.mutate({ title, content: articleDocument, status, publish_at: publishAt })
     }
 
     const handleSave = handleSubmit(({ title, status }) => {
-        // 公開中の記事を公開のまま保存するときは、公開に反映するか一時保存にするかを選んでもらう
-        if (article.status === 'published' && status === 'published') {
-            setPendingTitle(title)
+        clearNotice()
+
+        const resolved = resolvePublishAt(publishDate, publishTime)
+        if ('error' in resolved) {
+            setPublishAtError(resolved.error)
             return
         }
-        updateArticle.mutate({ title, content: articleDocument, status })
+        setPublishAtError(null)
+
+        // 公開中の記事を公開のまま保存するときは、公開に反映するか一時保存にするかを選んでもらう
+        if (article.status === 'published' && status === 'published') {
+            setPendingSave({ title, publishAt: resolved.publishAt })
+            return
+        }
+        save({ title, status, publishAt: resolved.publishAt })
     })
 
-    /** ダイアログの選択で保存する。status を送らなければ一時保存（公開中の記事は変えない） */
-    const saveWhilePublished = (status?: 'published') => () => {
-        if (pendingTitle === null) return
-        updateArticle.mutate(
-            status
-                ? { title: pendingTitle, content: articleDocument, status }
-                : { title: pendingTitle, content: articleDocument },
-        )
+    /** ダイアログで「一時保存する」。status を送らないので公開中の中身は変わらない */
+    const saveTemporarily = () => {
+        if (!pendingSave) return
+        save(pendingSave)
+    }
+
+    /** ダイアログで「公開に反映する」。予約は DB のトリガーで消えるので、入力欄も空にする */
+    const publishNow = () => {
+        if (!pendingSave) return
+        setPublishDate('')
+        setPublishTime('')
+        save({ title: pendingSave.title, status: 'published', publishAt: null })
     }
 
     return (
         <div className='space-y-6 p-8'>
             {/* BlockNote のツールバーのボタンで送信されないよう、エディタはフォームの外に置く */}
             <form onSubmit={handleSave} className='space-y-6' noValidate>
-                <div className='flex items-center justify-between'>
+                <div className='flex items-start justify-between'>
                     <div className='space-y-1'>
                         <h1 className='text-2xl font-bold'>記事エディタ</h1>
                         <p className='text-sm text-muted-foreground'>
@@ -134,16 +179,26 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
                         {hasUnpublishedChanges ? (
                             <p className='text-sm text-muted-foreground'>公開していない変更があります</p>
                         ) : null}
-                    </div>
-                    <div className='flex items-center gap-3'>
-                        {updateArticle.isSuccess ? (
-                            <p role='status' className='text-sm text-muted-foreground'>
-                                保存しました
+                        {article.schedule ? (
+                            <p className='text-sm text-muted-foreground'>
+                                {`${dateFormatter(article.schedule.publish_at, 'YYYY/MM/DD HH:mm')} に公開予定`}
                             </p>
                         ) : null}
-                        {updateArticle.isError ? (
+                        {hasChangesAfterSchedule ? (
+                            <p className='text-sm text-muted-foreground'>
+                                予約した版のあとに保存した変更があります（予約には入りません）
+                            </p>
+                        ) : null}
+                    </div>
+                    <div className='flex items-center gap-3'>
+                        {saveArticle.isSuccess ? (
+                            <p role='status' className='text-sm text-muted-foreground'>
+                                {savedNotice}
+                            </p>
+                        ) : null}
+                        {saveArticle.isError ? (
                             <p role='alert' className='text-sm text-destructive'>
-                                {updateArticle.error.message}
+                                {saveArticle.error.message}
                             </p>
                         ) : null}
                         <Controller
@@ -154,26 +209,28 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
                                     <Switch
                                         id='article-published'
                                         checked={field.value === 'published'}
+                                        disabled={isScheduling}
                                         onCheckedChange={(checked) => {
                                             field.onChange(checked ? 'published' : 'draft')
-                                            clearSavedStatus()
+                                            clearNotice()
                                         }}
                                     />
                                     <Label htmlFor='article-published'>公開</Label>
                                 </div>
                             )}
                         />
-                        <Button type='submit' disabled={updateArticle.isPending}>
+                        <Button type='submit' disabled={saveArticle.isPending}>
                             保存
                         </Button>
                     </div>
                 </div>
 
                 <div className='space-y-2'>
+                    <Label htmlFor='article-title'>タイトル</Label>
                     <Input
-                        aria-label='タイトル'
+                        id='article-title'
                         placeholder='タイトル'
-                        {...register('title', { onChange: clearSavedStatus })}
+                        {...register('title', { onChange: clearNotice })}
                         aria-invalid={Boolean(errors.title)}
                         aria-describedby={errors.title ? 'title-error' : undefined}
                     />
@@ -183,12 +240,31 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
                         </p>
                     ) : null}
                 </div>
+
+                <ArticlePublishAtField
+                    date={publishDate}
+                    time={publishTime}
+                    onDateChange={(date) => {
+                        setPublishDate(date)
+                        clearNotice()
+                    }}
+                    onTimeChange={(time) => {
+                        setPublishTime(time)
+                        clearNotice()
+                    }}
+                    onClear={() => {
+                        setPublishDate('')
+                        setPublishTime('')
+                        clearNotice()
+                    }}
+                    error={publishAtError}
+                />
             </form>
 
             <AlertDialog
-                open={pendingTitle !== null}
+                open={pendingSave !== null}
                 onOpenChange={(open) => {
-                    if (!open) setPendingTitle(null)
+                    if (!open) setPendingSave(null)
                 }}
             >
                 <AlertDialogContent>
@@ -196,19 +272,25 @@ function ArticleForm({ article }: { article: ArticleResponse }) {
                         <AlertDialogTitle>公開中の記事です</AlertDialogTitle>
                         <AlertDialogDescription>
                             一時保存すると、公開中の記事はそのままで変更だけを保存します。
+                            {pendingSave?.publishAt
+                                ? `${dateFormatter(pendingSave.publishAt, 'YYYY/MM/DD HH:mm')} に公開へ反映されます。`
+                                : null}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                        <AlertDialogAction variant='outline' onClick={saveWhilePublished()}>
+                        <AlertDialogAction variant='outline' onClick={saveTemporarily}>
                             一時保存する
                         </AlertDialogAction>
-                        <AlertDialogAction onClick={saveWhilePublished('published')}>公開に反映する</AlertDialogAction>
+                        <AlertDialogAction onClick={publishNow}>公開に反映する</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
 
-            <ArticleEditor content={initial.content} onChange={handleDocumentChange} />
+            <div className='space-y-2'>
+                <Label>本文</Label>
+                <ArticleEditor content={initial.content} onChange={handleDocumentChange} />
+            </div>
 
             <details className='rounded-md border border-border p-4 text-sm'>
                 <summary className='cursor-pointer font-medium'>JSON（確認用）</summary>
