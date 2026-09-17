@@ -1,12 +1,27 @@
-import { render, screen } from '@testing-library/react'
+import type { ReactNode } from 'react'
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render as rtlRender, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import { ComponentPropsPanel, isComponentBlock } from './ComponentPropsPanel'
 
+// お知らせ一覧のフォームが lib/queries.ts を読むので、env と API クライアントを差し替える
+vi.mock('~/lib/env', () => ({ env: { NEXT_PUBLIC_EVENT_ID: '0b7e6d5c-4a3b-4c2d-9e1f-a2b3c4d5e6f7' } }))
+vi.mock('~/lib/api', () => ({ adminFetch: vi.fn() }))
+
+/** お知らせ一覧のフォームがタグの仮データを TanStack Query で読むので、QueryClient の中で描画する */
+function render(ui: ReactNode) {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    return rtlRender(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>)
+}
+
 describe('isComponentBlock', () => {
     it('独自コンポーネントのブロックだけを true にする', () => {
-        expect(isComponentBlock({ type: 'pageHeader' })).toBe(true)
+        for (const type of ['pageHeader', 'newsList', 'coverImage', 'postSummary', 'adjacentPosts']) {
+            expect(isComponentBlock({ type })).toBe(true)
+        }
         expect(isComponentBlock({ type: 'paragraph' })).toBe(false)
     })
 })
@@ -52,5 +67,99 @@ describe('ComponentPropsPanel（ページ見出し）', () => {
         expect(await screen.findByText('日本語タイトルは50文字以内で入力してください')).toBeInTheDocument()
 
         expect(onChange).not.toHaveBeenCalled()
+    })
+})
+
+describe('ComponentPropsPanel（お知らせ一覧）', () => {
+    const block = {
+        id: '1',
+        type: 'newsList',
+        props: { showTagTabs: true, tags: 'shop', limit: 3, showViewAll: false },
+    } as const
+
+    it('コンポーネント名と、ブロックの props を初期値にした入力欄を出す', async () => {
+        render(<ComponentPropsPanel block={block} onChange={vi.fn()} />)
+
+        expect(screen.getByRole('heading', { name: 'お知らせ一覧' })).toBeInTheDocument()
+        expect(screen.getByRole('switch', { name: 'タグタブを出す' })).toBeChecked()
+        expect(await screen.findByRole('checkbox', { name: '模擬店' })).toBeChecked()
+        expect(screen.getByRole('checkbox', { name: 'ステージ' })).not.toBeChecked()
+        expect(screen.getByLabelText('表示件数')).toHaveValue(3)
+        expect(screen.getByRole('switch', { name: '「すべて見る」を出す' })).not.toBeChecked()
+    })
+
+    it('タグを選ぶと、タグの一覧の順に ID をカンマ区切りにして渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        await user.click(await screen.findByRole('checkbox', { name: 'ステージ' }))
+        expect(onChange).toHaveBeenLastCalledWith({ ...block.props, tags: 'stage,shop' })
+
+        await user.click(screen.getByRole('checkbox', { name: '模擬店' }))
+        expect(onChange).toHaveBeenLastCalledWith({ ...block.props, tags: 'stage' })
+    })
+
+    it('スイッチを切り替えると渡し、タグタブを出さない間はタグを選べない', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        await user.click(screen.getByRole('switch', { name: 'タグタブを出す' }))
+        expect(onChange).toHaveBeenLastCalledWith({ ...block.props, showTagTabs: false })
+        expect(await screen.findByRole('checkbox', { name: '模擬店' })).toBeDisabled()
+
+        await user.click(screen.getByRole('switch', { name: '「すべて見る」を出す' }))
+        expect(onChange).toHaveBeenLastCalledWith({ ...block.props, showTagTabs: false, showViewAll: true })
+    })
+
+    it('表示件数が1以上の整数でなければエラーを出して props を渡さず、空にすると表示件数を消して渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        await user.clear(screen.getByLabelText('表示件数'))
+        expect(onChange).toHaveBeenLastCalledWith({ showTagTabs: true, tags: 'shop', showViewAll: false })
+
+        onChange.mockClear()
+        await user.type(screen.getByLabelText('表示件数'), '0')
+        expect(await screen.findByText('表示件数は1以上の整数で入力してください')).toBeInTheDocument()
+        expect(screen.getByLabelText('表示件数')).toHaveAttribute('aria-invalid', 'true')
+        expect(onChange).not.toHaveBeenCalled()
+    })
+})
+
+describe('ComponentPropsPanel（記事の画像）', () => {
+    const block = { id: '1', type: 'coverImage', props: { imageUrl: '' } } as const
+
+    it('URL を入れると props を渡し、URL の形でなければエラーを出して渡さない', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        expect(screen.getByRole('heading', { name: '記事の画像' })).toBeInTheDocument()
+
+        await user.type(screen.getByLabelText('画像の URL'), 'cover.jpg')
+        expect(await screen.findByText('http:// か https:// で始まる URL を入力してください')).toBeInTheDocument()
+        expect(onChange).not.toHaveBeenCalled()
+
+        await user.clear(screen.getByLabelText('画像の URL'))
+        await user.type(screen.getByLabelText('画像の URL'), 'https://example.com/cover.jpg')
+        expect(onChange).toHaveBeenLastCalledWith({ imageUrl: 'https://example.com/cover.jpg' })
+    })
+})
+
+describe('ComponentPropsPanel（props を持たないコンポーネント）', () => {
+    it('コンポーネント名の下に「設定する項目はありません」と出す', () => {
+        const { rerender } = render(
+            <ComponentPropsPanel block={{ id: '1', type: 'postSummary', props: {} }} onChange={vi.fn()} />,
+        )
+        expect(screen.getByRole('heading', { name: '記事のサマリー' })).toBeInTheDocument()
+        expect(screen.getByText('設定する項目はありません')).toBeInTheDocument()
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+
+        rerender(<ComponentPropsPanel block={{ id: '2', type: 'adjacentPosts', props: {} }} onChange={vi.fn()} />)
+        expect(screen.getByRole('heading', { name: '前後の記事' })).toBeInTheDocument()
+        expect(screen.getByText('設定する項目はありません')).toBeInTheDocument()
     })
 })
