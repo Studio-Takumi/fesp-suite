@@ -1,4 +1,18 @@
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/noto-sans-jp';
 @import '@fesp/config/tailwind/preset.css';
 
 /* 共通UIパッケージのクラスもスキャン対象に含める */
 @source '../../../packages/ui/src';
+
+/* デザイン（ui-design.pen）の font-en / font-jp。`font-en` / `font-jp` のユーティリティになる */
+@theme {
+  --font-en: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-jp: 'Noto Sans JP Variable', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', sans-serif;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-jp);
+  }
+}

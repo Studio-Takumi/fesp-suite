@@ -5,7 +5,7 @@ import { ArticleRenderer } from '~/components/article/ArticleRenderer'
 import { QueryBoundary } from '~/components/QueryBoundary'
 import { articleQuery } from '~/lib/queries'
 
-/** 記事1件のタイトルと本文を表示する */
+/** 記事1件の本文を表示する。ページのタイトルは本文のページ見出し（`pageHeader`）が出すので、記事のタイトルは出さない */
 export function ArticlePage() {
     const { articleId } = useParams({ from: '/_authenticated/articles/$articleId' })
     const article = useQuery(articleQuery(articleId))
@@ -14,7 +14,6 @@ export function ArticlePage() {
         <QueryBoundary isPending={article.isPending} error={article.error} data={article.data}>
             {(data) => (
                 <article className='space-y-6'>
-                    <h1 className='text-2xl font-bold'>{data.title || '（無題）'}</h1>
                     <ArticleRenderer blocks={data.content} />
                 </article>
             )}

@@ -51,18 +51,29 @@ describe('記事ページ', () => {
 
         renderApp(`/articles/${ARTICLE_ID}`)
 
-        expect(await screen.findByRole('heading', { level: 1, name: '模擬店のお知らせ' })).toBeInTheDocument()
-        expect(screen.getByText('現金のみです。')).toBeInTheDocument()
+        expect(await screen.findByText('現金のみです。')).toBeInTheDocument()
         expect(requestAuthorization).toBe(`Bearer ${testSession.access_token}`)
         expect(requestUrl!.search).toBe('')
     })
 
-    it('タイトルが空なら「（無題）」と出す', async () => {
-        server.use(http.get(`${API}/api/articles/:id`, () => HttpResponse.json({ ...articleFixture, title: '' })))
+    it('記事のタイトルは出さず、ページ見出しをページのタイトル（h1）にする', async () => {
+        server.use(
+            http.get(`${API}/api/articles/:id`, () =>
+                HttpResponse.json({
+                    ...articleFixture,
+                    content: [
+                        { id: '1', type: 'pageHeader', props: { label: 'NEWS', title: 'お知らせ' }, children: [] },
+                        paragraph('2', '本文'),
+                    ],
+                }),
+            ),
+        )
 
         renderApp(`/articles/${ARTICLE_ID}`)
 
-        expect(await screen.findByRole('heading', { level: 1, name: '（無題）' })).toBeInTheDocument()
+        expect(await screen.findByRole('heading', { level: 1, name: 'お知らせ' })).toBeInTheDocument()
+        expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+        expect(screen.queryByText('模擬店のお知らせ')).not.toBeInTheDocument()
     })
 
     it('描画できないブロックを含んでいても、残りのブロックを表示する', async () => {

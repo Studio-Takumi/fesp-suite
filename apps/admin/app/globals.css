@@ -57,6 +57,12 @@
     font-size: 0.875em;
   }
 
+  /* 独自コンポーネントのブロック（ComponentBlockCard）。選択はカード自身の枠で見せるので、
+     BlockNote が選択中のブロックに重ねる青い塗り（::after）を消す。BlockNote の CSS はレイヤー外なので !important で上書きする */
+  .bn-block-content > [data-component-block]::after {
+    display: none !important;
+  }
+
   /* 他ユーザーのカーソル（CollaborationCaret） */
   .collaboration-carets__caret {
     border-inline: 1px solid;

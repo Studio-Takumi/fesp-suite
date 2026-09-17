@@ -7,6 +7,7 @@ import { CodeBlock } from './blocks/CodeBlock'
 import { Divider } from './blocks/Divider'
 import { Heading } from './blocks/Heading'
 import { ListItem } from './blocks/ListItem'
+import { PageHeader } from './blocks/PageHeader'
 import { Paragraph } from './blocks/Paragraph'
 import { Quote } from './blocks/Quote'
 import { Table } from './blocks/Table'
@@ -22,7 +23,7 @@ export type BlockRegistry = Partial<Record<ArticleBlock['type'], ComponentType<B
 
 /**
  * ブロックの `type` → 描画するコンポーネント。ここに無い `type` は描画しない。
- * 独自コンポーネント（#13 以降）もここに足す。足すときは `packages/schema` の記事ドキュメントと
+ * 独自コンポーネント（`pageHeader` など）もここに足す。足すときは `packages/schema` の記事ドキュメントと
  * 管理者サイトのブロック定義も同時に足すこと（docs/article-system.md 参照）
  */
 export const blockRegistry: BlockRegistry = {
@@ -36,4 +37,5 @@ export const blockRegistry: BlockRegistry = {
     divider: Divider,
     table: Table,
     codeBlock: CodeBlock,
+    pageHeader: PageHeader,
 }

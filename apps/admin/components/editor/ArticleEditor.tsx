@@ -2,7 +2,13 @@
 
 import { useCallback } from 'react'
 
-import { BlockNoteSchema, defaultBlockSpecs, filterSuggestionItems, SyntaxHighlightingExtension } from '@blocknote/core'
+import {
+    BlockNoteSchema,
+    defaultBlockSpecs,
+    filterSuggestionItems,
+    insertOrUpdateBlockForSlashMenu,
+    SyntaxHighlightingExtension,
+} from '@blocknote/core'
 import { ja } from '@blocknote/core/locales'
 import {
     BlockNoteViewRaw,
@@ -10,13 +16,17 @@ import {
     getDefaultReactSlashMenuItems,
     SuggestionMenuController,
     useCreateBlockNote,
+    useEditorState,
 } from '@blocknote/react'
 import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultComponents } from '@blocknote/shadcn'
 import '@blocknote/shadcn/style.css'
+import { PanelTop } from 'lucide-react'
 import { createHighlighter } from 'shiki'
 
 import type { ArticleDocument } from '@fesp/schema'
 
+import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
+import { type ComponentBlock, ComponentPropsPanel, isComponentBlock } from './ComponentPropsPanel'
 import { EmojiGridRoot } from './EmojiGridRoot'
 import { SlashMenuItem } from './SlashMenuItem'
 import { SlashMenuRoot } from './SlashMenuRoot'
@@ -58,6 +68,8 @@ export const articleSchema = BlockNoteSchema.create({
         table: defaultBlockSpecs.table,
         // 裏機能。バッククォート3つ（```）で誰でも作れるが、スラッシュメニューには出さない
         codeBlock: defaultBlockSpecs.codeBlock,
+        // 独自コンポーネント。中身を持たず、props はサイドパネル（ComponentPropsPanel）で編集する
+        pageHeader: createPageHeaderBlock(),
     },
 })
 
@@ -76,7 +88,9 @@ export type ArticleEditorProps = {
  * コードブロックの中身はShiki（VSCode等と同じハイライトエンジン）で色分けする。
  * 対応言語はhtml/css/javascript/typescript/json/yaml/markdownの7つに絞っている
  * （バンドルサイズの都合。増やす場合はsyntaxHighlightingのlangsに足す）。
- * 独自コンポーネントブロックの挿入・テンプレートによるロックは #24 で対応する。
+ * 独自コンポーネントのブロックはスラッシュメニューの「コンポーネント」グループから挿入し、
+ * カーソルがある間だけ右のサイドパネル（ComponentPropsPanel）で props を編集する。
+ * テンプレートによるロックは #64 で対応する。
  * 共同編集（Yjs）はこの版では繋がない（同期編集は `CollaborativeEditor.tsx` の役割）。
  */
 export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
@@ -94,29 +108,66 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
         async (query: string) => {
             const items = await getDefaultReactSlashMenuItems(editor)
             return filterSuggestionItems(
-                items.filter((item) => (item as { key?: string }).key !== 'code_block'),
+                [
+                    ...items.filter((item) => (item as { key?: string }).key !== 'code_block'),
+                    {
+                        title: 'ページ見出し',
+                        subtext: '英語ラベルと日本語タイトルの見出し',
+                        aliases: ['pageheader', 'midashi', 'みだし'],
+                        group: 'コンポーネント',
+                        icon: <PanelTop />,
+                        onItemClick: () => {
+                            // 中身の無いブロックを入れるとカーソルが次のブロックに移るので、サイドパネルを開くために戻す
+                            const block = insertOrUpdateBlockForSlashMenu(editor, { type: 'pageHeader' })
+                            editor.setTextCursorPosition(block)
+                        },
+                    },
+                ],
                 query,
             )
         },
         [editor],
     )
 
+    // カーソルがある独自コンポーネントのブロック。無ければサイドパネルを出さない
+    const activeComponentBlock = useEditorState({
+        editor,
+        selector: ({ editor }): ComponentBlock | null => {
+            const { block } = editor.getTextCursorPosition()
+            return isComponentBlock(block) ? { id: block.id, type: block.type, props: block.props } : null
+        },
+    })
+
+    // フォームの購読を張り直さないよう、ブロックの props ではなく id が変わったときだけ作り直す
+    const activeComponentBlockId = activeComponentBlock?.id
+    const handleComponentPropsChange = useCallback(
+        (props: ComponentBlock['props']) => {
+            if (activeComponentBlockId) editor.updateBlock(activeComponentBlockId, { props })
+        },
+        [editor, activeComponentBlockId],
+    )
+
     return (
-        <div className='rounded-md border border-border'>
-            <ShadCNComponentsContext.Provider value={ShadCNDefaultComponents}>
-                <ComponentsContext.Provider value={editorComponents}>
-                    <BlockNoteViewRaw
-                        editor={editor}
-                        theme='light'
-                        className='bn-shadcn'
-                        aria-label='本文エディタ'
-                        slashMenu={false}
-                        onChange={() => onChange?.(editor.document as ArticleDocument)}
-                    >
-                        <SuggestionMenuController triggerCharacter='/' getItems={getSlashMenuItems} />
-                    </BlockNoteViewRaw>
-                </ComponentsContext.Provider>
-            </ShadCNComponentsContext.Provider>
+        <div className='flex items-start gap-4'>
+            <div className='min-w-0 flex-1 rounded-md border border-border'>
+                <ShadCNComponentsContext.Provider value={ShadCNDefaultComponents}>
+                    <ComponentsContext.Provider value={editorComponents}>
+                        <BlockNoteViewRaw
+                            editor={editor}
+                            theme='light'
+                            className='bn-shadcn'
+                            aria-label='本文エディタ'
+                            slashMenu={false}
+                            onChange={() => onChange?.(editor.document as ArticleDocument)}
+                        >
+                            <SuggestionMenuController triggerCharacter='/' getItems={getSlashMenuItems} />
+                        </BlockNoteViewRaw>
+                    </ComponentsContext.Provider>
+                </ShadCNComponentsContext.Provider>
+            </div>
+            {activeComponentBlock && (
+                <ComponentPropsPanel block={activeComponentBlock} onChange={handleComponentPropsChange} />
+            )}
         </div>
     )
 }

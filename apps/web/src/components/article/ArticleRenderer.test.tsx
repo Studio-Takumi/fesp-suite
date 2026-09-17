@@ -209,6 +209,36 @@ describe('ArticleRenderer', () => {
         expect(screen.getByText('続きの段落')).toBeInTheDocument()
     })
 
+    it('ページ見出しは英語ラベル（大文字）と日本語タイトル（h1）を header に出す', () => {
+        renderBlocks([{ id: '1', type: 'pageHeader', props: { label: 'news', title: 'お知らせ' }, children: [] }])
+
+        const header = screen.getByRole('banner')
+        expect(header).toContainElement(screen.getByRole('heading', { level: 1, name: 'お知らせ' }))
+        expect(screen.getByText('news')).toHaveClass('uppercase', 'font-en')
+    })
+
+    it('ページ見出しは空の行を出さず、両方とも空なら header ごと出さない', () => {
+        const { rerender } = renderBlocks([
+            { id: '1', type: 'pageHeader', props: { label: '', title: 'お知らせ' }, children: [] },
+        ])
+        expect(screen.getByRole('banner').childElementCount).toBe(1)
+
+        rerender(
+            <ArticleRenderer
+                blocks={[{ id: '1', type: 'pageHeader', props: { label: 'NEWS', title: '' }, children: [] }]}
+            />,
+        )
+        expect(screen.queryByRole('heading')).not.toBeInTheDocument()
+        expect(screen.getByText('NEWS')).toBeInTheDocument()
+
+        rerender(
+            <ArticleRenderer
+                blocks={[{ id: '1', type: 'pageHeader', props: { label: '', title: '' }, children: [] }]}
+            />,
+        )
+        expect(screen.queryByRole('banner')).not.toBeInTheDocument()
+    })
+
     it('レジストリを差し替えると、差し替えたコンポーネントで描画する', () => {
         render(
             <ArticleRenderer
