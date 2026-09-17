@@ -117,6 +117,53 @@ export const pageHeaderPropsSchema = z
     .strict()
 export type PageHeaderProps = z.infer<typeof pageHeaderPropsSchema>
 
+/**
+ * お知らせ一覧（`newsList`）の props。
+ * BlockNote の props は文字列・数値・真偽値しか持てないので、タブに出すタグは ID をカンマ区切りで並べた文字列で持つ
+ */
+export const newsListPropsSchema = z
+    .object({
+        /** タグのタブを出すか */
+        showTagTabs: z.boolean(),
+        /** タブに出すタグの ID をカンマ区切りで並べた文字列（例: `stage,shop`）。空文字なら選んでいない */
+        tags: z.string().regex(/^([^,]+(,[^,]+)*)?$/, 'タグの指定が正しくありません'),
+        /** 表示件数。無ければ全件。BlockNote は未設定の値を `undefined` にし、JSON を経由するとキーごと消える */
+        limit: z
+            .number('表示件数は1以上の整数で入力してください')
+            .int('表示件数は1以上の整数で入力してください')
+            .min(1, '表示件数は1以上の整数で入力してください')
+            .optional(),
+        /** 「すべて見る」を出すか */
+        showViewAll: z.boolean(),
+    })
+    .strict()
+export type NewsListProps = z.infer<typeof newsListPropsSchema>
+
+/** お知らせ一覧の props の `tags` を、タグの ID の配列にする */
+export function parseNewsListTags(tags: string): string[] {
+    return tags === '' ? [] : tags.split(',')
+}
+
+/** 記事の画像（`coverImage`）の props */
+export const coverImagePropsSchema = z
+    .object({
+        /** 画像の URL。空文字なら画像を出さない */
+        imageUrl: z.union([
+            z.literal(''),
+            z.url({ protocol: /^https?$/, error: 'http:// か https:// で始まる URL を入力してください' }),
+        ]),
+    })
+    .strict()
+export type CoverImageProps = z.infer<typeof coverImagePropsSchema>
+
+/** 記事のサマリー（`postSummary`）の props。表示中の記事の情報を出すので props を持たない */
+export const postSummaryPropsSchema = z.object({}).strict()
+export type PostSummaryProps = z.infer<typeof postSummaryPropsSchema>
+
+/** 前後の記事（`adjacentPosts`）の props。表示中の記事の前後を出すので props を持たない */
+export const adjacentPostsPropsSchema = z.object({}).strict()
+export type AdjacentPostsProps = z.infer<typeof adjacentPostsPropsSchema>
+
 /** コードブロックの中身はスタイル（太字等）を持たない「プレーンテキスト」 */
 const plainTextSchema = z.object({
     type: z.literal('text'),
@@ -164,6 +211,10 @@ export type ArticleBlock = {
         | 'table'
         | 'codeBlock'
         | 'pageHeader'
+        | 'newsList'
+        | 'coverImage'
+        | 'postSummary'
+        | 'adjacentPosts'
     props: Record<string, unknown>
     content?: (ArticleStyledText | ArticleLink)[] | ArticleTableContent
     children: ArticleBlock[]
@@ -247,6 +298,34 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             type: z.literal('pageHeader'),
             props: pageHeaderPropsSchema,
             /** 独自コンポーネントは中身を持たない。JSONを経由すると`content`キーごと消える */
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('newsList'),
+            props: newsListPropsSchema,
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('coverImage'),
+            props: coverImagePropsSchema,
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('postSummary'),
+            props: postSummaryPropsSchema,
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('adjacentPosts'),
+            props: adjacentPostsPropsSchema,
             content: z.undefined().optional(),
             children: z.array(articleBlockSchema),
         }),
