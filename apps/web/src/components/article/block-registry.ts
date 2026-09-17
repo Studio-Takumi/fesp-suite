@@ -15,6 +15,7 @@ import { PageHeader } from './blocks/PageHeader'
 import { Paragraph } from './blocks/Paragraph'
 import { PostSummary } from './blocks/PostSummary'
 import { Quote } from './blocks/Quote'
+import { ScheduleTable } from './blocks/ScheduleTable'
 import { Table } from './blocks/Table'
 import { TodayWeather } from './blocks/TodayWeather'
 import { ToggleListItem } from './blocks/ToggleListItem'
@@ -49,6 +50,7 @@ export const blockRegistry: BlockRegistry = {
     table: Table,
     codeBlock: CodeBlock,
     pageHeader: PageHeader,
+    scheduleTable: ScheduleTable,
     map: Map,
     newsList: NewsList,
     coverImage: CoverImage,

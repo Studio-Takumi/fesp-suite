@@ -7,16 +7,19 @@ import type {
     EmptyComponentProps,
     NewsListProps,
     PageHeaderProps,
+    ScheduleTableProps,
     WeatherComponentType,
 } from '@fesp/schema'
 
 import { CoverImagePropsForm } from './CoverImagePropsForm'
 import { NewsListPropsForm } from './NewsListPropsForm'
 import { PageHeaderPropsForm } from './PageHeaderPropsForm'
+import { ScheduleTablePropsForm } from './ScheduleTablePropsForm'
 
 /** props をサイドパネルで編集する、独自コンポーネントのブロック */
 export type ComponentBlock =
     | { id: string; type: 'pageHeader'; props: PageHeaderProps }
+    | { id: string; type: 'scheduleTable'; props: ScheduleTableProps }
     | { id: string; type: 'newsList'; props: NewsListProps }
     | { id: string; type: 'coverImage'; props: CoverImageProps }
     | { id: string; type: 'map' | 'postSummary' | 'adjacentPosts'; props: EmptyComponentProps }
@@ -39,6 +42,12 @@ const componentPanels: {
     pageHeader: {
         name: 'ページ見出し',
         renderForm: (block, onChange) => <PageHeaderPropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
+    scheduleTable: {
+        name: 'スケジュール表',
+        renderForm: (block, onChange) => (
+            <ScheduleTablePropsForm defaultValues={block.props} onValidChange={onChange} />
+        ),
     },
     newsList: {
         name: 'お知らせ一覧',

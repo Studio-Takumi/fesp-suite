@@ -5,6 +5,7 @@ import { articleViewResponseSchema, exampleResponseSchema } from '@fesp/schema'
 import { apiFetch } from './api'
 import { mapMock } from './mock/map'
 import { mockAdjacentPosts, mockCurrentPost, mockNewsPosts, mockNewsTags } from './mock/news'
+import { scheduleDays } from './mock/schedule'
 import { createMockWeather } from './mock/weather'
 
 /**
@@ -16,6 +17,7 @@ import { createMockWeather } from './mock/weather'
 export const queryKeys = {
     example: ['example'] as const,
     article: (id: string) => ['articles', id] as const,
+    schedules: ['schedules'] as const,
     map: ['map'] as const,
     news: ['news'] as const,
     newsTags: ['news', 'tags'] as const,
@@ -35,6 +37,13 @@ export const articleQuery = (id: string) =>
         queryKey: queryKeys.article(id),
         queryFn: ({ signal }) =>
             apiFetch(`/api/articles/${id}`, articleViewResponseSchema, { signal, authenticated: true }),
+    })
+
+/** スケジュール（日付 → 会場 → 項目）。スケジュールの API ができるまでは仮データ（`lib/mock/schedule.ts`）を返す */
+export const scheduleQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.schedules,
+        queryFn: () => Promise.resolve(scheduleDays),
     })
 
 /** マップ（独自コンポーネント `map`）のフロアと場所の一覧。本物の API ができるまでは仮データを返す */

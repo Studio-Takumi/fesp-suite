@@ -7,6 +7,11 @@ describe('dateFormatter', () => {
         expect(dateFormatter('2026-09-14T03:05:09+09:00', 'YYYY/MM/DD HH:mm:ss')).toBe('2026/09/14 03:05:09')
     })
 
+    it('M / D / H は月・日・時をゼロ埋めせずに出す', () => {
+        expect(dateFormatter('2026-06-06T08:05:00+09:00', 'M/D(EEE) H:mm')).toBe('6/6(土) 8:05')
+        expect(dateFormatter('2026-12-24T00:30:00+09:00', 'M/D H:mm')).toBe('12/24 0:30')
+    })
+
     it('yyyy / dd も YYYY / DD と同じ意味で使える', () => {
         expect(dateFormatter('2026-09-14T03:05:09+09:00', 'yyyy-MM-dd')).toBe('2026-09-14')
     })

@@ -435,6 +435,15 @@ describe('ArticleRenderer', () => {
         expect(screen.getByText(/更新 ・ 出典: 気象庁/)).toBeInTheDocument()
     })
 
+    it('スケジュール表は日付タブと会場ごとのタイムテーブルを出す（仮データ）', async () => {
+        renderWithQuery([{ id: '1', type: 'scheduleTable', props: { showDateTabs: true }, children: [] }])
+
+        expect(await screen.findByRole('tablist', { name: '日付' })).toBeInTheDocument()
+        expect(screen.getByRole('region', { name: 'スケジュール' })).toContainElement(
+            screen.getByRole('list', { name: '体育館' }),
+        )
+    })
+
     it('マップは地図の領域とボトムシートの場所の一覧を出し、そのあとのブロックの描画を続ける', async () => {
         renderWithQuery([
             { id: '1', type: 'map', props: {}, children: [] },
