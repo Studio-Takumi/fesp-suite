@@ -20,6 +20,7 @@ TanStack Table で汎用のテーブル `components/data-table/DataTable.tsx` �
 | `apps/admin/components/example/DataTable.tsx`    | 削除（+ test）                                                                                            |
 | `apps/admin/components/articles/ArticleList.tsx` | DataTable で組み直し、検索欄と公開状態のセレクトをツールバーに置く                                        |
 | `apps/admin/components/ui/select.tsx`            | 追加。`shadcn add select` の出力（依存は既存の `radix-ui` だけで、パッケージは増えていない）              |
+| `apps/admin/components/ui/badge.tsx`             | 追加。`shadcn add badge` の出力。公開状態の表示に使う                                                     |
 | `apps/admin/test/setup.ts`                       | Radix の Select を開くための polyfill（`hasPointerCapture` / `releasePointerCapture` / `scrollIntoView`） |
 | `apps/admin/README.md`                           | ディレクトリ構成の `DataTable.tsx` の場所を更新                                                           |
 | `docs/admin.md`                                  | 記事一覧に並べ替え・絞り込み・ページ送りを追記                                                            |
@@ -33,14 +34,17 @@ TanStack Table で汎用のテーブル `components/data-table/DataTable.tsx` �
 - **公開状態は `status` と `schedule` から4種類（`draft` / `scheduled` / `published_scheduled` / `published`）を求める列にした。** 配列の順番を並べ替えの昇順（下書き → 予約中 → 公開中（更新予約あり）→ 公開中）とセレクトの選択肢の順に兼ねさせている
 - **更新日時の列は `Date` を返して `sortingFn: 'datetime'`、`sortDescFirst: true`。** 初期の並びが新しい順なので、最初のクリックは古い順になる
 - **Radix の Select は空文字を値にできないので、「すべて」は `all` にし、選んだら `setFilterValue(undefined)` で絞り込みを外す**
+- **セルの中身は列定義の `cell` で自由に描ける**ので、DataTable 側にカスタム表示の仕組みは足していない。公開状態のバッジも `ArticleList` の列定義の `cell` で描いている（レビューで相談）
+- **公開状態は色を分けたバッジで出す**（下書き=グレー、予約中=黄、公開中（更新予約あり）=水色、公開中=緑。発注者と合意）。`components/ui/badge.tsx` は shadcn 本家のまま触らず、色は `ArticleList` から `className` で渡した
+- **「前へ」「次へ」は `ChevronLeft` / `ChevronRight` のアイコンだけのボタンにし、`aria-label` で名前を付けた**（レビューの指摘）
 - 絞り込みを変えたときに1ページ目に戻るのは、TanStack Table の `autoResetPageIndex`（既定で有効）に任せた
 
 ## テスト
 
-| テスト                                                | 検証内容                                                                                                                                                     |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `apps/admin/components/data-table/DataTable.test.tsx` | `initialSorting`、昇順・降順の切り替え（並べ替えなしに戻らない）、並べ替えない列、ツールバーからの絞り込み、0行の文言、ページ送り、絞り込みで1ページ目に戻る |
-| `apps/admin/components/articles/ArticleList.test.tsx` | 初期は更新日時の新しい順、タイトル・公開状態・更新日時の並べ替え、公開状態4種類と「すべて」の絞り込み、検索との併用、絞り込んで0件の文言、50件のページ送り   |
+| テスト                                                | 検証内容                                                                                                                                                                     |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/admin/components/data-table/DataTable.test.tsx` | `initialSorting`、昇順・降順の切り替え（並べ替えなしに戻らない）、並べ替えない列、ツールバーからの絞り込み、0行の文言、ページ送り、絞り込みで1ページ目に戻る                 |
+| `apps/admin/components/articles/ArticleList.test.tsx` | 初期は更新日時の新しい順、タイトル・公開状態・更新日時の並べ替え、公開状態4種類と「すべて」の絞り込み、検索との併用、絞り込んで0件の文言、50件のページ送り、公開状態のバッジ |
 
 ```
 bun run format    ✅
