@@ -2,11 +2,14 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
+import { weatherComponentTypes } from '@fesp/schema'
+
 import { ComponentPropsPanel, isComponentBlock } from './ComponentPropsPanel'
 
 describe('isComponentBlock', () => {
     it('独自コンポーネントのブロックだけを true にする', () => {
         expect(isComponentBlock({ type: 'pageHeader' })).toBe(true)
+        for (const type of weatherComponentTypes) expect(isComponentBlock({ type })).toBe(true)
         expect(isComponentBlock({ type: 'paragraph' })).toBe(false)
     })
 })
@@ -53,4 +56,24 @@ describe('ComponentPropsPanel（ページ見出し）', () => {
 
         expect(onChange).not.toHaveBeenCalled()
     })
+})
+
+describe('ComponentPropsPanel（props を持たないコンポーネント）', () => {
+    it.each([
+        ['todayWeather', '今日の天気'],
+        ['weeklyForecast', '週間予報'],
+        ['weatherAlert', '気象警報・注意報'],
+        ['wbgt', '暑さ指数'],
+        ['weatherOverview', '天気概況'],
+        ['weatherCredit', '天気の更新時刻・出典'],
+    ] as const)(
+        '%s はコンポーネント名「%s」の下に「設定する項目はありません」と出し、入力欄を出さない',
+        (type, name) => {
+            render(<ComponentPropsPanel block={{ id: '1', type, props: {} }} onChange={vi.fn()} />)
+
+            expect(screen.getByRole('heading', { name })).toBeInTheDocument()
+            expect(screen.getByText('設定する項目はありません')).toBeInTheDocument()
+            expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+        },
+    )
 })

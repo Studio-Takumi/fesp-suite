@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -9,7 +9,7 @@ import { ArticleEditor, articleSchema } from './ArticleEditor'
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
 
 describe('articleSchema', () => {
-    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・区切り線・表・コードブロックと、独自コンポーネントのページ見出しだけを許可する（画像・動画等は含まない）', () => {
+    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・区切り線・表・コードブロックと、独自コンポーネント（ページ見出し・天気）だけを許可する（画像・動画等は含まない）', () => {
         expect(Object.keys(articleSchema.blockSchema).sort()).toEqual(
             [
                 'bulletListItem',
@@ -23,6 +23,12 @@ describe('articleSchema', () => {
                 'quote',
                 'table',
                 'toggleListItem',
+                'todayWeather',
+                'weeklyForecast',
+                'weatherAlert',
+                'wbgt',
+                'weatherOverview',
+                'weatherCredit',
             ].sort(),
         )
     })
@@ -141,6 +147,44 @@ describe('ArticleEditor', () => {
         expect(await screen.findByText('編集中')).toBeInTheDocument()
         expect(screen.getAllByText('ページ見出し', { selector: 'span' })).toHaveLength(2)
         expect(screen.getByText('設定')).toBeInTheDocument()
+    })
+
+    it('天気のブロックは、カードに名前と説明の1文を出す', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'paragraph', props: defaultBlockProps, content: [], children: [] },
+            { id: '2', type: 'todayWeather', props: {}, children: [] },
+            { id: '3', type: 'weeklyForecast', props: {}, children: [] },
+            { id: '4', type: 'weatherAlert', props: {}, children: [] },
+            { id: '5', type: 'wbgt', props: {}, children: [] },
+            { id: '6', type: 'weatherOverview', props: {}, children: [] },
+            { id: '7', type: 'weatherCredit', props: {}, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        for (const [name, description] of [
+            ['今日の天気', '今日の天気と気温を出します'],
+            ['週間予報', '1週間分の天気と気温を横に並べて出します'],
+            ['気象警報・注意報', '発表中の警報・注意報を出します（無いときは出しません）'],
+            ['暑さ指数', '暑さ指数（WBGT）と段階を出します'],
+            ['天気概況', '気象台の天気概況の文章を出します'],
+            ['天気の更新時刻・出典', '天気の更新時刻と出典（気象庁）を出します'],
+        ]) {
+            expect(await screen.findByText(name!, { selector: 'span' })).toBeInTheDocument()
+            expect(screen.getByText(description!)).toBeInTheDocument()
+        }
+        expect(screen.queryByRole('complementary', { name: 'コンポーネントの設定' })).not.toBeInTheDocument()
+    })
+
+    it('カーソルが天気のブロックにあれば、サイドパネルに名前と「設定する項目はありません」を出す', async () => {
+        const content: ArticleDocument = [{ id: '1', type: 'wbgt', props: {}, children: [] }]
+
+        render(<ArticleEditor content={content} />)
+
+        const panel = await screen.findByRole('complementary', { name: 'コンポーネントの設定' })
+        expect(within(panel).getByRole('heading', { name: '暑さ指数' })).toBeInTheDocument()
+        expect(within(panel).getByText('設定する項目はありません')).toBeInTheDocument()
+        expect(within(panel).queryByRole('textbox')).not.toBeInTheDocument()
     })
 
     it('コードブロック（裏機能）の中身を<pre><code>で表示する', async () => {

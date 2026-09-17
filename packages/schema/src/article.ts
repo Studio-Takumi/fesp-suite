@@ -117,6 +117,24 @@ export const pageHeaderPropsSchema = z
     .strict()
 export type PageHeaderProps = z.infer<typeof pageHeaderPropsSchema>
 
+/**
+ * props を持たない独自コンポーネント（天気の `todayWeather` など）の props。
+ * 表示するデータはコンポーネントが自分で読むので、記事には何も持たせない
+ */
+export const emptyComponentPropsSchema = z.object({}).strict()
+export type EmptyComponentProps = z.infer<typeof emptyComponentPropsSchema>
+
+/** 天気の独自コンポーネント。どれも props を持たない（docs/app.md の「天気のブロック」参照） */
+export const weatherComponentTypes = [
+    'todayWeather',
+    'weeklyForecast',
+    'weatherAlert',
+    'wbgt',
+    'weatherOverview',
+    'weatherCredit',
+] as const
+export type WeatherComponentType = (typeof weatherComponentTypes)[number]
+
 /** コードブロックの中身はスタイル（太字等）を持たない「プレーンテキスト」 */
 const plainTextSchema = z.object({
     type: z.literal('text'),
@@ -164,6 +182,7 @@ export type ArticleBlock = {
         | 'table'
         | 'codeBlock'
         | 'pageHeader'
+        | WeatherComponentType
     props: Record<string, unknown>
     content?: (ArticleStyledText | ArticleLink)[] | ArticleTableContent
     children: ArticleBlock[]
@@ -250,8 +269,25 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             content: z.undefined().optional(),
             children: z.array(articleBlockSchema),
         }),
+        emptyComponentBlockSchema('todayWeather'),
+        emptyComponentBlockSchema('weeklyForecast'),
+        emptyComponentBlockSchema('weatherAlert'),
+        emptyComponentBlockSchema('wbgt'),
+        emptyComponentBlockSchema('weatherOverview'),
+        emptyComponentBlockSchema('weatherCredit'),
     ]),
 )
+
+/** props を持たない独自コンポーネントのブロック。中身も持たない（JSONを経由すると`content`キーごと消える） */
+function emptyComponentBlockSchema<Type extends string>(type: Type) {
+    return z.object({
+        id: z.string().min(1),
+        type: z.literal(type),
+        props: emptyComponentPropsSchema,
+        content: z.undefined().optional(),
+        children: z.array(articleBlockSchema),
+    })
+}
 
 /** 記事ドキュメント全体の形。BlockNoteの `Block[]`（トップレベルは配列で、`doc` のようなルートノードは無い） */
 export const articleDocumentSchema = z.array(articleBlockSchema)

@@ -20,12 +20,18 @@ import {
 } from '@blocknote/react'
 import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultComponents } from '@blocknote/shadcn'
 import '@blocknote/shadcn/style.css'
-import { PanelTop } from 'lucide-react'
+import { CalendarDays, FileText, PanelTop, RefreshCw, Sun, Thermometer, TriangleAlert } from 'lucide-react'
 import { createHighlighter } from 'shiki'
 
 import type { ArticleDocument } from '@fesp/schema'
 
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
+import { createTodayWeatherBlock } from './blocks/TodayWeatherBlock'
+import { createWbgtBlock } from './blocks/WbgtBlock'
+import { createWeatherAlertBlock } from './blocks/WeatherAlertBlock'
+import { createWeatherCreditBlock } from './blocks/WeatherCreditBlock'
+import { createWeatherOverviewBlock } from './blocks/WeatherOverviewBlock'
+import { createWeeklyForecastBlock } from './blocks/WeeklyForecastBlock'
 import { type ComponentBlock, ComponentPropsPanel, isComponentBlock } from './ComponentPropsPanel'
 import { EmojiGridRoot } from './EmojiGridRoot'
 import { SlashMenuItem } from './SlashMenuItem'
@@ -70,8 +76,67 @@ export const articleSchema = BlockNoteSchema.create({
         codeBlock: defaultBlockSpecs.codeBlock,
         // 独自コンポーネント。中身を持たず、props はサイドパネル（ComponentPropsPanel）で編集する
         pageHeader: createPageHeaderBlock(),
+        todayWeather: createTodayWeatherBlock(),
+        weeklyForecast: createWeeklyForecastBlock(),
+        weatherAlert: createWeatherAlertBlock(),
+        wbgt: createWbgtBlock(),
+        weatherOverview: createWeatherOverviewBlock(),
+        weatherCredit: createWeatherCreditBlock(),
     },
 })
+
+/** スラッシュメニューの「コンポーネント」グループに出す、独自コンポーネントのブロック */
+const componentSlashMenuItems = [
+    {
+        type: 'pageHeader',
+        title: 'ページ見出し',
+        subtext: '英語ラベルと日本語タイトルの見出し',
+        aliases: ['pageheader', 'midashi', 'みだし'],
+        icon: <PanelTop />,
+    },
+    {
+        type: 'todayWeather',
+        title: '今日の天気',
+        subtext: '今日の天気と気温',
+        aliases: ['todayweather', 'weather', 'tenki', 'てんき'],
+        icon: <Sun />,
+    },
+    {
+        type: 'weeklyForecast',
+        title: '週間予報',
+        subtext: '1週間分の天気と気温',
+        aliases: ['weeklyforecast', 'weather', 'tenki', 'てんき', 'yohou', 'よほう'],
+        icon: <CalendarDays />,
+    },
+    {
+        type: 'weatherAlert',
+        title: '気象警報・注意報',
+        subtext: '発表中の警報・注意報',
+        aliases: ['weatheralert', 'weather', 'keihou', 'けいほう', 'tyuuihou', 'ちゅういほう'],
+        icon: <TriangleAlert />,
+    },
+    {
+        type: 'wbgt',
+        title: '暑さ指数',
+        subtext: '暑さ指数（WBGT）と段階',
+        aliases: ['wbgt', 'weather', 'atusa', 'あつさ', 'nettyuusyou', 'ねっちゅうしょう'],
+        icon: <Thermometer />,
+    },
+    {
+        type: 'weatherOverview',
+        title: '天気概況',
+        subtext: '気象台の天気概況の文章',
+        aliases: ['weatheroverview', 'weather', 'tenki', 'てんき', 'gaikyou', 'がいきょう'],
+        icon: <FileText />,
+    },
+    {
+        type: 'weatherCredit',
+        title: '天気の更新時刻・出典',
+        subtext: '天気の更新時刻と出典（気象庁）',
+        aliases: ['weathercredit', 'weather', 'tenki', 'てんき', 'syutten', 'しゅってん'],
+        icon: <RefreshCw />,
+    },
+] as const
 
 export type ArticleEditorProps = {
     content?: ArticleDocument
@@ -110,18 +175,16 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
             return filterSuggestionItems(
                 [
                     ...items.filter((item) => (item as { key?: string }).key !== 'code_block'),
-                    {
-                        title: 'ページ見出し',
-                        subtext: '英語ラベルと日本語タイトルの見出し',
-                        aliases: ['pageheader', 'midashi', 'みだし'],
+                    ...componentSlashMenuItems.map(({ type, aliases, ...item }) => ({
+                        ...item,
+                        aliases: [...aliases],
                         group: 'コンポーネント',
-                        icon: <PanelTop />,
                         onItemClick: () => {
                             // 中身の無いブロックを入れるとカーソルが次のブロックに移るので、サイドパネルを開くために戻す
-                            const block = insertOrUpdateBlockForSlashMenu(editor, { type: 'pageHeader' })
+                            const block = insertOrUpdateBlockForSlashMenu(editor, { type })
                             editor.setTextCursorPosition(block)
                         },
-                    },
+                    })),
                 ],
                 query,
             )
@@ -134,7 +197,10 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
         editor,
         selector: ({ editor }): ComponentBlock | null => {
             const { block } = editor.getTextCursorPosition()
-            return isComponentBlock(block) ? { id: block.id, type: block.type, props: block.props } : null
+            // `type` と `props` を分けて取り出すと組み合わせの型が消えるので、ComponentBlock に戻す
+            return isComponentBlock(block)
+                ? ({ id: block.id, type: block.type, props: block.props } as ComponentBlock)
+                : null
         },
     })
 

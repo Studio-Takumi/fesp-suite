@@ -3,6 +3,10 @@ import { describe, expect, it } from 'vitest'
 
 import type { ArticleBlock, ArticleDocument, ArticleStyles } from '@fesp/schema'
 
+import { createMockWeather } from '~/lib/mock/weather'
+import { weatherQuery } from '~/lib/queries'
+import { createTestQueryClient, renderWithQueryClient } from '~/test/render'
+
 import { ArticleRenderer } from './ArticleRenderer'
 import { blockRegistry } from './block-registry'
 
@@ -237,6 +241,34 @@ describe('ArticleRenderer', () => {
             />,
         )
         expect(screen.queryByRole('banner')).not.toBeInTheDocument()
+    })
+
+    it('天気のブロック（今日・週間予報・警報・暑さ指数・概況・更新時刻と出典）を天気のデータから描画する', () => {
+        const queryClient = createTestQueryClient()
+        queryClient.setQueryData(weatherQuery().queryKey, createMockWeather())
+
+        renderWithQueryClient(
+            <ArticleRenderer
+                blocks={(
+                    [
+                        'todayWeather',
+                        'weeklyForecast',
+                        'weatherAlert',
+                        'wbgt',
+                        'weatherOverview',
+                        'weatherCredit',
+                    ] as const
+                ).map((type) => ({ id: type, type, props: {}, children: [] }))}
+            />,
+            queryClient,
+        )
+
+        expect(screen.getByRole('region', { name: '今日の天気' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2, name: '週間予報' })).toBeInTheDocument()
+        expect(screen.getByRole('region', { name: '気象警報・注意報' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2, name: '暑さ指数（WBGT）' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2, name: '今日の天気概況' })).toBeInTheDocument()
+        expect(screen.getByText(/更新 ・ 出典: 気象庁/)).toBeInTheDocument()
     })
 
     it('レジストリを差し替えると、差し替えたコンポーネントで描画する', () => {

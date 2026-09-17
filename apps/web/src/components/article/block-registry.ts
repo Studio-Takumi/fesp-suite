@@ -11,7 +11,13 @@ import { PageHeader } from './blocks/PageHeader'
 import { Paragraph } from './blocks/Paragraph'
 import { Quote } from './blocks/Quote'
 import { Table } from './blocks/Table'
+import { TodayWeather } from './blocks/TodayWeather'
 import { ToggleListItem } from './blocks/ToggleListItem'
+import { Wbgt } from './blocks/Wbgt'
+import { WeatherAlert } from './blocks/WeatherAlert'
+import { WeatherCredit } from './blocks/WeatherCredit'
+import { WeatherOverview } from './blocks/WeatherOverview'
+import { WeeklyForecast } from './blocks/WeeklyForecast'
 
 export type BlockComponentProps = {
     block: ArticleBlock
@@ -38,4 +44,10 @@ export const blockRegistry: BlockRegistry = {
     table: Table,
     codeBlock: CodeBlock,
     pageHeader: PageHeader,
+    todayWeather: TodayWeather,
+    weeklyForecast: WeeklyForecast,
+    weatherAlert: WeatherAlert,
+    wbgt: Wbgt,
+    weatherOverview: WeatherOverview,
+    weatherCredit: WeatherCredit,
 }
