@@ -72,7 +72,7 @@ const product = (id: string, name: string, price: number, photoId?: string): Sho
 export const mockShops: Shop[] = [
     {
         id: 'shop-1',
-        image_url: photo('photo-1499028344343-cd173ffc68a9'),
+        image_url: photo('photo-1527661591475-527312dd65f5'),
         name: 'レモネードスタンド',
         group: '2年1組',
         location: '特別教室A',
@@ -82,15 +82,15 @@ export const mockShops: Shop[] = [
         starts_at: '2026-06-06T09:10:00+09:00',
         ends_at: '2026-06-06T14:30:00+09:00',
         products: [
-            product('product-1', 'レモネード', 200, 'photo-1513104890138-7c749659a591'),
-            product('product-2', 'ピンクレモネード', 200, 'photo-1550317138-10000687a72b'),
-            product('product-3', 'はちみつレモン', 150, 'photo-1568901346375-23c9450c58cd'),
+            product('product-1', 'レモネード', 200, 'photo-1621263764928-df1444c5e859'),
+            product('product-2', 'ピンクレモネード', 200, 'photo-1497534446932-c925b458314e'),
+            product('product-3', 'はちみつレモン', 150, 'photo-1600271886742-f049cd451bba'),
             product('product-4', 'レモンスカッシュ', 250),
         ],
     },
     {
         id: 'shop-2',
-        image_url: photo('photo-1552566626-52f8b828add9'),
+        image_url: photo('photo-1567620905732-2d1ec7ab7445'),
         name: 'クレープ屋さん',
         group: '1年5組',
         location: '1年5組教室',
@@ -100,14 +100,14 @@ export const mockShops: Shop[] = [
         starts_at: '2026-06-06T09:40:00+09:00',
         ends_at: '2026-06-06T15:00:00+09:00',
         products: [
-            product('product-5', 'チョコクレープ', 300, 'photo-1555396273-367ea4eb4db5'),
-            product('product-6', 'いちごクレープ', 350, 'photo-1528605248644-14dd04022da1'),
-            product('product-7', 'ツナクレープ', 300, 'photo-1517248135467-4c7edcad34c4'),
+            product('product-5', 'チョコクレープ', 300, 'photo-1567620905732-2d1ec7ab7445'),
+            product('product-6', 'いちごクレープ', 350, 'photo-1519676867240-f03562e64548'),
+            product('product-7', 'ツナクレープ', 300, 'photo-1558961363-fa8fdf82db35'),
         ],
     },
     {
         id: 'shop-3',
-        image_url: photo('photo-1540575467063-178a50c2df87'),
+        image_url: photo('photo-1533900298318-6b8da08a523e'),
         name: '射的横丁',
         group: '3年2組',
         location: '第2校舎 1F',
@@ -120,7 +120,7 @@ export const mockShops: Shop[] = [
     },
     {
         id: 'shop-4',
-        image_url: photo('photo-1476224203421-9ac39bcb3327'),
+        image_url: photo('photo-1524230572899-a752b3835840'),
         name: 'お化け屋敷',
         group: '2年4組',
         location: '本校舎 3F',
@@ -133,7 +133,7 @@ export const mockShops: Shop[] = [
     },
     {
         id: 'shop-5',
-        image_url: photo('photo-1493225457124-a3eb161ffa5f'),
+        image_url: photo('photo-1502920917128-1aa500764cbd'),
         name: '写真部展示',
         group: '写真部',
         location: '第2校舎 2F',
@@ -157,7 +157,7 @@ export const mockShops: Shop[] = [
         ends_at: '2026-06-07T15:00:00+09:00',
         products: [
             product('product-11', 'Tシャツ', 1200, 'photo-1521572163474-6864f9cf17ab'),
-            product('product-12', 'タオル', 800, 'photo-1504674900247-0877df9cc836'),
+            product('product-12', 'タオル', 800),
         ],
     },
 ]
