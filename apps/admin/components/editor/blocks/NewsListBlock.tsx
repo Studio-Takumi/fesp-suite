@@ -4,7 +4,7 @@ import { createReactBlockSpec, useEditorState } from '@blocknote/react'
 import { useQuery } from '@tanstack/react-query'
 import { Newspaper } from 'lucide-react'
 
-import { type NewsListProps, parseNewsListTags } from '@fesp/schema'
+import { type NewsListProps, parseIdListProp } from '@fesp/schema'
 
 import type { NewsTag } from '~/lib/mock/news'
 import { newsTagsQuery } from '~/lib/queries'
@@ -13,7 +13,7 @@ import { ComponentBlockCard } from './ComponentBlockCard'
 
 /** カードに出す設定の要約（1要素1行）。選んだタグはタグの一覧の順に並べ、一覧に無い ID は出さない */
 export function summarizeNewsListProps(props: NewsListProps, tags: NewsTag[]): string[] {
-    const tagIds = parseNewsListTags(props.tags)
+    const tagIds = parseIdListProp(props.tags)
     const tagNames = tags.filter((tag) => tagIds.includes(tag.id)).map((tag) => tag.name)
 
     return [

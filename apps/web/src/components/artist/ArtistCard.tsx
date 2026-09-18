@@ -2,9 +2,8 @@ import { MapPin, Timer } from 'lucide-react'
 
 import { cn, dateFormatter } from '@fesp/ui'
 
+import { cardColorFromId } from '~/components/list/card-color'
 import type { Artist } from '~/lib/mock/artist'
-
-import { artistColor } from './artist-color'
 
 export type ArtistCardProps = {
     artist: Artist
@@ -12,7 +11,7 @@ export type ArtistCardProps = {
 
 /** 出演者一覧の1枚（デザインの ArtistCard）。上に色付きの枠、下に Day・団体名・出演者名・出演時間・会場 */
 export function ArtistCard({ artist }: ArtistCardProps) {
-    const color = artistColor(artist.id)
+    const color = cardColorFromId(artist.id)
     const time = `${dateFormatter(artist.starts_at, 'H:mm')} - ${dateFormatter(artist.ends_at, 'H:mm')}`
 
     return (
@@ -20,7 +19,7 @@ export function ArtistCard({ artist }: ArtistCardProps) {
             <div
                 className={cn(
                     'relative flex h-44 flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl',
-                    color.background,
+                    color.surface,
                 )}
             >
                 {/* デザインの「コーナー」（左上の三角の飾り） */}
@@ -40,12 +39,7 @@ export function ArtistCard({ artist }: ArtistCardProps) {
             </div>
             <div className='flex flex-col gap-2'>
                 <div className='flex items-center gap-2'>
-                    <span
-                        className={cn(
-                            'font-en rounded-full px-3 py-1 text-xs font-bold text-white',
-                            color.accentBackground,
-                        )}
-                    >
+                    <span className={cn('font-en rounded-full px-3 py-1 text-xs font-bold text-white', color.accent)}>
                         Day{artist.day}
                     </span>
                     <span className='text-xs text-slate-500'>{artist.group}</span>

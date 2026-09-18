@@ -34,7 +34,19 @@ test.beforeEach(async ({ page }) => {
                         content: [{ type: 'text', text: 'たこ焼き', styles: {} }],
                         children: [],
                     },
-                    { id: '3', type: 'shopList', props: { day: 1 }, children: [] },
+                    {
+                        id: '3',
+                        type: 'shopList',
+                        props: {
+                            showDateTabs: true,
+                            showSearch: true,
+                            showSort: true,
+                            showTagTabs: false,
+                            tags: '',
+                            showProducts: true,
+                        },
+                        children: [],
+                    },
                     {
                         id: '4',
                         type: 'paragraph',
@@ -70,4 +82,7 @@ test('記事ページで本文が表示され、記事のタイトルの代わ�
     await expect(page.getByRole('heading', { name: '今日の模擬店', level: 2 })).toBeVisible()
     await expect(page.getByRole('listitem').filter({ hasText: 'たこ焼き' })).toBeVisible()
     await expect(page.getByRole('link', { name: '詳しくはこちら' })).toHaveAttribute('target', '_blank')
+    // 独自コンポーネント（模擬店一覧）は仮データを読んで描画する
+    await expect(page.getByRole('tablist', { name: '日付' })).toBeVisible()
+    await expect(page.getByRole('searchbox', { name: '店名・商品で検索' })).toBeVisible()
 })

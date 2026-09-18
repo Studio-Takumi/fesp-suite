@@ -6,12 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
 
-import { parseShopListTags, type ShopListProps, shopListPropsSchema } from '@fesp/schema'
+import { type ShopListProps, shopListPropsSchema } from '@fesp/schema'
 
-import { Checkbox } from '~/components/ui/checkbox'
-import { Label } from '~/components/ui/label'
-import { Switch } from '~/components/ui/switch'
 import { shopTagsQuery } from '~/lib/queries'
+
+import { IdListCheckboxes } from './fields/IdListCheckboxes'
+import { SwitchField } from './fields/SwitchField'
 
 export type ShopListPropsFormProps = {
     defaultValues: ShopListProps
@@ -52,75 +52,48 @@ export function ShopListPropsForm({ defaultValues, onValidChange }: ShopListProp
     return (
         <div className='space-y-4'>
             {switches.map(({ name, label }) => (
-                <div key={name} className='flex items-center justify-between gap-2'>
-                    <Label htmlFor={`shop-list-${name}`}>{label}</Label>
-                    <Controller
-                        control={control}
-                        name={name}
-                        render={({ field }) => (
-                            <Switch
-                                id={`shop-list-${name}`}
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                onBlur={field.onBlur}
-                                ref={field.ref}
-                            />
-                        )}
-                    />
-                </div>
-            ))}
-            <fieldset className='space-y-2'>
-                <legend className='text-sm font-medium'>タブに出すタグ</legend>
                 <Controller
+                    key={name}
                     control={control}
-                    name='tags'
-                    render={({ field }) => {
-                        const selected = parseShopListTags(field.value)
-                        // 並びはタグの一覧の順にそろえる
-                        const toggle = (id: string, checked: boolean) =>
-                            field.onChange(
-                                (tags.data ?? [])
-                                    .map((tag) => tag.id)
-                                    .filter((tagId) => (tagId === id ? checked : selected.includes(tagId)))
-                                    .join(','),
-                            )
-
-                        return (
-                            <div className='space-y-2'>
-                                {(tags.data ?? []).map((tag) => (
-                                    <div key={tag.id} className='flex items-center gap-2'>
-                                        <Checkbox
-                                            id={`shop-list-tag-${tag.id}`}
-                                            checked={selected.includes(tag.id)}
-                                            disabled={!showTagTabs}
-                                            onCheckedChange={(checked) => toggle(tag.id, checked === true)}
-                                        />
-                                        <Label htmlFor={`shop-list-tag-${tag.id}`} className='font-normal'>
-                                            {tag.name}
-                                        </Label>
-                                    </div>
-                                ))}
-                            </div>
-                        )
-                    }}
-                />
-            </fieldset>
-            <div className='flex items-center justify-between gap-2'>
-                <Label htmlFor='shop-list-show-products'>カードに商品を出す</Label>
-                <Controller
-                    control={control}
-                    name='showProducts'
+                    name={name}
                     render={({ field }) => (
-                        <Switch
-                            id='shop-list-show-products'
+                        <SwitchField
+                            id={`shop-list-${name}`}
+                            label={label}
                             checked={field.value}
                             onCheckedChange={field.onChange}
                             onBlur={field.onBlur}
-                            ref={field.ref}
                         />
                     )}
                 />
-            </div>
+            ))}
+            <Controller
+                control={control}
+                name='tags'
+                render={({ field }) => (
+                    <IdListCheckboxes
+                        legend='タブに出すタグ'
+                        options={tags.data ?? []}
+                        value={field.value}
+                        onChange={field.onChange}
+                        idPrefix='shop-list-tag'
+                        disabled={!showTagTabs}
+                    />
+                )}
+            />
+            <Controller
+                control={control}
+                name='showProducts'
+                render={({ field }) => (
+                    <SwitchField
+                        id='shop-list-show-products'
+                        label='カードに商品を出す'
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        onBlur={field.onBlur}
+                    />
+                )}
+            />
         </div>
     )
 }

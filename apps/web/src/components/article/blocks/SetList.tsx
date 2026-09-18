@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { cn } from '@fesp/ui'
 
-import { artistColor } from '~/components/artist/artist-color'
+import { cardColorFromId } from '~/components/list/card-color'
 import { QueryBoundary } from '~/components/QueryBoundary'
 import { currentArtistQuery, setListQuery } from '~/lib/queries'
 
@@ -25,7 +25,7 @@ export function SetList({ children }: BlockComponentProps) {
             >
                 {({ songs, artistId }) => {
                     if (songs.length === 0) return null
-                    const color = artistColor(artistId)
+                    const color = cardColorFromId(artistId)
 
                     return (
                         <section aria-label='セットリスト' className='flex flex-col gap-3'>
@@ -39,7 +39,7 @@ export function SetList({ children }: BlockComponentProps) {
                                         <span
                                             className={cn(
                                                 'font-en flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-                                                color.background,
+                                                color.surface,
                                                 color.accentText,
                                             )}
                                         >

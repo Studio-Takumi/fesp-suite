@@ -4,7 +4,7 @@ import { createReactBlockSpec, useEditorState } from '@blocknote/react'
 import { useQuery } from '@tanstack/react-query'
 import { BookOpen } from 'lucide-react'
 
-import { type BlogListProps, parseBlogListTags } from '@fesp/schema'
+import { type BlogListProps, parseIdListProp } from '@fesp/schema'
 
 import type { BlogTag } from '~/lib/mock/blog'
 import { blogTagsQuery } from '~/lib/queries'
@@ -15,7 +15,7 @@ import { ComponentBlockCard } from './ComponentBlockCard'
 export function summarizeBlogListProps(props: BlogListProps, tags: BlogTag[]): string {
     if (!props.showTagTabs) return 'タグタブ: なし'
 
-    const tagIds = parseBlogListTags(props.tags)
+    const tagIds = parseIdListProp(props.tags)
     const tagNames = tags.filter((tag) => tagIds.includes(tag.id)).map((tag) => tag.name)
 
     return `タグタブ: あり（${tagNames.length > 0 ? tagNames.join('・') : 'タグ未選択'}）`

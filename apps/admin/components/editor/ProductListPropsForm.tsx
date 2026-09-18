@@ -6,11 +6,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
 
-import { parseProductListIds, type ProductListProps, productListPropsSchema } from '@fesp/schema'
+import { type ProductListProps, productListPropsSchema } from '@fesp/schema'
 
-import { Checkbox } from '~/components/ui/checkbox'
-import { Label } from '~/components/ui/label'
 import { shopProductsQuery } from '~/lib/queries'
+
+import { IdListCheckboxes } from './fields/IdListCheckboxes'
 
 export type ProductListPropsFormProps = {
     defaultValues: ProductListProps
@@ -39,40 +39,18 @@ export function ProductListPropsForm({ defaultValues, onValidChange }: ProductLi
     }, [watch, onValidChange])
 
     return (
-        <fieldset className='space-y-2'>
-            <legend className='text-sm font-medium'>表示する商品</legend>
-            <Controller
-                control={control}
-                name='products'
-                render={({ field }) => {
-                    const selected = parseProductListIds(field.value)
-                    // 並びは商品の一覧の順にそろえる
-                    const toggle = (id: string, checked: boolean) =>
-                        field.onChange(
-                            (products.data ?? [])
-                                .map((product) => product.id)
-                                .filter((productId) => (productId === id ? checked : selected.includes(productId)))
-                                .join(','),
-                        )
-
-                    return (
-                        <div className='space-y-2'>
-                            {(products.data ?? []).map((product) => (
-                                <div key={product.id} className='flex items-center gap-2'>
-                                    <Checkbox
-                                        id={`product-list-${product.id}`}
-                                        checked={selected.includes(product.id)}
-                                        onCheckedChange={(checked) => toggle(product.id, checked === true)}
-                                    />
-                                    <Label htmlFor={`product-list-${product.id}`} className='font-normal'>
-                                        {product.name}
-                                    </Label>
-                                </div>
-                            ))}
-                        </div>
-                    )
-                }}
-            />
-        </fieldset>
+        <Controller
+            control={control}
+            name='products'
+            render={({ field }) => (
+                <IdListCheckboxes
+                    legend='表示する商品'
+                    options={products.data ?? []}
+                    value={field.value}
+                    onChange={field.onChange}
+                    idPrefix='product-list'
+                />
+            )}
+        />
     )
 }

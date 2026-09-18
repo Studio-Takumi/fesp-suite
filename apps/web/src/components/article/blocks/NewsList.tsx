@@ -3,18 +3,15 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronRight } from 'lucide-react'
 
-import { newsListPropsSchema, parseNewsListTags } from '@fesp/schema'
-import { cn } from '@fesp/ui'
+import { newsListPropsSchema, parseIdListProp } from '@fesp/schema'
 
 import { EmptyState } from '~/components/EmptyState'
+import { ALL_TAB, ListTagTabs } from '~/components/list/ListTagTabs'
 import { NewsRow } from '~/components/news/NewsRow'
 import { QueryBoundary } from '~/components/QueryBoundary'
 import { newsQuery, newsTagsQuery } from '~/lib/queries'
 
 import type { BlockComponentProps } from '../block-registry'
-
-/** 「すべて」のタブ */
-const ALL_TAB = 'all'
 
 /**
  * お知らせ一覧（独自コンポーネント `newsList`）。タグのタブで絞り込み、お知らせの行を並べる。
@@ -29,7 +26,7 @@ export function NewsList({ block, children }: BlockComponentProps) {
 
     if (!props.success) return <>{children}</>
     const { showTagTabs, limit, showViewAll } = props.data
-    const tagIds = parseNewsListTags(props.data.tags)
+    const tagIds = parseIdListProp(props.data.tags)
 
     return (
         <>
@@ -51,32 +48,7 @@ export function NewsList({ block, children }: BlockComponentProps) {
                         return (
                             <>
                                 {tabs.length > 0 && (
-                                    <div
-                                        role='tablist'
-                                        aria-label='タグ'
-                                        className='flex gap-5 overflow-x-auto border-b border-slate-200'
-                                    >
-                                        {[{ id: ALL_TAB, name: 'すべて' }, ...tabs].map((tab) => {
-                                            const isSelected = tab.id === selectedTab
-                                            return (
-                                                <button
-                                                    key={tab.id}
-                                                    type='button'
-                                                    role='tab'
-                                                    aria-selected={isSelected}
-                                                    onClick={() => setSelectedTab(tab.id)}
-                                                    className={cn(
-                                                        '-mb-px shrink-0 border-b-2 px-1 py-2 text-sm whitespace-nowrap',
-                                                        isSelected
-                                                            ? 'border-sky-500 font-bold text-slate-900'
-                                                            : 'border-transparent text-slate-500',
-                                                    )}
-                                                >
-                                                    {tab.name}
-                                                </button>
-                                            )
-                                        })}
-                                    </div>
+                                    <ListTagTabs tabs={tabs} selected={selectedTab} onSelect={setSelectedTab} />
                                 )}
                                 {visible.length === 0 ? (
                                     <EmptyState

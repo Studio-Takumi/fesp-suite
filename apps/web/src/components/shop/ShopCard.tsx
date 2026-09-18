@@ -1,8 +1,7 @@
 import { cn } from '@fesp/ui'
 
+import { cardColors } from '~/components/list/card-color'
 import type { Shop } from '~/lib/mock/shop'
-
-import { shopColors } from './shop-colors'
 
 /** カードの中に出す商品の数 */
 const VISIBLE_PRODUCTS = 3
@@ -15,7 +14,7 @@ export type ShopCardProps = {
 
 /** 模擬店一覧の1枚（デザインの ShopCard）。上に模擬店の色の枠、下に団体名・店名・商品のサムネ */
 export function ShopCard({ shop, showProducts }: ShopCardProps) {
-    const color = shopColors[shop.color]
+    const color = cardColors[shop.color]
 
     return (
         <a href={`/shops/${shop.id}`} className='flex flex-col gap-3'>

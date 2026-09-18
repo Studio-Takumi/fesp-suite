@@ -4,7 +4,7 @@ import { createReactBlockSpec, useEditorState } from '@blocknote/react'
 import { useQuery } from '@tanstack/react-query'
 import { Store } from 'lucide-react'
 
-import { parseShopListTags, type ShopListProps } from '@fesp/schema'
+import { parseIdListProp, type ShopListProps } from '@fesp/schema'
 
 import type { ShopTag } from '~/lib/mock/shop'
 import { shopTagsQuery } from '~/lib/queries'
@@ -13,7 +13,7 @@ import { ComponentBlockCard } from './ComponentBlockCard'
 
 /** カードに出す設定の要約（1要素1行）。選んだタグはタグの一覧の順に並べ、一覧に無い ID は出さない */
 export function summarizeShopListProps(props: ShopListProps, tags: ShopTag[]): string[] {
-    const tagIds = parseShopListTags(props.tags)
+    const tagIds = parseIdListProp(props.tags)
     const tagNames = tags.filter((tag) => tagIds.includes(tag.id)).map((tag) => tag.name)
 
     return [

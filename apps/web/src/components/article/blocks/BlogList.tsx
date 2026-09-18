@@ -2,18 +2,15 @@ import { useState } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 
-import { blogListPropsSchema, parseBlogListTags } from '@fesp/schema'
-import { cn } from '@fesp/ui'
+import { blogListPropsSchema, parseIdListProp } from '@fesp/schema'
 
 import { BlogCard } from '~/components/blog/BlogCard'
 import { EmptyState } from '~/components/EmptyState'
+import { ALL_TAB, ListTagTabs } from '~/components/list/ListTagTabs'
 import { QueryBoundary } from '~/components/QueryBoundary'
 import { blogsQuery, blogTagsQuery } from '~/lib/queries'
 
 import type { BlockComponentProps } from '../block-registry'
-
-/** 「すべて」のタブ */
-const ALL_TAB = 'all'
 
 /**
  * ブログ一覧（独自コンポーネント `blogList`）。タグのタブで絞り込み、ブログのカードを並べる。
@@ -28,7 +25,7 @@ export function BlogList({ block, children }: BlockComponentProps) {
 
     if (!props.success) return <>{children}</>
     const { showTagTabs } = props.data
-    const tagIds = parseBlogListTags(props.data.tags)
+    const tagIds = parseIdListProp(props.data.tags)
 
     return (
         <>
@@ -49,32 +46,7 @@ export function BlogList({ block, children }: BlockComponentProps) {
                         return (
                             <>
                                 {tabs.length > 0 && (
-                                    <div
-                                        role='tablist'
-                                        aria-label='タグ'
-                                        className='flex gap-5 overflow-x-auto border-b border-slate-200'
-                                    >
-                                        {[{ id: ALL_TAB, name: 'すべて' }, ...tabs].map((tab) => {
-                                            const isSelected = tab.id === selectedTab
-                                            return (
-                                                <button
-                                                    key={tab.id}
-                                                    type='button'
-                                                    role='tab'
-                                                    aria-selected={isSelected}
-                                                    onClick={() => setSelectedTab(tab.id)}
-                                                    className={cn(
-                                                        '-mb-px shrink-0 border-b-2 px-1 py-2 text-sm whitespace-nowrap',
-                                                        isSelected
-                                                            ? 'border-sky-500 font-bold text-slate-900'
-                                                            : 'border-transparent text-slate-500',
-                                                    )}
-                                                >
-                                                    {tab.name}
-                                                </button>
-                                            )
-                                        })}
-                                    </div>
+                                    <ListTagTabs tabs={tabs} selected={selectedTab} onSelect={setSelectedTab} />
                                 )}
                                 {visible.length === 0 ? (
                                     <EmptyState
