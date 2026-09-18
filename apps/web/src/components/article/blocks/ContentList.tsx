@@ -1,4 +1,14 @@
-import { CalendarDays, ClipboardList, CloudSun, type LucideIcon, MapIcon, Music, Newspaper, Store } from 'lucide-react'
+import {
+    CalendarDays,
+    ClipboardList,
+    CloudSun,
+    type LucideIcon,
+    MapIcon,
+    Music,
+    Newspaper,
+    Settings,
+    Store,
+} from 'lucide-react'
 
 import { type ContentListIcon, contentListPropsSchema, parseContentListLinks } from '@fesp/schema'
 
@@ -13,6 +23,7 @@ const contentListIconComponents: Record<ContentListIcon, LucideIcon> = {
     newspaper: Newspaper,
     'cloud-sun': CloudSun,
     'clipboard-list': ClipboardList,
+    settings: Settings,
 }
 
 /**

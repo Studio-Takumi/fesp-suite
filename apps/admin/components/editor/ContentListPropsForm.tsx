@@ -35,6 +35,7 @@ const contentListIconLabels: Record<ContentListIcon, string> = {
     newspaper: '新聞',
     'cloud-sun': '雲と太陽',
     'clipboard-list': 'クリップボード',
+    settings: '歯車',
 }
 
 /** リンクを足したときの初期値 */
