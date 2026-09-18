@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { ArticleBlock, ArticleDocument, ArticleStyles } from '@fesp/schema'
 
+import { mockBlogPosts } from '~/lib/mock/blog'
 import { mockNewsPosts, type NewsPost } from '~/lib/mock/news'
 import { mockCurrentShop, mockShops } from '~/lib/mock/shop'
 import { createMockWeather } from '~/lib/mock/weather'
@@ -50,6 +51,9 @@ const componentBlock = (type: ArticleBlock['type'], props: Record<string, unknow
 
 const newsList = (props: Record<string, unknown> = {}) =>
     componentBlock('newsList', { showTagTabs: false, tags: '', showViewAll: false, ...props })
+
+const blogList = (props: Record<string, unknown> = {}) =>
+    componentBlock('blogList', { showTagTabs: false, tags: '', ...props })
 
 const shopList = (props: Record<string, unknown> = {}) =>
     componentBlock('shopList', {
@@ -419,6 +423,176 @@ describe('ArticleRenderer', () => {
 
         renderWithQuery([componentBlock('adjacentPosts')], [[queryKeys.adjacentPosts, { previous: null, next: null }]])
         expect(screen.queryByRole('navigation')).not.toBeInTheDocument()
+    })
+
+    it('ブログ一覧は日付（ゼロ埋めしない月と日）・投稿者・タイトル・抜粋・タグのカードを並べ、カードはブログへのリンクにする', async () => {
+        renderWithQuery([blogList()])
+
+        const cards = await screen.findAllByRole('listitem')
+        expect(cards).toHaveLength(mockBlogPosts.length)
+        const first = within(cards[0]!)
+        expect(first.getByRole('link')).toHaveAttribute('href', '/blogs/blog-5')
+        expect(first.getByText('準備期間の裏側をのぞいてみた')).toBeInTheDocument()
+        expect(first.getByText('6月2日')).toBeInTheDocument()
+        expect(first.getByText('広報委員会')).toBeInTheDocument()
+        expect(first.getByText(/開催まであと3日。/)).toBeInTheDocument()
+        expect(first.getByText('#準備')).toBeInTheDocument()
+        expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
+    })
+
+    it('ブログ一覧は「すべて」と選んだタグのタブを出し、タブで絞り込む', async () => {
+        const user = userEvent.setup()
+        renderWithQuery([blogList({ showTagTabs: true, tags: 'day,prep,unknown' })])
+
+        const tabs = await screen.findAllByRole('tab')
+        // 並びはタグの一覧の順。タグの一覧に無い ID は出さない
+        expect(tabs.map((tab) => tab.textContent)).toEqual(['すべて', '準備', '当日'])
+        expect(screen.getByRole('tab', { name: 'すべて' })).toHaveAttribute('aria-selected', 'true')
+
+        await user.click(screen.getByRole('tab', { name: '準備' }))
+
+        expect(screen.getByRole('tab', { name: '準備' })).toHaveAttribute('aria-selected', 'true')
+        const cards = screen.getAllByRole('listitem')
+        expect(cards).toHaveLength(2)
+        for (const card of cards) expect(within(card).getByText('#準備')).toBeInTheDocument()
+    })
+
+    it('ブログ一覧はタグタブを出す設定でも、タグを選んでいなければタブを出さない', async () => {
+        renderWithQuery([blogList({ showTagTabs: true, tags: '' })])
+
+        expect(await screen.findAllByRole('listitem')).toHaveLength(mockBlogPosts.length)
+        expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
+    })
+
+    it('ブログ一覧は0件なら空状態を出す', async () => {
+        renderWithQuery([blogList()], [[queryKeys.blogs, []]])
+
+        expect(await screen.findByRole('heading', { name: 'ブログはまだありません' })).toBeInTheDocument()
+        expect(screen.getByText('記事が投稿されると、ここに表示されます。')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: '再読み込み' })).toBeInTheDocument()
+        expect(screen.queryByRole('list')).not.toBeInTheDocument()
+    })
+
+    it('関連する記事は見出しと、タイトル・日付（ゼロ埋めしない月と日）のリンクを出す', async () => {
+        renderWithQuery([componentBlock('relatedPosts')])
+
+        expect(await screen.findByRole('heading', { name: '関連する記事' })).toBeInTheDocument()
+        const links = screen.getAllByRole('link')
+        expect(links).toHaveLength(2)
+        expect(links[0]).toHaveTextContent('今年のテーマが決まるまで5月28日')
+        expect(links[0]).toHaveAttribute('href', '/blogs/blog-4')
+        expect(links[1]).toHaveAttribute('href', '/blogs/blog-3')
+    })
+
+    it('関連する記事は0件ならブロックごと出さない', async () => {
+        renderWithQuery(
+            [componentBlock('relatedPosts'), block('2', 'paragraph', [text('本文')])],
+            [[queryKeys.relatedPosts, []]],
+        )
+
+        expect(await screen.findByText('本文')).toBeInTheDocument()
+        expect(screen.queryByRole('heading', { name: '関連する記事' })).not.toBeInTheDocument()
+    })
+
+    it('天気のブロック（今日・週間予報・警報・暑さ指数・概況・更新時刻と出典）を天気のデータから描画する', () => {
+        const queryClient = createTestQueryClient()
+        queryClient.setQueryData(weatherQuery().queryKey, createMockWeather())
+
+        renderWithQueryClient(
+            <ArticleRenderer
+                blocks={(
+                    [
+                        'todayWeather',
+                        'weeklyForecast',
+                        'weatherAlert',
+                        'wbgt',
+                        'weatherOverview',
+                        'weatherCredit',
+                    ] as const
+                ).map((type) => ({ id: type, type, props: {}, children: [] }))}
+            />,
+            queryClient,
+        )
+
+        expect(screen.getByRole('region', { name: '今日の天気' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2, name: '週間予報' })).toBeInTheDocument()
+        expect(screen.getByRole('region', { name: '気象警報・注意報' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2, name: '暑さ指数（WBGT）' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2, name: '今日の天気概況' })).toBeInTheDocument()
+        expect(screen.getByText(/更新 ・ 出典: 気象庁/)).toBeInTheDocument()
+    })
+
+    it('スケジュール表は日付タブと会場ごとのタイムテーブルを出す（仮データ）', async () => {
+        renderWithQuery([{ id: '1', type: 'scheduleTable', props: { showDateTabs: true }, children: [] }])
+
+        expect(await screen.findByRole('tablist', { name: '日付' })).toBeInTheDocument()
+        expect(screen.getByRole('region', { name: 'スケジュール' })).toContainElement(
+            screen.getByRole('list', { name: '体育館' }),
+        )
+    })
+
+    it('マップは地図の領域とボトムシートの場所の一覧を出し、そのあとのブロックの描画を続ける', async () => {
+        renderWithQuery([
+            { id: '1', type: 'map', props: {}, children: [] },
+            block('2', 'paragraph', [text('続きの段落')]),
+        ])
+
+        expect(screen.getByRole('region', { name: 'マップ' })).toHaveClass('h-dvh')
+        expect(screen.getByRole('searchbox', { name: '場所・模擬店を検索' })).toBeInTheDocument()
+        expect(await screen.findByRole('list', { name: '場所の一覧' })).toBeInTheDocument()
+        expect(screen.getByText('続きの段落')).toBeInTheDocument()
+    })
+
+    it('注意書きは種類ごとの見出し・色の枠に本文を出す', () => {
+        const callout = (id: string, variant: string, value: string): ArticleBlock => ({
+            id,
+            type: 'callout',
+            props: { variant },
+            content: [text(value)],
+            children: [],
+        })
+        renderBlocks([
+            callout('1', 'info', '入場は無料です'),
+            callout('2', 'caution', '現金のみです'),
+            callout('3', 'warning', '火気厳禁です'),
+        ])
+
+        const info = screen.getByRole('note', { name: '情報' })
+        expect(info).toHaveClass('bg-emerald-50', 'border-emerald-300')
+        expect(within(info).getByText('情報')).toHaveClass('font-bold', 'text-emerald-800')
+        expect(info).toHaveTextContent('入場は無料です')
+
+        const caution = screen.getByRole('note', { name: '注意' })
+        expect(caution).toHaveClass('bg-amber-50', 'border-amber-300')
+        expect(within(caution).getByText('注意')).toHaveClass('text-amber-800')
+        expect(caution).toHaveTextContent('現金のみです')
+
+        const warning = screen.getByRole('note', { name: '警告' })
+        expect(warning).toHaveClass('bg-red-50', 'border-red-300')
+        expect(within(warning).getByText('警告')).toHaveClass('text-red-800')
+        expect(warning).toHaveTextContent('火気厳禁です')
+    })
+
+    it('注意書きの子ブロックは1段下げずに枠の中に出し、本文が空なら本文の行を出さない', () => {
+        renderBlocks([
+            {
+                id: '1',
+                type: 'callout',
+                props: { variant: 'caution' },
+                content: [],
+                children: [
+                    block('1-1', 'bulletListItem', [text('整理券を配ることがあります')]),
+                    block('1-2', 'bulletListItem', [text('値段が変わることがあります')]),
+                ],
+            },
+            block('2', 'paragraph', [text('枠の外')]),
+        ])
+
+        const note = screen.getByRole('note', { name: '注意' })
+        expect(within(note).getAllByRole('listitem')).toHaveLength(2)
+        expect(within(note).getByRole('list').parentElement).not.toHaveClass('pl-6')
+        expect(note.querySelector('p')).not.toBeInTheDocument()
+        expect(note).not.toHaveTextContent('枠の外')
     })
 
     it('模擬店一覧は日付タブ・検索・並び替え・タグタブと模擬店のカードを出す', async () => {

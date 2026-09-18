@@ -171,13 +171,15 @@ BlockNote（[`docs/article-system.md`](./article-system.md)）でテキスト・
 | ページ見出し         | `pageHeader`      | 英語ラベル（`label`。30文字まで、空でもよい）・日本語タイトル（`title`。50文字まで、空でもよい）                                                                                                                                                          |
 | スケジュール表       | `scheduleTable`   | 日付タブを出すか（`showDateTabs`。`true` / `false`）                                                                                                                                                                                                      |
 | マップ               | `map`             | なし                                                                                                                                                                                                                                                      |
+| 模擬店一覧           | `shopList`        | 日付タブを出すか（`showDateTabs`）・検索を出すか（`showSearch`）・並び替えを出すか（`showSort`）・タグタブを出すか（`showTagTabs`）・タブに出すタグ（`tags`。タグの ID をカンマ区切りで並べた文字列、空でもよい）・カードに商品を出すか（`showProducts`） |
+| 模擬店のサマリー     | `shopSummary`     | なし                                                                                                                                                                                                                                                      |
+| 商品一覧             | `productList`     | 表示する商品（`products`。商品の ID をカンマ区切りで並べた文字列、空なら全件）                                                                                                                                                                            |
 | お知らせ一覧         | `newsList`        | タグタブを出すか（`showTagTabs`）・タブに出すタグ（`tags`。タグの ID をカンマ区切りで並べた文字列、空でもよい）・表示件数（`limit`。1以上の整数、無ければ全件）・「すべて見る」を出すか（`showViewAll`）                                                  |
 | 記事の画像           | `coverImage`      | 画像の URL（`imageUrl`。`http://` か `https://` で始まる URL、空でもよい）                                                                                                                                                                                |
 | 記事のサマリー       | `postSummary`     | なし                                                                                                                                                                                                                                                      |
 | 前後の記事           | `adjacentPosts`   | なし                                                                                                                                                                                                                                                      |
-| 模擬店一覧           | `shopList`        | 日付タブを出すか（`showDateTabs`）・検索を出すか（`showSearch`）・並び替えを出すか（`showSort`）・タグタブを出すか（`showTagTabs`）・タブに出すタグ（`tags`。タグの ID をカンマ区切りで並べた文字列、空でもよい）・カードに商品を出すか（`showProducts`） |
-| 模擬店のサマリー     | `shopSummary`     | なし                                                                                                                                                                                                                                                      |
-| 商品一覧             | `productList`     | 表示する商品（`products`。商品の ID をカンマ区切りで並べた文字列、空なら全件）                                                                                                                                                                            |
+| ブログ一覧           | `blogList`        | タグタブを出すか（`showTagTabs`）・タブに出すタグ（`tags`。タグの ID をカンマ区切りで並べた文字列、空でもよい）                                                                                                                                           |
+| 関連する記事         | `relatedPosts`    | なし                                                                                                                                                                                                                                                      |
 | 今日の天気           | `todayWeather`    | なし                                                                                                                                                                                                                                                      |
 | 週間予報             | `weeklyForecast`  | なし                                                                                                                                                                                                                                                      |
 | 気象警報・注意報     | `weatherAlert`    | なし                                                                                                                                                                                                                                                      |
@@ -229,6 +231,19 @@ BlockNote（[`docs/article-system.md`](./article-system.md)）でテキスト・
 ##### 前後の記事（`adjacentPosts`）
 
 - カードの中身には「表示中の記事の前の記事・次の記事へのリンクを出します」と出す
+
+##### ブログ一覧（`blogList`）
+
+- 挿入した直後は、タグタブを出す・タグは選ばない
+- カードの中身には設定の要約を出す
+    - 「タグタブ: あり（<選んだタグの名前を「・」でつなげたもの>）」。タグを選んでいなければ「タグタブ: あり（タグ未選択）」、出さないなら「タグタブ: なし」
+- パネルには、次の入力欄を並べる
+    - 「タグタブを出す」のスイッチ
+    - 「タブに出すタグ」: タグの一覧をチェックボックスで並べ、複数選べる。並びはタグの一覧の順。「タグタブを出す」がオフの間は選べない
+
+##### 関連する記事（`relatedPosts`）
+
+- カードの中身には「表示中の記事に関連する記事を出します」と出す
 
 ##### 模擬店一覧（`shopList`）
 

@@ -23,8 +23,10 @@ import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultC
 import '@blocknote/shadcn/style.css'
 import {
     ArrowLeftRight,
+    BookOpen,
     CalendarClock,
     CalendarDays,
+    Files,
     FileText,
     ImageIcon,
     Info,
@@ -44,6 +46,7 @@ import { createHighlighter } from 'shiki'
 import type { ArticleDocument } from '@fesp/schema'
 
 import { createAdjacentPostsBlock } from './blocks/AdjacentPostsBlock'
+import { createBlogListBlock } from './blocks/BlogListBlock'
 import { createCalloutBlock } from './blocks/CalloutBlock'
 import { createCoverImageBlock } from './blocks/CoverImageBlock'
 import { createMapBlock } from './blocks/MapBlock'
@@ -51,6 +54,7 @@ import { createNewsListBlock } from './blocks/NewsListBlock'
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
 import { createPostSummaryBlock } from './blocks/PostSummaryBlock'
 import { createProductListBlock } from './blocks/ProductListBlock'
+import { createRelatedPostsBlock } from './blocks/RelatedPostsBlock'
 import { createScheduleTableBlock } from './blocks/ScheduleTableBlock'
 import { createShopListBlock } from './blocks/ShopListBlock'
 import { createShopSummaryBlock } from './blocks/ShopSummaryBlock'
@@ -107,13 +111,15 @@ export const articleSchema = BlockNoteSchema.create({
         pageHeader: createPageHeaderBlock(),
         scheduleTable: createScheduleTableBlock(),
         map: createMapBlock(),
+        shopList: createShopListBlock(),
+        shopSummary: createShopSummaryBlock(),
+        productList: createProductListBlock(),
         newsList: createNewsListBlock(),
         coverImage: createCoverImageBlock(),
         postSummary: createPostSummaryBlock(),
         adjacentPosts: createAdjacentPostsBlock(),
-        shopList: createShopListBlock(),
-        shopSummary: createShopSummaryBlock(),
-        productList: createProductListBlock(),
+        blogList: createBlogListBlock(),
+        relatedPosts: createRelatedPostsBlock(),
         todayWeather: createTodayWeatherBlock(),
         weeklyForecast: createWeeklyForecastBlock(),
         weatherAlert: createWeatherAlertBlock(),
@@ -153,6 +159,27 @@ const componentSlashMenuItems: {
         icon: <MapIcon />,
     },
     {
+        type: 'shopList',
+        title: '模擬店一覧',
+        subtext: '日付・検索・タグで絞り込める模擬店の一覧',
+        aliases: ['shoplist', 'shop', 'mogiten', 'もぎてん', '模擬店'],
+        icon: <Store />,
+    },
+    {
+        type: 'shopSummary',
+        title: '模擬店のサマリー',
+        subtext: '表示中の模擬店の Day・団体・店名・時間・場所',
+        aliases: ['shopsummary', 'shop', 'mogiten', 'もぎてん', 'sama', 'さまりー'],
+        icon: <Info />,
+    },
+    {
+        type: 'productList',
+        title: '商品一覧',
+        subtext: '表示中の模擬店の商品（メニュー）の一覧',
+        aliases: ['productlist', 'product', 'menu', 'syouhin', 'しょうひん', 'めにゅー'],
+        icon: <ShoppingBag />,
+    },
+    {
         type: 'newsList',
         title: 'お知らせ一覧',
         subtext: 'タグで絞り込めるお知らせの一覧',
@@ -181,25 +208,18 @@ const componentSlashMenuItems: {
         icon: <ArrowLeftRight />,
     },
     {
-        type: 'shopList',
-        title: '模擬店一覧',
-        subtext: '日付・検索・タグで絞り込める模擬店の一覧',
-        aliases: ['shoplist', 'shop', 'mogiten', 'もぎてん', '模擬店'],
-        icon: <Store />,
+        type: 'blogList',
+        title: 'ブログ一覧',
+        subtext: 'タグで絞り込めるブログの一覧',
+        aliases: ['bloglist', 'blog', 'burogu', 'ぶろぐ'],
+        icon: <BookOpen />,
     },
     {
-        type: 'shopSummary',
-        title: '模擬店のサマリー',
-        subtext: '表示中の模擬店の Day・団体・店名・時間・場所',
-        aliases: ['shopsummary', 'shop', 'mogiten', 'もぎてん', 'sama', 'さまりー'],
-        icon: <Info />,
-    },
-    {
-        type: 'productList',
-        title: '商品一覧',
-        subtext: '表示中の模擬店の商品（メニュー）の一覧',
-        aliases: ['productlist', 'product', 'menu', 'syouhin', 'しょうひん', 'めにゅー'],
-        icon: <ShoppingBag />,
+        type: 'relatedPosts',
+        title: '関連する記事',
+        subtext: '表示中の記事に関連する記事のリスト',
+        aliases: ['relatedposts', 'related', 'kanren', 'かんれん'],
+        icon: <Files />,
     },
     {
         type: 'todayWeather',

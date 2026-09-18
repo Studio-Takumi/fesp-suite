@@ -172,6 +172,25 @@ export const coverImagePropsSchema = z
 export type CoverImageProps = z.infer<typeof coverImagePropsSchema>
 
 /**
+ * ブログ一覧（`blogList`）の props。
+ * BlockNote の props は文字列・数値・真偽値しか持てないので、タブに出すタグは ID をカンマ区切りで並べた文字列で持つ
+ */
+export const blogListPropsSchema = z
+    .object({
+        /** タグのタブを出すか */
+        showTagTabs: z.boolean(),
+        /** タブに出すタグの ID をカンマ区切りで並べた文字列（例: `prep,day`）。空文字なら選んでいない */
+        tags: z.string().regex(/^([^,]+(,[^,]+)*)?$/, 'タグの指定が正しくありません'),
+    })
+    .strict()
+export type BlogListProps = z.infer<typeof blogListPropsSchema>
+
+/** ブログ一覧の props の `tags` を、タグの ID の配列にする */
+export function parseBlogListTags(tags: string): string[] {
+    return tags === '' ? [] : tags.split(',')
+}
+
+/**
  * props を持たない独自コンポーネント（記事のサマリー・前後の記事・天気の各ブロックなど）の props。
  * 表示するデータはコンポーネントが自分で読むので、記事には何も持たせない
  */
@@ -188,6 +207,15 @@ export const weatherComponentTypes = [
     'weatherCredit',
 ] as const
 export type WeatherComponentType = (typeof weatherComponentTypes)[number]
+
+/** スケジュール表（`scheduleTable`）の props。管理者サイトのサイドパネルのフォームでもこのスキーマで検証する */
+export const scheduleTablePropsSchema = z
+    .object({
+        /** 日付タブを出すか。出さないときは1日目のタイムテーブルを出す */
+        showDateTabs: z.boolean(),
+    })
+    .strict()
+export type ScheduleTableProps = z.infer<typeof scheduleTablePropsSchema>
 
 /** ID をカンマ区切りで並べた props（タブに出すタグ・表示する商品など）の形。空文字なら選んでいない */
 const idListSchema = (error: string) => z.string().regex(/^([^,]+(,[^,]+)*)?$/, error)
@@ -235,15 +263,6 @@ export type ProductListProps = z.infer<typeof productListPropsSchema>
 export function parseProductListIds(products: string): string[] {
     return parseIdList(products)
 }
-
-/** スケジュール表（`scheduleTable`）の props。管理者サイトのサイドパネルのフォームでもこのスキーマで検証する */
-export const scheduleTablePropsSchema = z
-    .object({
-        /** 日付タブを出すか。出さないときは1日目のタイムテーブルを出す */
-        showDateTabs: z.boolean(),
-    })
-    .strict()
-export type ScheduleTableProps = z.infer<typeof scheduleTablePropsSchema>
 
 /** コードブロックの中身はスタイル（太字等）を持たない「プレーンテキスト」 */
 const plainTextSchema = z.object({
@@ -295,13 +314,15 @@ export type ArticleBlock = {
         | 'pageHeader'
         | 'map'
         | 'scheduleTable'
+        | 'shopList'
+        | 'shopSummary'
+        | 'productList'
         | 'newsList'
         | 'coverImage'
         | 'postSummary'
         | 'adjacentPosts'
-        | 'shopList'
-        | 'shopSummary'
-        | 'productList'
+        | 'blogList'
+        | 'relatedPosts'
         | WeatherComponentType
     props: Record<string, unknown>
     content?: (ArticleStyledText | ArticleLink)[] | ArticleTableContent
@@ -419,6 +440,13 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
         }),
         z.object({
             id: z.string().min(1),
+            type: z.literal('blogList'),
+            props: blogListPropsSchema,
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
+        z.object({
+            id: z.string().min(1),
             type: z.literal('shopList'),
             props: shopListPropsSchema,
             content: z.undefined().optional(),
@@ -431,10 +459,11 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             content: z.undefined().optional(),
             children: z.array(articleBlockSchema),
         }),
-        emptyComponentBlockSchema('map'),
         emptyComponentBlockSchema('shopSummary'),
+        emptyComponentBlockSchema('map'),
         emptyComponentBlockSchema('postSummary'),
         emptyComponentBlockSchema('adjacentPosts'),
+        emptyComponentBlockSchema('relatedPosts'),
         emptyComponentBlockSchema('todayWeather'),
         emptyComponentBlockSchema('weeklyForecast'),
         emptyComponentBlockSchema('weatherAlert'),
