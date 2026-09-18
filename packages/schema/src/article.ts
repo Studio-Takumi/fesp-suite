@@ -189,6 +189,53 @@ export const weatherComponentTypes = [
 ] as const
 export type WeatherComponentType = (typeof weatherComponentTypes)[number]
 
+/** ID をカンマ区切りで並べた props（タブに出すタグ・表示する商品など）の形。空文字なら選んでいない */
+const idListSchema = (error: string) => z.string().regex(/^([^,]+(,[^,]+)*)?$/, error)
+
+/** ID をカンマ区切りで並べた props の文字列を、ID の配列にする */
+const parseIdList = (value: string): string[] => (value === '' ? [] : value.split(','))
+
+/**
+ * 模擬店一覧（`shopList`）の props。管理者サイトのサイドパネルのフォームでもこのスキーマで検証する。
+ * タブに出すタグは、`newsList` と同じく ID をカンマ区切りで並べた文字列で持つ（BlockNote の props は配列を持てない）
+ */
+export const shopListPropsSchema = z
+    .object({
+        /** 日付タブを出すか */
+        showDateTabs: z.boolean(),
+        /** 検索を出すか */
+        showSearch: z.boolean(),
+        /** 並び替えを出すか */
+        showSort: z.boolean(),
+        /** タグのタブを出すか */
+        showTagTabs: z.boolean(),
+        /** タブに出すタグの ID をカンマ区切りで並べた文字列（例: `food,experience`）。空文字なら選んでいない */
+        tags: idListSchema('タグの指定が正しくありません'),
+        /** カードの中に商品を出すか */
+        showProducts: z.boolean(),
+    })
+    .strict()
+export type ShopListProps = z.infer<typeof shopListPropsSchema>
+
+/** 模擬店一覧の props の `tags` を、タグの ID の配列にする */
+export function parseShopListTags(tags: string): string[] {
+    return parseIdList(tags)
+}
+
+/** 商品一覧（`productList`）の props。管理者サイトのサイドパネルのフォームでもこのスキーマで検証する */
+export const productListPropsSchema = z
+    .object({
+        /** 表示する商品の ID をカンマ区切りで並べた文字列（例: `p1,p2`）。空文字なら全件出す */
+        products: idListSchema('商品の指定が正しくありません'),
+    })
+    .strict()
+export type ProductListProps = z.infer<typeof productListPropsSchema>
+
+/** 商品一覧の props の `products` を、商品の ID の配列にする */
+export function parseProductListIds(products: string): string[] {
+    return parseIdList(products)
+}
+
 /** スケジュール表（`scheduleTable`）の props。管理者サイトのサイドパネルのフォームでもこのスキーマで検証する */
 export const scheduleTablePropsSchema = z
     .object({
@@ -252,6 +299,9 @@ export type ArticleBlock = {
         | 'coverImage'
         | 'postSummary'
         | 'adjacentPosts'
+        | 'shopList'
+        | 'shopSummary'
+        | 'productList'
         | WeatherComponentType
     props: Record<string, unknown>
     content?: (ArticleStyledText | ArticleLink)[] | ArticleTableContent
@@ -367,7 +417,22 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             content: z.undefined().optional(),
             children: z.array(articleBlockSchema),
         }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('shopList'),
+            props: shopListPropsSchema,
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('productList'),
+            props: productListPropsSchema,
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
         emptyComponentBlockSchema('map'),
+        emptyComponentBlockSchema('shopSummary'),
         emptyComponentBlockSchema('postSummary'),
         emptyComponentBlockSchema('adjacentPosts'),
         emptyComponentBlockSchema('todayWeather'),

@@ -27,10 +27,13 @@ import {
     CalendarDays,
     FileText,
     ImageIcon,
+    Info,
     MapIcon,
     Newspaper,
     PanelTop,
     RefreshCw,
+    ShoppingBag,
+    Store,
     Sun,
     Thermometer,
     TriangleAlert,
@@ -47,7 +50,10 @@ import { createMapBlock } from './blocks/MapBlock'
 import { createNewsListBlock } from './blocks/NewsListBlock'
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
 import { createPostSummaryBlock } from './blocks/PostSummaryBlock'
+import { createProductListBlock } from './blocks/ProductListBlock'
 import { createScheduleTableBlock } from './blocks/ScheduleTableBlock'
+import { createShopListBlock } from './blocks/ShopListBlock'
+import { createShopSummaryBlock } from './blocks/ShopSummaryBlock'
 import { createTodayWeatherBlock } from './blocks/TodayWeatherBlock'
 import { createWbgtBlock } from './blocks/WbgtBlock'
 import { createWeatherAlertBlock } from './blocks/WeatherAlertBlock'
@@ -105,6 +111,9 @@ export const articleSchema = BlockNoteSchema.create({
         coverImage: createCoverImageBlock(),
         postSummary: createPostSummaryBlock(),
         adjacentPosts: createAdjacentPostsBlock(),
+        shopList: createShopListBlock(),
+        shopSummary: createShopSummaryBlock(),
+        productList: createProductListBlock(),
         todayWeather: createTodayWeatherBlock(),
         weeklyForecast: createWeeklyForecastBlock(),
         weatherAlert: createWeatherAlertBlock(),
@@ -170,6 +179,27 @@ const componentSlashMenuItems: {
         subtext: '前の記事・次の記事へのリンク',
         aliases: ['adjacentposts', 'zengo', 'ぜんご'],
         icon: <ArrowLeftRight />,
+    },
+    {
+        type: 'shopList',
+        title: '模擬店一覧',
+        subtext: '日付・検索・タグで絞り込める模擬店の一覧',
+        aliases: ['shoplist', 'shop', 'mogiten', 'もぎてん', '模擬店'],
+        icon: <Store />,
+    },
+    {
+        type: 'shopSummary',
+        title: '模擬店のサマリー',
+        subtext: '表示中の模擬店の Day・団体・店名・時間・場所',
+        aliases: ['shopsummary', 'shop', 'mogiten', 'もぎてん', 'sama', 'さまりー'],
+        icon: <Info />,
+    },
+    {
+        type: 'productList',
+        title: '商品一覧',
+        subtext: '表示中の模擬店の商品（メニュー）の一覧',
+        aliases: ['productlist', 'product', 'menu', 'syouhin', 'しょうひん', 'めにゅー'],
+        icon: <ShoppingBag />,
     },
     {
         type: 'todayWeather',

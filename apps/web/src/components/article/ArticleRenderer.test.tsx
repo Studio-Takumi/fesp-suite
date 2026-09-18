@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import type { ArticleBlock, ArticleDocument, ArticleStyles } from '@fesp/schema'
 
 import { mockNewsPosts, type NewsPost } from '~/lib/mock/news'
+import { mockCurrentShop, mockShops } from '~/lib/mock/shop'
 import { createMockWeather } from '~/lib/mock/weather'
 import { queryKeys, weatherQuery } from '~/lib/queries'
 import { createTestQueryClient, renderWithQueryClient } from '~/test/render'
@@ -49,6 +50,19 @@ const componentBlock = (type: ArticleBlock['type'], props: Record<string, unknow
 
 const newsList = (props: Record<string, unknown> = {}) =>
     componentBlock('newsList', { showTagTabs: false, tags: '', showViewAll: false, ...props })
+
+const shopList = (props: Record<string, unknown> = {}) =>
+    componentBlock('shopList', {
+        showDateTabs: true,
+        showSearch: true,
+        showSort: true,
+        showTagTabs: false,
+        tags: '',
+        showProducts: true,
+        ...props,
+    })
+
+const productList = (props: Record<string, unknown> = {}) => componentBlock('productList', { products: '', ...props })
 
 const newsPost = (id: string, title: string, tagIds: string[]): NewsPost => ({
     id,
@@ -405,6 +419,130 @@ describe('ArticleRenderer', () => {
 
         renderWithQuery([componentBlock('adjacentPosts')], [[queryKeys.adjacentPosts, { previous: null, next: null }]])
         expect(screen.queryByRole('navigation')).not.toBeInTheDocument()
+    })
+
+    it('模擬店一覧は日付タブ・検索・並び替え・タグタブと模擬店のカードを出す', async () => {
+        renderWithQuery([shopList({ showTagTabs: true, tags: 'experience,food' })])
+
+        const cards = await screen.findAllByRole('listitem')
+        expect(cards).toHaveLength(mockShops.length)
+        const first = within(cards[0]!)
+        expect(first.getByRole('link')).toHaveAttribute('href', '/shops/shop-1')
+        expect(first.getAllByText('レモネードスタンド')).toHaveLength(2)
+        expect(first.getByText('Day1')).toBeInTheDocument()
+        expect(first.getByText('2年1組')).toBeInTheDocument()
+        expect(first.getByText('@ 特別教室A')).toBeInTheDocument()
+        // カードの中の商品は先頭から3件まで
+        expect(first.getAllByText('200円')).toHaveLength(2)
+        expect(first.getByText('150円')).toBeInTheDocument()
+        expect(first.queryByText('250円')).not.toBeInTheDocument()
+
+        const dateTabs = within(screen.getByRole('tablist', { name: '日付' })).getAllByRole('tab')
+        expect(dateTabs.map((tab) => tab.textContent)).toEqual(['すべて', 'Day16/6(土)', 'Day26/7(日)'])
+        // タブの並びはタグの一覧の順
+        const tagTabs = within(screen.getByRole('tablist', { name: 'タグ' })).getAllByRole('tab')
+        expect(tagTabs.map((tab) => tab.textContent)).toEqual(['すべて', '食べ物', '体験'])
+        expect(screen.getByRole('searchbox', { name: '店名・商品で検索' })).toBeInTheDocument()
+        expect(screen.getByRole('combobox', { name: '並び替え' })).toHaveValue('recommended')
+    })
+
+    it('模擬店一覧は日付タブ・タグタブで絞り込み、検索は店名・団体名・場所・商品名に合うものを出す', async () => {
+        const user = userEvent.setup()
+        renderWithQuery([shopList({ showTagTabs: true, tags: 'food,experience' })])
+
+        await user.click(await screen.findByRole('tab', { name: 'Day26/7(日)' }))
+        expect(screen.getAllByRole('listitem')).toHaveLength(3)
+
+        await user.click(screen.getByRole('tab', { name: '体験' }))
+        const filtered = screen.getAllByRole('listitem')
+        expect(filtered).toHaveLength(1)
+        expect(within(filtered[0]!).getAllByText('射的横丁').length).toBeGreaterThan(0)
+
+        await user.click(within(screen.getByRole('tablist', { name: 'タグ' })).getByRole('tab', { name: 'すべて' }))
+        await user.type(screen.getByRole('searchbox', { name: '店名・商品で検索' }), 'タオル')
+        const searched = screen.getAllByRole('listitem')
+        expect(searched).toHaveLength(1)
+        expect(within(searched[0]!).getAllByText('文化祭Tシャツ').length).toBeGreaterThan(0)
+    })
+
+    it('模擬店一覧は名前順に並び替えられる', async () => {
+        const user = userEvent.setup()
+        renderWithQuery([shopList()])
+
+        await screen.findAllByRole('listitem')
+        await user.selectOptions(screen.getByRole('combobox', { name: '並び替え' }), 'name')
+
+        const names = screen.getAllByRole('listitem').map((card) => within(card).getAllByText(/./)[1]?.textContent)
+        expect(names).toEqual([...names].sort((a, b) => (a ?? '').localeCompare(b ?? '', 'ja')))
+    })
+
+    it('模擬店一覧は出さない設定の日付タブ・検索・並び替え・タグタブを出さず、タグ未選択ならタグタブを出さない', async () => {
+        const { unmount } = renderWithQuery([
+            shopList({ showDateTabs: false, showSearch: false, showSort: false, showTagTabs: false }),
+        ])
+
+        expect(await screen.findAllByRole('listitem')).toHaveLength(mockShops.length)
+        expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
+        expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
+        expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+        unmount()
+
+        renderWithQuery([shopList({ showTagTabs: true, tags: '' })])
+        expect(await screen.findAllByRole('listitem')).toHaveLength(mockShops.length)
+        expect(screen.queryByRole('tablist', { name: 'タグ' })).not.toBeInTheDocument()
+    })
+
+    it('模擬店一覧はカードの商品を出さない設定なら、商品のサムネを出さない', async () => {
+        renderWithQuery([shopList({ showProducts: false })])
+
+        expect(await screen.findAllByRole('listitem')).toHaveLength(mockShops.length)
+        expect(screen.queryByText('200円')).not.toBeInTheDocument()
+    })
+
+    it('模擬店一覧は絞り込んだ結果が0件なら空状態を出し、タブ・検索は出したままにする', async () => {
+        const user = userEvent.setup()
+        renderWithQuery([shopList()])
+
+        await user.type(await screen.findByRole('searchbox', { name: '店名・商品で検索' }), 'ない店')
+
+        expect(screen.getByRole('heading', { name: '模擬店が見つかりません' })).toBeInTheDocument()
+        expect(screen.getByText('条件に合う模擬店がありません。絞り込みを変えてお試しください。')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: '再読み込み' })).toBeInTheDocument()
+        expect(screen.queryByRole('list')).not.toBeInTheDocument()
+        expect(screen.getByRole('tablist', { name: '日付' })).toBeInTheDocument()
+    })
+
+    it('模擬店のサマリーは表示中の模擬店の Day・団体・店名・時間・場所とマップへのリンクを出す', async () => {
+        renderWithQuery([componentBlock('shopSummary')])
+
+        expect(await screen.findByRole('heading', { name: 'レモネードスタンド' })).toBeInTheDocument()
+        expect(screen.getByText('Day1')).toBeInTheDocument()
+        expect(screen.getByText('2年1組')).toBeInTheDocument()
+        expect(screen.getByText('9:10 - 14:30')).toBeInTheDocument()
+        expect(screen.getByText('特別教室A')).toBeInTheDocument()
+        expect(screen.getByRole('link', { name: 'マップで見る' })).toHaveAttribute('href', '/map')
+    })
+
+    it('商品一覧は表示中の模擬店の商品を出し、表示する商品を選べばその商品だけを並び順で出す', async () => {
+        const { unmount } = renderWithQuery([productList()])
+
+        expect(await screen.findByRole('heading', { name: 'メニュー' })).toBeInTheDocument()
+        expect(await screen.findAllByRole('listitem')).toHaveLength(mockCurrentShop.products.length)
+        expect(screen.getByText('レモネード')).toBeInTheDocument()
+        expect(screen.getByText('250円')).toBeInTheDocument()
+        unmount()
+
+        renderWithQuery([productList({ products: 'product-3,product-1,unknown' })])
+        const items = await screen.findAllByRole('listitem')
+        expect(items.map((item) => item.textContent)).toEqual(['レレモネード200円', 'ははちみつレモン150円'])
+    })
+
+    it('商品一覧は出す商品が0件なら空状態を出す', async () => {
+        renderWithQuery([productList()], [[queryKeys.currentShop, { ...mockCurrentShop, products: [] }]])
+
+        expect(await screen.findByRole('heading', { name: '商品はまだありません' })).toBeInTheDocument()
+        expect(screen.getByText('商品が登録されると、ここに表示されます。')).toBeInTheDocument()
+        expect(screen.queryByRole('list')).not.toBeInTheDocument()
     })
 
     it('天気のブロック（今日・週間予報・警報・暑さ指数・概況・更新時刻と出典）を天気のデータから描画する', () => {

@@ -6,6 +6,7 @@ import { apiFetch } from './api'
 import { mapMock } from './mock/map'
 import { mockAdjacentPosts, mockCurrentPost, mockNewsPosts, mockNewsTags } from './mock/news'
 import { scheduleDays } from './mock/schedule'
+import { mockCurrentShop, mockShopDays, mockShops, mockShopTags } from './mock/shop'
 import { createMockWeather } from './mock/weather'
 
 /**
@@ -24,6 +25,10 @@ export const queryKeys = {
     currentPost: ['posts', 'current'] as const,
     adjacentPosts: ['posts', 'current', 'adjacent'] as const,
     weather: ['weather'] as const,
+    shops: ['shops'] as const,
+    shopTags: ['shops', 'tags'] as const,
+    shopDays: ['shops', 'days'] as const,
+    currentShop: ['shops', 'current'] as const,
 }
 
 export const exampleQuery = () =>
@@ -81,6 +86,36 @@ export const adjacentPostsQuery = () =>
     queryOptions({
         queryKey: queryKeys.adjacentPosts,
         queryFn: () => Promise.resolve(mockAdjacentPosts),
+    })
+
+// 模擬店（#16）は API ができるまで仮データ（lib/mock/shop.ts）を返す。API ができたら queryFn を差し替える（#59）
+
+/** 模擬店（登録順） */
+export const shopsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.shops,
+        queryFn: () => Promise.resolve(mockShops),
+    })
+
+/** 模擬店のタグ */
+export const shopTagsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.shopTags,
+        queryFn: () => Promise.resolve(mockShopTags),
+    })
+
+/** 模擬店の開催日 */
+export const shopDaysQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.shopDays,
+        queryFn: () => Promise.resolve(mockShopDays),
+    })
+
+/** 表示中の模擬店（Day・団体・店名・時間・場所と商品） */
+export const currentShopQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.currentShop,
+        queryFn: () => Promise.resolve(mockCurrentShop),
     })
 
 /**

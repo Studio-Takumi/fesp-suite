@@ -16,6 +16,7 @@ import {
 import { adminFetch } from './api'
 import { env } from './env'
 import { mockNewsTags } from './mock/news'
+import { mockShopProducts, mockShopTags } from './mock/shop'
 
 /**
  * サーバー状態は TanStack Query が担当する。
@@ -26,6 +27,8 @@ export const queryKeys = {
     articles: ['articles'] as const,
     article: (id: string) => ['articles', id] as const,
     newsTags: ['news', 'tags'] as const,
+    shopTags: ['shops', 'tags'] as const,
+    shopProducts: ['shops', 'current', 'products'] as const,
 }
 
 export const exampleQuery = () =>
@@ -69,6 +72,20 @@ export const newsTagsQuery = () =>
     queryOptions({
         queryKey: queryKeys.newsTags,
         queryFn: () => Promise.resolve(mockNewsTags),
+    })
+
+/** 模擬店のタグ。API ができるまで仮データ（lib/mock/shop.ts）を返す。API ができたら queryFn を差し替える（#59） */
+export const shopTagsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.shopTags,
+        queryFn: () => Promise.resolve(mockShopTags),
+    })
+
+/** 表示中の模擬店の商品。API ができるまで仮データ（lib/mock/shop.ts）を返す。API ができたら queryFn を差し替える（#59） */
+export const shopProductsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.shopProducts,
+        queryFn: () => Promise.resolve(mockShopProducts),
     })
 
 export function useCreateArticle() {

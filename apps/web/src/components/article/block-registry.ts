@@ -15,8 +15,11 @@ import { NewsList } from './blocks/NewsList'
 import { PageHeader } from './blocks/PageHeader'
 import { Paragraph } from './blocks/Paragraph'
 import { PostSummary } from './blocks/PostSummary'
+import { ProductList } from './blocks/ProductList'
 import { Quote } from './blocks/Quote'
 import { ScheduleTable } from './blocks/ScheduleTable'
+import { ShopList } from './blocks/ShopList'
+import { ShopSummary } from './blocks/ShopSummary'
 import { Table } from './blocks/Table'
 import { TodayWeather } from './blocks/TodayWeather'
 import { ToggleListItem } from './blocks/ToggleListItem'
@@ -58,6 +61,9 @@ export const blockRegistry: BlockRegistry = {
     coverImage: CoverImage,
     postSummary: PostSummary,
     adjacentPosts: AdjacentPosts,
+    shopList: ShopList,
+    shopSummary: ShopSummary,
+    productList: ProductList,
     todayWeather: TodayWeather,
     weeklyForecast: WeeklyForecast,
     weatherAlert: WeatherAlert,
