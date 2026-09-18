@@ -355,6 +355,7 @@ export const contentListIcons = [
     'newspaper',
     'cloud-sun',
     'clipboard-list',
+    'settings',
 ] as const
 export type ContentListIcon = (typeof contentListIcons)[number]
 

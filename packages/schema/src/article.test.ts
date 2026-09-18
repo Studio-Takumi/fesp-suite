@@ -968,9 +968,11 @@ describe('articleDocumentSchema の日付・天気の帯（weatherBar）', () =>
 })
 
 describe('articleDocumentSchema のその他のコンテンツ（contentList）', () => {
-    const links = ['スケジュール|calendar-days|/schedule', 'アンケート|clipboard-list|https://example.com/form'].join(
-        '\n',
-    )
+    const links = [
+        'スケジュール|calendar-days|/schedule',
+        'アンケート|clipboard-list|https://example.com/form',
+        '設定|settings|/settings',
+    ].join('\n')
 
     it('リンクの並び（1行1件）と、挿入した直後（空文字）を受理する', () => {
         expect(articleDocumentSchema.safeParse(componentBlock('contentList', { links })).success).toBe(true)
