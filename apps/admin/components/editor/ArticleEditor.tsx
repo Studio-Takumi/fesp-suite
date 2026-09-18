@@ -147,9 +147,16 @@ export const articleSchema = BlockNoteSchema.create({
     },
 })
 
-/** スラッシュメニューの「コンポーネント」グループに出す、独自コンポーネントのブロック */
-const componentSlashMenuItems: {
+/** BlockNote に元からある項目と同じアイコンの大きさ（`@blocknote/react` の既定） */
+const SLASH_MENU_ICON_SIZE = 18
+
+/**
+ * スラッシュメニューに出す独自コンポーネント。ページごとのグループに分け、この配列の順に出す。
+ * グループの順番は最初に出てきた順で決まるので、並べ替えるときはこの配列を並べ替える
+ */
+export const componentSlashMenuItems: {
     type: ComponentBlock['type']
+    group: string
     title: string
     subtext: string
     aliases: string[]
@@ -157,171 +164,195 @@ const componentSlashMenuItems: {
 }[] = [
     {
         type: 'pageHeader',
+        group: '共通',
         title: 'ページ見出し',
         subtext: '英語ラベルと日本語タイトルの見出し',
         aliases: ['pageheader', 'midashi', 'みだし'],
-        icon: <PanelTop />,
-    },
-    {
-        type: 'scheduleTable',
-        title: 'スケジュール表',
-        subtext: '日付タブと会場ごとのタイムテーブル',
-        aliases: ['scheduletable', 'schedule', 'timetable', 'sukejuru', 'スケジュール', 'タイムテーブル'],
-        icon: <CalendarClock />,
-    },
-    {
-        type: 'map',
-        title: 'マップ',
-        subtext: '会場のマップ（検索・フロア切替・場所の一覧）',
-        aliases: ['map', 'chizu', 'ちず', '地図'],
-        icon: <MapIcon />,
-    },
-    {
-        type: 'shopList',
-        title: '模擬店一覧',
-        subtext: '日付・検索・タグで絞り込める模擬店の一覧',
-        aliases: ['shoplist', 'shop', 'mogiten', 'もぎてん', '模擬店'],
-        icon: <Store />,
-    },
-    {
-        type: 'shopSummary',
-        title: '模擬店のサマリー',
-        subtext: '表示中の模擬店の Day・団体・店名・時間・場所',
-        aliases: ['shopsummary', 'shop', 'mogiten', 'もぎてん', 'sama', 'さまりー'],
-        icon: <Info />,
-    },
-    {
-        type: 'productList',
-        title: '商品一覧',
-        subtext: '表示中の模擬店の商品（メニュー）の一覧',
-        aliases: ['productlist', 'product', 'menu', 'syouhin', 'しょうひん', 'めにゅー'],
-        icon: <ShoppingBag />,
-    },
-    {
-        type: 'artistList',
-        title: '出演者一覧',
-        subtext: '日付・検索・タグで絞り込める出演者の一覧',
-        aliases: ['artistlist', 'artist', 'syutuensya', 'しゅつえんしゃ', '出演者'],
-        icon: <Music />,
-    },
-    {
-        type: 'artistSummary',
-        title: '出演者のサマリー',
-        subtext: '表示中の出演者の Day・団体・演目・出演日時・会場・人数',
-        aliases: ['artistsummary', 'artist', 'summary', 'しゅつえんしゃ', '出演者'],
-        icon: <Mic />,
-    },
-    {
-        type: 'setList',
-        title: 'セットリスト',
-        subtext: '表示中の出演者のセットリスト',
-        aliases: ['setlist', 'setto', 'セトリ', 'せっとりすと'],
-        icon: <ListMusic />,
+        icon: <PanelTop size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'mainHero',
+        group: 'Home',
         title: 'メインスライダー',
         subtext: '画像・キャッチ・タイトルのスライダー',
         aliases: ['mainhero', 'hero', 'slider', 'suraida', 'スライダー'],
-        icon: <Images />,
+        icon: <Images size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'weatherBar',
+        group: 'Home',
         title: '日付・天気の帯',
         subtext: '今日の日付と天気（押すと天気ページへ）',
         aliases: ['weatherbar', 'weather', 'tenki', 'てんき', 'hiduke', 'ひづけ'],
-        icon: <CloudSun />,
+        icon: <CloudSun size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'contentList',
+        group: 'Home',
         title: 'その他のコンテンツ',
         subtext: '各ページへのリンクのグリッド',
         aliases: ['contentlist', 'link', 'rinku', 'リンク', 'kontentsu', 'コンテンツ'],
-        icon: <LayoutGrid />,
+        icon: <LayoutGrid size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'newsList',
+        group: 'News',
         title: 'お知らせ一覧',
         subtext: 'タグで絞り込めるお知らせの一覧',
         aliases: ['newslist', 'news', 'oshirase', 'おしらせ'],
-        icon: <Newspaper />,
+        icon: <Newspaper size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'coverImage',
+        group: 'News',
         title: '記事の画像',
         subtext: '記事の先頭に出す画像',
         aliases: ['coverimage', 'image', 'gazou', 'がぞう'],
-        icon: <ImageIcon />,
+        icon: <ImageIcon size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'postSummary',
+        group: 'News',
         title: '記事のサマリー',
         subtext: '表示中の記事の作成者・日時・ハッシュタグ',
         aliases: ['postsummary', 'summary', 'sama', 'さまりー'],
-        icon: <UserRound />,
+        icon: <UserRound size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'adjacentPosts',
+        group: 'News',
         title: '前後の記事',
         subtext: '前の記事・次の記事へのリンク',
         aliases: ['adjacentposts', 'zengo', 'ぜんご'],
-        icon: <ArrowLeftRight />,
+        icon: <ArrowLeftRight size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'blogList',
+        group: 'Blog',
         title: 'ブログ一覧',
         subtext: 'タグで絞り込めるブログの一覧',
         aliases: ['bloglist', 'blog', 'burogu', 'ぶろぐ'],
-        icon: <BookOpen />,
+        icon: <BookOpen size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'relatedPosts',
+        group: 'Blog',
         title: '関連する記事',
         subtext: '表示中の記事に関連する記事のリスト',
         aliases: ['relatedposts', 'related', 'kanren', 'かんれん'],
-        icon: <Files />,
+        icon: <Files size={SLASH_MENU_ICON_SIZE} />,
+    },
+    {
+        type: 'scheduleTable',
+        group: 'Schedule',
+        title: 'スケジュール表',
+        subtext: '日付タブと会場ごとのタイムテーブル',
+        aliases: ['scheduletable', 'schedule', 'timetable', 'sukejuru', 'スケジュール', 'タイムテーブル'],
+        icon: <CalendarClock size={SLASH_MENU_ICON_SIZE} />,
+    },
+    {
+        type: 'map',
+        group: 'Map',
+        title: 'マップ',
+        subtext: '会場のマップ（検索・フロア切替・場所の一覧）',
+        aliases: ['map', 'chizu', 'ちず', '地図'],
+        icon: <MapIcon size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'todayWeather',
+        group: 'Weather',
         title: '今日の天気',
         subtext: '今日の天気と気温',
         aliases: ['todayweather', 'weather', 'tenki', 'てんき'],
-        icon: <Sun />,
+        icon: <Sun size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'weeklyForecast',
+        group: 'Weather',
         title: '週間予報',
         subtext: '1週間分の天気と気温',
         aliases: ['weeklyforecast', 'weather', 'tenki', 'てんき', 'yohou', 'よほう'],
-        icon: <CalendarDays />,
+        icon: <CalendarDays size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'weatherAlert',
+        group: 'Weather',
         title: '気象警報・注意報',
         subtext: '発表中の警報・注意報',
         aliases: ['weatheralert', 'weather', 'keihou', 'けいほう', 'tyuuihou', 'ちゅういほう'],
-        icon: <TriangleAlert />,
+        icon: <TriangleAlert size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'wbgt',
+        group: 'Weather',
         title: '暑さ指数',
         subtext: '暑さ指数（WBGT）と段階',
         aliases: ['wbgt', 'weather', 'atusa', 'あつさ', 'nettyuusyou', 'ねっちゅうしょう'],
-        icon: <Thermometer />,
+        icon: <Thermometer size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'weatherOverview',
+        group: 'Weather',
         title: '天気概況',
         subtext: '気象台の天気概況の文章',
         aliases: ['weatheroverview', 'weather', 'tenki', 'てんき', 'gaikyou', 'がいきょう'],
-        icon: <FileText />,
+        icon: <FileText size={SLASH_MENU_ICON_SIZE} />,
     },
     {
         type: 'weatherCredit',
+        group: 'Weather',
         title: '天気の更新時刻・出典',
         subtext: '天気の更新時刻と出典（気象庁）',
         aliases: ['weathercredit', 'weather', 'tenki', 'てんき', 'syutten', 'しゅってん'],
-        icon: <RefreshCw />,
+        icon: <RefreshCw size={SLASH_MENU_ICON_SIZE} />,
+    },
+    {
+        type: 'shopList',
+        group: 'Shop',
+        title: '模擬店一覧',
+        subtext: '日付・検索・タグで絞り込める模擬店の一覧',
+        aliases: ['shoplist', 'shop', 'mogiten', 'もぎてん', '模擬店'],
+        icon: <Store size={SLASH_MENU_ICON_SIZE} />,
+    },
+    {
+        type: 'shopSummary',
+        group: 'Shop',
+        title: '模擬店のサマリー',
+        subtext: '表示中の模擬店の Day・団体・店名・時間・場所',
+        aliases: ['shopsummary', 'shop', 'mogiten', 'もぎてん', 'sama', 'さまりー'],
+        icon: <Info size={SLASH_MENU_ICON_SIZE} />,
+    },
+    {
+        type: 'productList',
+        group: 'Shop',
+        title: '商品一覧',
+        subtext: '表示中の模擬店の商品（メニュー）の一覧',
+        aliases: ['productlist', 'product', 'menu', 'syouhin', 'しょうひん', 'めにゅー'],
+        icon: <ShoppingBag size={SLASH_MENU_ICON_SIZE} />,
+    },
+    {
+        type: 'artistList',
+        group: 'Artist',
+        title: '出演者一覧',
+        subtext: '日付・検索・タグで絞り込める出演者の一覧',
+        aliases: ['artistlist', 'artist', 'syutuensya', 'しゅつえんしゃ', '出演者'],
+        icon: <Music size={SLASH_MENU_ICON_SIZE} />,
+    },
+    {
+        type: 'artistSummary',
+        group: 'Artist',
+        title: '出演者のサマリー',
+        subtext: '表示中の出演者の Day・団体・演目・出演日時・会場・人数',
+        aliases: ['artistsummary', 'artist', 'summary', 'しゅつえんしゃ', '出演者'],
+        icon: <Mic size={SLASH_MENU_ICON_SIZE} />,
+    },
+    {
+        type: 'setList',
+        group: 'Artist',
+        title: 'セットリスト',
+        subtext: '表示中の出演者のセットリスト',
+        aliases: ['setlist', 'setto', 'セトリ', 'せっとりすと'],
+        icon: <ListMusic size={SLASH_MENU_ICON_SIZE} />,
     },
 ]
 
@@ -364,7 +395,7 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
                 subtext: '読み飛ばされたくない文章を色付きの枠で囲む',
                 aliases: ['callout', 'chuui', 'ちゅうい', '注意'],
                 group: items.find((item) => (item as { key?: string }).key === 'quote')?.group ?? '基本ブロック',
-                icon: <TriangleAlert />,
+                icon: <TriangleAlert size={SLASH_MENU_ICON_SIZE} />,
                 onItemClick: () => insertOrUpdateBlockForSlashMenu(editor, { type: 'callout' }),
             }
             return filterSuggestionItems(
@@ -374,7 +405,6 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
                         .flatMap((item) => ((item as { key?: string }).key === 'quote' ? [item, calloutItem] : [item])),
                     ...componentSlashMenuItems.map(({ type, ...item }): DefaultReactSuggestionItem => ({
                         ...item,
-                        group: 'コンポーネント',
                         onItemClick: () => {
                             // 中身の無いブロックを入れるとカーソルが次のブロックに移るので、サイドパネルを開くために戻す
                             const block = insertOrUpdateBlockForSlashMenu(editor, { type })
