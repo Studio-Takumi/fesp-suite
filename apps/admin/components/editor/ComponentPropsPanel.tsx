@@ -8,7 +8,9 @@ import type {
     EmptyComponentProps,
     NewsListProps,
     PageHeaderProps,
+    ProductListProps,
     ScheduleTableProps,
+    ShopListProps,
     WeatherComponentType,
 } from '@fesp/schema'
 
@@ -16,16 +18,24 @@ import { BlogListPropsForm } from './BlogListPropsForm'
 import { CoverImagePropsForm } from './CoverImagePropsForm'
 import { NewsListPropsForm } from './NewsListPropsForm'
 import { PageHeaderPropsForm } from './PageHeaderPropsForm'
+import { ProductListPropsForm } from './ProductListPropsForm'
 import { ScheduleTablePropsForm } from './ScheduleTablePropsForm'
+import { ShopListPropsForm } from './ShopListPropsForm'
 
 /** props をサイドパネルで編集する、独自コンポーネントのブロック */
 export type ComponentBlock =
     | { id: string; type: 'pageHeader'; props: PageHeaderProps }
     | { id: string; type: 'scheduleTable'; props: ScheduleTableProps }
+    | { id: string; type: 'shopList'; props: ShopListProps }
+    | { id: string; type: 'productList'; props: ProductListProps }
     | { id: string; type: 'newsList'; props: NewsListProps }
     | { id: string; type: 'coverImage'; props: CoverImageProps }
     | { id: string; type: 'blogList'; props: BlogListProps }
-    | { id: string; type: 'map' | 'postSummary' | 'adjacentPosts' | 'relatedPosts'; props: EmptyComponentProps }
+    | {
+          id: string
+          type: 'shopSummary' | 'map' | 'postSummary' | 'adjacentPosts' | 'relatedPosts'
+          props: EmptyComponentProps
+      }
     | { id: string; type: WeatherComponentType; props: EmptyComponentProps }
 
 /**
@@ -52,6 +62,15 @@ const componentPanels: {
             <ScheduleTablePropsForm defaultValues={block.props} onValidChange={onChange} />
         ),
     },
+    shopList: {
+        name: '模擬店一覧',
+        renderForm: (block, onChange) => <ShopListPropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
+    productList: {
+        name: '商品一覧',
+        renderForm: (block, onChange) => <ProductListPropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
+    shopSummary: { name: '模擬店のサマリー' },
     newsList: {
         name: 'お知らせ一覧',
         renderForm: (block, onChange) => <NewsListPropsForm defaultValues={block.props} onValidChange={onChange} />,

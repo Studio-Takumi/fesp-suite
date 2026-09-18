@@ -22,7 +22,7 @@ function render(ui: ReactNode) {
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
 
 describe('articleSchema', () => {
-    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・注意書き・区切り線・表・コードブロックと、独自コンポーネント（ページ見出し・スケジュール表・マップ・お知らせ・ブログ・天気）だけを許可する（画像・動画等は含まない）', () => {
+    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・注意書き・区切り線・表・コードブロックと、独自コンポーネント（ページ見出し・スケジュール表・マップ・お知らせ・ブログ・模擬店・天気）だけを許可する（画像・動画等は含まない）', () => {
         expect(Object.keys(articleSchema.blockSchema).sort()).toEqual(
             [
                 'adjacentPosts',
@@ -30,6 +30,9 @@ describe('articleSchema', () => {
                 'relatedPosts',
                 'coverImage',
                 'newsList',
+                'shopList',
+                'shopSummary',
+                'productList',
                 'map',
                 'postSummary',
                 'scheduleTable',
@@ -374,6 +377,193 @@ describe('ArticleEditor', () => {
         expect(onChange).toHaveBeenLastCalledWith([
             expect.objectContaining({ id: '1', type: 'scheduleTable', props: { showDateTabs: false } }),
         ])
+    })
+
+    it('マップはカードに説明の一文を出し、カーソルがあればサイドパネルに「設定する項目はありません」と出す', async () => {
+        const content: ArticleDocument = [{ id: '1', type: 'map', props: {}, children: [] }]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('会場のマップを出します')).toBeInTheDocument()
+        expect(screen.getByText('マップ', { selector: 'span' })).toBeInTheDocument()
+        const panel = await screen.findByRole('complementary', { name: 'コンポーネントの設定' })
+        expect(panel).toHaveTextContent('マップ')
+        expect(panel).toHaveTextContent('設定する項目はありません')
+    })
+
+    it('カーソルが別のブロックにあれば、マップのサイドパネルを出さない', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'paragraph', props: defaultBlockProps, content: [], children: [] },
+            { id: '2', type: 'map', props: {}, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('会場のマップを出します')).toBeInTheDocument()
+        expect(screen.getByText('設定')).toBeInTheDocument()
+        expect(screen.queryByRole('complementary', { name: 'コンポーネントの設定' })).not.toBeInTheDocument()
+    })
+
+    it('注意書きは種類の見出しと本文を出し、子ブロックも同じブロックの中に出す', async () => {
+        const content: ArticleDocument = [
+            {
+                id: '1',
+                type: 'callout',
+                props: { variant: 'info' },
+                content: [{ type: 'text', text: '入場は無料です', styles: {} }],
+                children: [
+                    {
+                        id: '2',
+                        type: 'bulletListItem',
+                        props: defaultBlockProps,
+                        content: [{ type: 'text', text: '再入場できます', styles: {} }],
+                        children: [],
+                    },
+                ],
+            },
+        ]
+
+        const { container } = render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('入場は無料です')).toBeInTheDocument()
+        const callout = container.querySelector('[data-callout-variant="info"]')
+        expect(callout).toHaveTextContent('情報')
+        // 子ブロックは同じ .bn-block の中（枠を付ける要素の中）に入る
+        expect(callout?.closest('.bn-block')).toHaveTextContent('再入場できます')
+    })
+
+    it('注意書きのアイコンのメニューで種類を選ぶと、variant を変えて onChange に渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        const content: ArticleDocument = [
+            {
+                id: '1',
+                type: 'callout',
+                props: { variant: 'caution' },
+                content: [{ type: 'text', text: '現金のみです', styles: {} }],
+                children: [],
+            },
+        ]
+
+        render(<ArticleEditor content={content} onChange={onChange} />)
+
+        expect(await screen.findByText('注意', { selector: 'span' })).toBeInTheDocument()
+        await user.click(screen.getByRole('button', { name: '注意書きの種類' }))
+        // いまの種類にだけチェックを付ける
+        expect((await screen.findByRole('menuitem', { name: '注意' })).querySelector('.lucide-check')).not.toBeNull()
+        expect(screen.getByRole('menuitem', { name: '警告' }).querySelector('.lucide-check')).toBeNull()
+        await user.click(screen.getByRole('menuitem', { name: '警告' }))
+
+        expect(await screen.findByText('警告', { selector: 'span' })).toBeInTheDocument()
+        expect(onChange).toHaveBeenLastCalledWith([
+            expect.objectContaining({ id: '1', type: 'callout', props: { variant: 'warning' } }),
+        ])
+    })
+
+    it('模擬店一覧はカードに設定の要約を出す（タグはタグの一覧の順に名前で出す）', async () => {
+        const content: ArticleDocument = [
+            {
+                id: '1',
+                type: 'shopList',
+                props: {
+                    showDateTabs: true,
+                    showSearch: true,
+                    showSort: false,
+                    showTagTabs: true,
+                    tags: 'experience,food',
+                    showProducts: true,
+                },
+                children: [],
+            },
+            {
+                id: '2',
+                type: 'shopList',
+                props: {
+                    showDateTabs: false,
+                    showSearch: false,
+                    showSort: true,
+                    showTagTabs: false,
+                    tags: '',
+                    showProducts: false,
+                },
+                children: [],
+            },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('タグタブ: あり（食べ物・体験）')).toBeInTheDocument()
+        expect(screen.getByText('日付タブ: あり')).toBeInTheDocument()
+        expect(screen.getByText('検索: あり')).toBeInTheDocument()
+        expect(screen.getByText('並び替え: なし')).toBeInTheDocument()
+        expect(screen.getByText('カードの商品: あり')).toBeInTheDocument()
+        expect(screen.getByText('タグタブ: なし')).toBeInTheDocument()
+        expect(screen.getByText('日付タブ: なし')).toBeInTheDocument()
+        expect(screen.getByText('カードの商品: なし')).toBeInTheDocument()
+    })
+
+    it('模擬店一覧のサイドパネルでスイッチを切り替えると、ブロックの props を変えて onChange に渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        const props = {
+            showDateTabs: true,
+            showSearch: true,
+            showSort: true,
+            showTagTabs: true,
+            tags: '',
+            showProducts: true,
+        }
+        const content: ArticleDocument = [{ id: '1', type: 'shopList', props, children: [] }]
+
+        render(<ArticleEditor content={content} onChange={onChange} />)
+
+        await user.click(await screen.findByRole('switch', { name: 'カードに商品を出す' }))
+
+        expect(await screen.findByText('カードの商品: なし')).toBeInTheDocument()
+        expect(onChange).toHaveBeenLastCalledWith([
+            expect.objectContaining({ id: '1', type: 'shopList', props: { ...props, showProducts: false } }),
+        ])
+    })
+
+    it('商品一覧はカードに表示する商品を出し、選んでいなければ「すべて」と出す', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'productList', props: { products: 'product-3,product-1' }, children: [] },
+            { id: '2', type: 'productList', props: { products: '' }, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('表示する商品: レモネード・はちみつレモン')).toBeInTheDocument()
+        expect(screen.getByText('表示する商品: すべて')).toBeInTheDocument()
+    })
+
+    it('商品一覧のサイドパネルで商品を選ぶと、商品の一覧の順に ID を並べて props に入れる', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        const content: ArticleDocument = [{ id: '1', type: 'productList', props: { products: '' }, children: [] }]
+
+        render(<ArticleEditor content={content} onChange={onChange} />)
+
+        await user.click(await screen.findByRole('checkbox', { name: 'はちみつレモン' }))
+        await user.click(screen.getByRole('checkbox', { name: 'レモネード' }))
+
+        expect(await screen.findByText('表示する商品: レモネード・はちみつレモン')).toBeInTheDocument()
+        expect(onChange).toHaveBeenLastCalledWith([
+            expect.objectContaining({ id: '1', type: 'productList', props: { products: 'product-1,product-3' } }),
+        ])
+    })
+
+    it('模擬店のサマリーはカードに説明を出し、カーソルがあればサイドパネルに「設定する項目はありません」と出す', async () => {
+        const content: ArticleDocument = [{ id: '1', type: 'shopSummary', props: {}, children: [] }]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(
+            await screen.findByText('表示中の模擬店の Day・団体・店名・時間・場所と「マップで見る」を出します'),
+        ).toBeInTheDocument()
+        const panel = await screen.findByRole('complementary', { name: 'コンポーネントの設定' })
+        expect(within(panel).getByRole('heading', { name: '模擬店のサマリー' })).toBeInTheDocument()
+        expect(within(panel).getByText('設定する項目はありません')).toBeInTheDocument()
     })
 
     it('マップはカードに説明の一文を出し、カーソルがあればサイドパネルに「設定する項目はありません」と出す', async () => {

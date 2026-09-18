@@ -29,10 +29,13 @@ import {
     Files,
     FileText,
     ImageIcon,
+    Info,
     MapIcon,
     Newspaper,
     PanelTop,
     RefreshCw,
+    ShoppingBag,
+    Store,
     Sun,
     Thermometer,
     TriangleAlert,
@@ -50,8 +53,11 @@ import { createMapBlock } from './blocks/MapBlock'
 import { createNewsListBlock } from './blocks/NewsListBlock'
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
 import { createPostSummaryBlock } from './blocks/PostSummaryBlock'
+import { createProductListBlock } from './blocks/ProductListBlock'
 import { createRelatedPostsBlock } from './blocks/RelatedPostsBlock'
 import { createScheduleTableBlock } from './blocks/ScheduleTableBlock'
+import { createShopListBlock } from './blocks/ShopListBlock'
+import { createShopSummaryBlock } from './blocks/ShopSummaryBlock'
 import { createTodayWeatherBlock } from './blocks/TodayWeatherBlock'
 import { createWbgtBlock } from './blocks/WbgtBlock'
 import { createWeatherAlertBlock } from './blocks/WeatherAlertBlock'
@@ -105,6 +111,9 @@ export const articleSchema = BlockNoteSchema.create({
         pageHeader: createPageHeaderBlock(),
         scheduleTable: createScheduleTableBlock(),
         map: createMapBlock(),
+        shopList: createShopListBlock(),
+        shopSummary: createShopSummaryBlock(),
+        productList: createProductListBlock(),
         newsList: createNewsListBlock(),
         coverImage: createCoverImageBlock(),
         postSummary: createPostSummaryBlock(),
@@ -148,6 +157,27 @@ const componentSlashMenuItems: {
         subtext: '会場のマップ（検索・フロア切替・場所の一覧）',
         aliases: ['map', 'chizu', 'ちず', '地図'],
         icon: <MapIcon />,
+    },
+    {
+        type: 'shopList',
+        title: '模擬店一覧',
+        subtext: '日付・検索・タグで絞り込める模擬店の一覧',
+        aliases: ['shoplist', 'shop', 'mogiten', 'もぎてん', '模擬店'],
+        icon: <Store />,
+    },
+    {
+        type: 'shopSummary',
+        title: '模擬店のサマリー',
+        subtext: '表示中の模擬店の Day・団体・店名・時間・場所',
+        aliases: ['shopsummary', 'shop', 'mogiten', 'もぎてん', 'sama', 'さまりー'],
+        icon: <Info />,
+    },
+    {
+        type: 'productList',
+        title: '商品一覧',
+        subtext: '表示中の模擬店の商品（メニュー）の一覧',
+        aliases: ['productlist', 'product', 'menu', 'syouhin', 'しょうひん', 'めにゅー'],
+        icon: <ShoppingBag />,
     },
     {
         type: 'newsList',
