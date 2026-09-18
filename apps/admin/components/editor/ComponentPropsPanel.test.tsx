@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render as rtlRender, screen } from '@testing-library/react'
+import { render as rtlRender, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -353,6 +353,138 @@ describe('ComponentPropsPanel（出演者一覧）', () => {
         await user.click(screen.getByRole('switch', { name: 'タグタブを出す' }))
         expect(onChange).toHaveBeenLastCalledWith({ ...block.props, showSearch: true, showTagTabs: false })
         expect(await screen.findByRole('checkbox', { name: 'ダンス' })).toBeDisabled()
+    })
+})
+
+describe('ComponentPropsPanel（メインスライダー）', () => {
+    const block = {
+        id: '1',
+        type: 'mainHero',
+        props: { slides: 'https://example.com/1.jpg|第42回 あおば祭|あおば祭へ、ようこそ' },
+    } as const
+
+    it('コンポーネント名と、スライドごとの入力欄を出す', () => {
+        render(<ComponentPropsPanel block={block} onChange={vi.fn()} />)
+
+        expect(screen.getByRole('heading', { name: 'メインスライダー' })).toBeInTheDocument()
+        const slide = within(screen.getByRole('group', { name: '1枚目' }))
+        expect(slide.getByLabelText('画像の URL')).toHaveValue('https://example.com/1.jpg')
+        expect(slide.getByLabelText('キャッチ')).toHaveValue('第42回 あおば祭')
+        expect(slide.getByLabelText('タイトル')).toHaveValue('あおば祭へ、ようこそ')
+    })
+
+    it('入力すると、1行1枚の文字列にして props を渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        const slide = within(screen.getByRole('group', { name: '1枚目' }))
+        await user.clear(slide.getByLabelText('タイトル'))
+        await user.type(slide.getByLabelText('タイトル'), 'ようこそ')
+
+        expect(onChange).toHaveBeenLastCalledWith({
+            slides: 'https://example.com/1.jpg|第42回 あおば祭|ようこそ',
+        })
+    })
+
+    it('スライドを足して入力すると2枚になり、削除すると消える', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        await user.click(screen.getByRole('button', { name: 'スライドを追加' }))
+        const added = within(screen.getByRole('group', { name: '2枚目' }))
+        await user.type(added.getByLabelText('画像の URL'), 'https://example.com/2.jpg')
+
+        expect(onChange).toHaveBeenLastCalledWith({
+            slides: 'https://example.com/1.jpg|第42回 あおば祭|あおば祭へ、ようこそ\nhttps://example.com/2.jpg||',
+        })
+
+        await user.click(within(screen.getByRole('group', { name: '2枚目' })).getByRole('button', { name: '削除' }))
+
+        expect(onChange).toHaveBeenLastCalledWith({
+            slides: 'https://example.com/1.jpg|第42回 あおば祭|あおば祭へ、ようこそ',
+        })
+        expect(screen.queryByRole('group', { name: '2枚目' })).not.toBeInTheDocument()
+    })
+
+    it('URL の形でない・文字数を超えるときはエラーを出し、props を渡さない', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        const slide = within(screen.getByRole('group', { name: '1枚目' }))
+        await user.clear(slide.getByLabelText('画像の URL'))
+        await user.type(slide.getByLabelText('画像の URL'), 'hero.jpg')
+        expect(await screen.findByText('http:// か https:// で始まる URL を入力してください')).toBeInTheDocument()
+        expect(slide.getByLabelText('画像の URL')).toHaveAttribute('aria-invalid', 'true')
+
+        onChange.mockClear()
+        await user.type(slide.getByLabelText('キャッチ'), 'あ'.repeat(30))
+        expect(await screen.findByText('キャッチは30文字以内で入力してください')).toBeInTheDocument()
+        expect(onChange).not.toHaveBeenCalled()
+    })
+})
+
+describe('ComponentPropsPanel（その他のコンテンツ）', () => {
+    const block = { id: '1', type: 'contentList', props: { links: 'スケジュール|calendar-days|/schedule' } } as const
+
+    it('コンポーネント名と、リンクごとの入力欄を出す', () => {
+        render(<ComponentPropsPanel block={block} onChange={vi.fn()} />)
+
+        expect(screen.getByRole('heading', { name: 'その他のコンテンツ' })).toBeInTheDocument()
+        const link = within(screen.getByRole('group', { name: '1件目' }))
+        expect(link.getByLabelText('表示名')).toHaveValue('スケジュール')
+        expect(link.getByLabelText('リンク先')).toHaveValue('/schedule')
+        expect(link.getByLabelText('アイコン')).toHaveTextContent('カレンダー')
+    })
+
+    it('アイコンを選び直すと、1行1件の文字列にして props を渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        await user.click(within(screen.getByRole('group', { name: '1件目' })).getByLabelText('アイコン'))
+        await user.click(await screen.findByRole('option', { name: '地図' }))
+
+        expect(onChange).toHaveBeenLastCalledWith({ links: 'スケジュール|map|/schedule' })
+    })
+
+    it('リンクを足して入力すると2件になり、削除すると消える', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        await user.click(screen.getByRole('button', { name: 'リンクを追加' }))
+        const added = within(screen.getByRole('group', { name: '2件目' }))
+        await user.type(added.getByLabelText('表示名'), 'マップ')
+        await user.type(added.getByLabelText('リンク先'), '/map')
+
+        expect(onChange).toHaveBeenLastCalledWith({
+            links: 'スケジュール|calendar-days|/schedule\nマップ|calendar-days|/map',
+        })
+
+        await user.click(within(screen.getByRole('group', { name: '2件目' })).getByRole('button', { name: '削除' }))
+
+        expect(onChange).toHaveBeenLastCalledWith({ links: 'スケジュール|calendar-days|/schedule' })
+    })
+
+    it('リンク先の形が違う・表示名が長すぎるときはエラーを出し、props を渡さない', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        const link = within(screen.getByRole('group', { name: '1件目' }))
+        await user.clear(link.getByLabelText('リンク先'))
+        await user.type(link.getByLabelText('リンク先'), 'schedule')
+        expect(
+            await screen.findByText('「/」で始まるページのパスか、http:// か https:// で始まる URL を入力してください'),
+        ).toBeInTheDocument()
+
+        onChange.mockClear()
+        await user.type(link.getByLabelText('表示名'), 'あ'.repeat(20))
+        expect(await screen.findByText('表示名は20文字以内で入力してください')).toBeInTheDocument()
+        expect(onChange).not.toHaveBeenCalled()
     })
 })
 

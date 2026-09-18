@@ -26,10 +26,13 @@ import {
     BookOpen,
     CalendarClock,
     CalendarDays,
+    CloudSun,
     Files,
     FileText,
     ImageIcon,
+    Images,
     Info,
+    LayoutGrid,
     ListMusic,
     MapIcon,
     Mic,
@@ -53,7 +56,9 @@ import { createArtistListBlock } from './blocks/ArtistListBlock'
 import { createArtistSummaryBlock } from './blocks/ArtistSummaryBlock'
 import { createBlogListBlock } from './blocks/BlogListBlock'
 import { createCalloutBlock } from './blocks/CalloutBlock'
+import { createContentListBlock } from './blocks/ContentListBlock'
 import { createCoverImageBlock } from './blocks/CoverImageBlock'
+import { createMainHeroBlock } from './blocks/MainHeroBlock'
 import { createMapBlock } from './blocks/MapBlock'
 import { createNewsListBlock } from './blocks/NewsListBlock'
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
@@ -67,6 +72,7 @@ import { createShopSummaryBlock } from './blocks/ShopSummaryBlock'
 import { createTodayWeatherBlock } from './blocks/TodayWeatherBlock'
 import { createWbgtBlock } from './blocks/WbgtBlock'
 import { createWeatherAlertBlock } from './blocks/WeatherAlertBlock'
+import { createWeatherBarBlock } from './blocks/WeatherBarBlock'
 import { createWeatherCreditBlock } from './blocks/WeatherCreditBlock'
 import { createWeatherOverviewBlock } from './blocks/WeatherOverviewBlock'
 import { createWeeklyForecastBlock } from './blocks/WeeklyForecastBlock'
@@ -123,6 +129,9 @@ export const articleSchema = BlockNoteSchema.create({
         artistList: createArtistListBlock(),
         artistSummary: createArtistSummaryBlock(),
         setList: createSetListBlock(),
+        mainHero: createMainHeroBlock(),
+        weatherBar: createWeatherBarBlock(),
+        contentList: createContentListBlock(),
         newsList: createNewsListBlock(),
         coverImage: createCoverImageBlock(),
         postSummary: createPostSummaryBlock(),
@@ -208,6 +217,27 @@ const componentSlashMenuItems: {
         subtext: '表示中の出演者のセットリスト',
         aliases: ['setlist', 'setto', 'セトリ', 'せっとりすと'],
         icon: <ListMusic />,
+    },
+    {
+        type: 'mainHero',
+        title: 'メインスライダー',
+        subtext: '画像・キャッチ・タイトルのスライダー',
+        aliases: ['mainhero', 'hero', 'slider', 'suraida', 'スライダー'],
+        icon: <Images />,
+    },
+    {
+        type: 'weatherBar',
+        title: '日付・天気の帯',
+        subtext: '今日の日付と天気（押すと天気ページへ）',
+        aliases: ['weatherbar', 'weather', 'tenki', 'てんき', 'hiduke', 'ひづけ'],
+        icon: <CloudSun />,
+    },
+    {
+        type: 'contentList',
+        title: 'その他のコンテンツ',
+        subtext: '各ページへのリンクのグリッド',
+        aliases: ['contentlist', 'link', 'rinku', 'リンク', 'kontentsu', 'コンテンツ'],
+        icon: <LayoutGrid />,
     },
     {
         type: 'newsList',

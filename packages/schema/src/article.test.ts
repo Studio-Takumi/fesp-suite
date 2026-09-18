@@ -9,8 +9,10 @@ import {
     articleScheduleInputSchema,
     articleViewResponseSchema,
     blogListPropsSchema,
+    contentListLinkSchema,
     coverImagePropsSchema,
     emptyComponentPropsSchema,
+    mainHeroSlideSchema,
     newsListPropsSchema,
     pageHeaderPropsSchema,
     parseArticleDocument,
@@ -914,6 +916,112 @@ describe('articleDocumentSchema の出演者一覧（artistList）', () => {
                 },
             ]).success,
         ).toBe(false)
+    })
+})
+
+describe('articleDocumentSchema のメインスライダー（mainHero）', () => {
+    const slides = [
+        'https://example.com/a.jpg|第42回 あおば祭|あおば祭へ、ようこそ',
+        'http://localhost:8787/b.jpg||',
+    ].join('\n')
+
+    it('スライドの並び（1行1枚）と、挿入した直後（空文字）を受理する', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('mainHero', { slides })).success).toBe(true)
+        expect(articleDocumentSchema.safeParse(componentBlock('mainHero', { slides: '' })).success).toBe(true)
+    })
+
+    it('項目の数が合わない・URL でない・文字数を超える・区切りの文字を含む行があれば拒否する', () => {
+        for (const value of [
+            'https://example.com/a.jpg|キャッチ',
+            'https://example.com/a.jpg|キャッチ|タイトル|余計',
+            'a.jpg|キャッチ|タイトル',
+            'javascript:alert(1)|キャッチ|タイトル',
+            `https://example.com/a.jpg|${'あ'.repeat(31)}|タイトル`,
+            `https://example.com/a.jpg|キャッチ|${'あ'.repeat(41)}`,
+        ]) {
+            expect(articleDocumentSchema.safeParse(componentBlock('mainHero', { slides: value })).success).toBe(false)
+        }
+        // 1行でも形が合わなければ拒否する
+        expect(
+            articleDocumentSchema.safeParse(
+                componentBlock('mainHero', { slides: `https://example.com/a.jpg|A|B\nこわれた行` }),
+            ).success,
+        ).toBe(false)
+    })
+
+    it('props が欠けている・型が違う・知らない props があれば拒否する', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('mainHero', {})).success).toBe(false)
+        expect(articleDocumentSchema.safeParse(componentBlock('mainHero', { slides: [] })).success).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse(componentBlock('mainHero', { slides: '', autoplay: true })).success,
+        ).toBe(false)
+    })
+})
+
+describe('mainHeroSlideSchema', () => {
+    it('入力欄に出すエラーメッセージを返す', () => {
+        const result = mainHeroSlideSchema.safeParse({
+            imageUrl: 'a.jpg',
+            catchphrase: 'あ'.repeat(31),
+            title: 'タイ|トル',
+        })
+
+        expect(result.error?.issues.map((issue) => issue.message)).toEqual([
+            'http:// か https:// で始まる URL を入力してください',
+            'キャッチは30文字以内で入力してください',
+            'タイトルに「|」は使えません',
+        ])
+    })
+})
+
+describe('articleDocumentSchema の日付・天気の帯（weatherBar）', () => {
+    it('props なしで受理し、props があれば拒否する', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('weatherBar', {})).success).toBe(true)
+        expect(articleDocumentSchema.safeParse(componentBlock('weatherBar', { href: '/weather' })).success).toBe(false)
+    })
+})
+
+describe('articleDocumentSchema のその他のコンテンツ（contentList）', () => {
+    const links = ['スケジュール|calendar-days|/schedule', 'アンケート|clipboard-list|https://example.com/form'].join(
+        '\n',
+    )
+
+    it('リンクの並び（1行1件）と、挿入した直後（空文字）を受理する', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('contentList', { links })).success).toBe(true)
+        expect(articleDocumentSchema.safeParse(componentBlock('contentList', { links: '' })).success).toBe(true)
+    })
+
+    it('項目の数が合わない・知らないアイコン・リンク先の形が違う・文字数を超える行があれば拒否する', () => {
+        for (const value of [
+            'スケジュール|calendar-days',
+            'スケジュール|calendar-days|/schedule|余計',
+            'スケジュール|calendar|/schedule',
+            'スケジュール|calendar-days|schedule',
+            'スケジュール|calendar-days|javascript:alert(1)',
+            `${'あ'.repeat(21)}|calendar-days|/schedule`,
+        ]) {
+            expect(articleDocumentSchema.safeParse(componentBlock('contentList', { links: value })).success).toBe(false)
+        }
+    })
+
+    it('props が欠けている・型が違う・知らない props があれば拒否する', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('contentList', {})).success).toBe(false)
+        expect(articleDocumentSchema.safeParse(componentBlock('contentList', { links: [] })).success).toBe(false)
+        expect(articleDocumentSchema.safeParse(componentBlock('contentList', { links: '', columns: 2 })).success).toBe(
+            false,
+        )
+    })
+})
+
+describe('contentListLinkSchema', () => {
+    it('入力欄に出すエラーメッセージを返す', () => {
+        const result = contentListLinkSchema.safeParse({ label: 'あ'.repeat(21), icon: 'calendar', href: 'schedule' })
+
+        expect(result.error?.issues.map((issue) => issue.message)).toEqual([
+            '表示名は20文字以内で入力してください',
+            'アイコンを選んでください',
+            '「/」で始まるページのパスか、http:// か https:// で始まる URL を入力してください',
+        ])
     })
 })
 

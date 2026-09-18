@@ -5,8 +5,10 @@ import type { ReactNode } from 'react'
 import type {
     ArtistListProps,
     BlogListProps,
+    ContentListProps,
     CoverImageProps,
     EmptyComponentProps,
+    MainHeroProps,
     NewsListProps,
     PageHeaderProps,
     ProductListProps,
@@ -17,7 +19,9 @@ import type {
 
 import { ArtistListPropsForm } from './ArtistListPropsForm'
 import { BlogListPropsForm } from './BlogListPropsForm'
+import { ContentListPropsForm } from './ContentListPropsForm'
 import { CoverImagePropsForm } from './CoverImagePropsForm'
+import { MainHeroPropsForm } from './MainHeroPropsForm'
 import { NewsListPropsForm } from './NewsListPropsForm'
 import { PageHeaderPropsForm } from './PageHeaderPropsForm'
 import { ProductListPropsForm } from './ProductListPropsForm'
@@ -31,12 +35,22 @@ export type ComponentBlock =
     | { id: string; type: 'shopList'; props: ShopListProps }
     | { id: string; type: 'productList'; props: ProductListProps }
     | { id: string; type: 'artistList'; props: ArtistListProps }
+    | { id: string; type: 'mainHero'; props: MainHeroProps }
+    | { id: string; type: 'contentList'; props: ContentListProps }
     | { id: string; type: 'newsList'; props: NewsListProps }
     | { id: string; type: 'coverImage'; props: CoverImageProps }
     | { id: string; type: 'blogList'; props: BlogListProps }
     | {
           id: string
-          type: 'shopSummary' | 'artistSummary' | 'setList' | 'map' | 'postSummary' | 'adjacentPosts' | 'relatedPosts'
+          type:
+              | 'weatherBar'
+              | 'shopSummary'
+              | 'artistSummary'
+              | 'setList'
+              | 'map'
+              | 'postSummary'
+              | 'adjacentPosts'
+              | 'relatedPosts'
           props: EmptyComponentProps
       }
     | { id: string; type: WeatherComponentType; props: EmptyComponentProps }
@@ -80,6 +94,15 @@ const componentPanels: {
     },
     artistSummary: { name: '出演者のサマリー' },
     setList: { name: 'セットリスト' },
+    mainHero: {
+        name: 'メインスライダー',
+        renderForm: (block, onChange) => <MainHeroPropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
+    contentList: {
+        name: 'その他のコンテンツ',
+        renderForm: (block, onChange) => <ContentListPropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
+    weatherBar: { name: '日付・天気の帯' },
     newsList: {
         name: 'お知らせ一覧',
         renderForm: (block, onChange) => <NewsListPropsForm defaultValues={block.props} onValidChange={onChange} />,
