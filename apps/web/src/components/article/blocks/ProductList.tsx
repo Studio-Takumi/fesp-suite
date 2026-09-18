@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { parseProductListIds, productListPropsSchema } from '@fesp/schema'
+import { parseIdListProp, productListPropsSchema } from '@fesp/schema'
 import { cn } from '@fesp/ui'
 
 import { EmptyState } from '~/components/EmptyState'
+import { cardColors } from '~/components/list/card-color'
 import { QueryBoundary } from '~/components/QueryBoundary'
-import { shopColors } from '~/components/shop/shop-colors'
 import { currentShopQuery } from '~/lib/queries'
 
 import type { BlockComponentProps } from '../block-registry'
@@ -20,7 +20,7 @@ export function ProductList({ block, children }: BlockComponentProps) {
     const shop = useQuery(currentShopQuery())
 
     if (!props.success) return <>{children}</>
-    const productIds = parseProductListIds(props.data.products)
+    const productIds = parseIdListProp(props.data.products)
 
     return (
         <>
@@ -33,7 +33,7 @@ export function ProductList({ block, children }: BlockComponentProps) {
                             productIds.length === 0
                                 ? data.products
                                 : data.products.filter((product) => productIds.includes(product.id))
-                        const color = shopColors[data.color]
+                        const color = cardColors[data.color]
 
                         return visible.length === 0 ? (
                             <EmptyState

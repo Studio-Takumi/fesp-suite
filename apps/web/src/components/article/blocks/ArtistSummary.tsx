@@ -5,7 +5,7 @@ import { CalendarDays, Map as MapIcon, MapPin, Timer, Users } from 'lucide-react
 
 import { cn, dateFormatter } from '@fesp/ui'
 
-import { artistColor } from '~/components/artist/artist-color'
+import { cardColorFromId } from '~/components/list/card-color'
 import { QueryBoundary } from '~/components/QueryBoundary'
 import type { Artist } from '~/lib/mock/artist'
 import { currentArtistQuery } from '~/lib/queries'
@@ -32,7 +32,7 @@ export function ArtistSummary({ children }: BlockComponentProps) {
 }
 
 function Summary({ artist }: { artist: Artist }) {
-    const color = artistColor(artist.id)
+    const color = cardColorFromId(artist.id)
     const time = `${artist.day}日目 ${dateFormatter(artist.starts_at, 'H:mm')} - ${dateFormatter(artist.ends_at, 'H:mm')}`
 
     return (
@@ -40,10 +40,7 @@ function Summary({ artist }: { artist: Artist }) {
             <div className='flex flex-col gap-3'>
                 <div className='flex items-center gap-2'>
                     <span
-                        className={cn(
-                            'font-en rounded-full px-3 py-1 text-xs font-semibold text-white',
-                            color.accentBackground,
-                        )}
+                        className={cn('font-en rounded-full px-3 py-1 text-xs font-semibold text-white', color.accent)}
                     >
                         Day{artist.day}
                     </span>

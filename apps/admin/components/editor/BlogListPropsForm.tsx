@@ -6,12 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
 
-import { type BlogListProps, blogListPropsSchema, parseBlogListTags } from '@fesp/schema'
+import { type BlogListProps, blogListPropsSchema } from '@fesp/schema'
 
-import { Checkbox } from '~/components/ui/checkbox'
-import { Label } from '~/components/ui/label'
-import { Switch } from '~/components/ui/switch'
 import { blogTagsQuery } from '~/lib/queries'
+
+import { IdListCheckboxes } from './fields/IdListCheckboxes'
+import { SwitchField } from './fields/SwitchField'
 
 export type BlogListPropsFormProps = {
     defaultValues: BlogListProps
@@ -43,52 +43,32 @@ export function BlogListPropsForm({ defaultValues, onValidChange }: BlogListProp
 
     return (
         <div className='space-y-4'>
-            <div className='flex items-center justify-between gap-2'>
-                <Label htmlFor='blog-list-show-tag-tabs'>タグタブを出す</Label>
-                <Controller
-                    control={control}
-                    name='showTagTabs'
-                    render={({ field }) => (
-                        <Switch id='blog-list-show-tag-tabs' checked={field.value} onCheckedChange={field.onChange} />
-                    )}
-                />
-            </div>
-            <fieldset className='space-y-2'>
-                <legend className='text-sm font-medium'>タブに出すタグ</legend>
-                <Controller
-                    control={control}
-                    name='tags'
-                    render={({ field }) => {
-                        const selected = parseBlogListTags(field.value)
-                        // 並びはタグの一覧の順にそろえる
-                        const toggle = (id: string, checked: boolean) =>
-                            field.onChange(
-                                (tags.data ?? [])
-                                    .map((tag) => tag.id)
-                                    .filter((tagId) => (tagId === id ? checked : selected.includes(tagId)))
-                                    .join(','),
-                            )
-
-                        return (
-                            <div className='space-y-2'>
-                                {(tags.data ?? []).map((tag) => (
-                                    <div key={tag.id} className='flex items-center gap-2'>
-                                        <Checkbox
-                                            id={`blog-list-tag-${tag.id}`}
-                                            checked={selected.includes(tag.id)}
-                                            disabled={!showTagTabs}
-                                            onCheckedChange={(checked) => toggle(tag.id, checked === true)}
-                                        />
-                                        <Label htmlFor={`blog-list-tag-${tag.id}`} className='font-normal'>
-                                            {tag.name}
-                                        </Label>
-                                    </div>
-                                ))}
-                            </div>
-                        )
-                    }}
-                />
-            </fieldset>
+            <Controller
+                control={control}
+                name='showTagTabs'
+                render={({ field }) => (
+                    <SwitchField
+                        id='blog-list-show-tag-tabs'
+                        label='タグタブを出す'
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                    />
+                )}
+            />
+            <Controller
+                control={control}
+                name='tags'
+                render={({ field }) => (
+                    <IdListCheckboxes
+                        legend='タブに出すタグ'
+                        options={tags.data ?? []}
+                        value={field.value}
+                        onChange={field.onChange}
+                        idPrefix='blog-list-tag'
+                        disabled={!showTagTabs}
+                    />
+                )}
+            />
         </div>
     )
 }

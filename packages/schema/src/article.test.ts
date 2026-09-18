@@ -16,10 +16,7 @@ import {
     newsListPropsSchema,
     pageHeaderPropsSchema,
     parseArticleDocument,
-    parseBlogListTags,
-    parseNewsListTags,
-    parseProductListIds,
-    parseShopListTags,
+    parseIdListProp,
     productListPropsSchema,
     shopListPropsSchema,
     weatherComponentTypes,
@@ -506,10 +503,12 @@ describe('newsListPropsSchema', () => {
     })
 })
 
-describe('parseNewsListTags', () => {
-    it('カンマ区切りのタグを ID の配列にし、空文字なら空の配列にする', () => {
-        expect(parseNewsListTags('stage,shop')).toEqual(['stage', 'shop'])
-        expect(parseNewsListTags('')).toEqual([])
+describe('parseIdListProp', () => {
+    it('カンマ区切りの ID を配列にし、空文字なら空の配列にする', () => {
+        expect(parseIdListProp('stage,shop')).toEqual(['stage', 'shop'])
+        expect(parseIdListProp('food,experience')).toEqual(['food', 'experience'])
+        expect(parseIdListProp('p1,p2')).toEqual(['p1', 'p2'])
+        expect(parseIdListProp('')).toEqual([])
     })
 })
 
@@ -609,13 +608,6 @@ describe('blogListPropsSchema', () => {
         const result = blogListPropsSchema.safeParse({ showTagTabs: true, tags: 'prep,' })
 
         expect(result.error?.issues.map((issue) => issue.message)).toEqual(['タグの指定が正しくありません'])
-    })
-})
-
-describe('parseBlogListTags', () => {
-    it('カンマ区切りのタグを ID の配列にし、空文字なら空の配列にする', () => {
-        expect(parseBlogListTags('prep,day')).toEqual(['prep', 'day'])
-        expect(parseBlogListTags('')).toEqual([])
     })
 })
 
@@ -854,15 +846,6 @@ describe('shopListPropsSchema / productListPropsSchema', () => {
 
         const productList = productListPropsSchema.safeParse({ products: 'p1,' })
         expect(productList.error?.issues.map((issue) => issue.message)).toEqual(['商品の指定が正しくありません'])
-    })
-})
-
-describe('parseShopListTags / parseProductListIds', () => {
-    it('カンマ区切りの ID を配列にし、空文字なら空の配列にする', () => {
-        expect(parseShopListTags('food,experience')).toEqual(['food', 'experience'])
-        expect(parseShopListTags('')).toEqual([])
-        expect(parseProductListIds('p1,p2')).toEqual(['p1', 'p2'])
-        expect(parseProductListIds('')).toEqual([])
     })
 })
 

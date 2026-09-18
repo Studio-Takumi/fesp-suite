@@ -6,12 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
 
-import { type ArtistListProps, artistListPropsSchema, parseArtistListTags } from '@fesp/schema'
+import { type ArtistListProps, artistListPropsSchema } from '@fesp/schema'
 
-import { Checkbox } from '~/components/ui/checkbox'
-import { Label } from '~/components/ui/label'
-import { Switch } from '~/components/ui/switch'
 import { artistTagsQuery } from '~/lib/queries'
+
+import { IdListCheckboxes } from './fields/IdListCheckboxes'
+import { SwitchField } from './fields/SwitchField'
 
 export type ArtistListPropsFormProps = {
     defaultValues: ArtistListProps
@@ -52,53 +52,35 @@ export function ArtistListPropsForm({ defaultValues, onValidChange }: ArtistList
     return (
         <div className='space-y-4'>
             {SWITCHES.map(({ name, label }) => (
-                <div key={name} className='flex items-center justify-between gap-2'>
-                    <Label htmlFor={`artist-list-${name}`}>{label}</Label>
-                    <Controller
-                        control={control}
-                        name={name}
-                        render={({ field }) => (
-                            <Switch id={`artist-list-${name}`} checked={field.value} onCheckedChange={field.onChange} />
-                        )}
-                    />
-                </div>
-            ))}
-            <fieldset className='space-y-2'>
-                <legend className='text-sm font-medium'>タブに出すタグ</legend>
                 <Controller
+                    key={name}
                     control={control}
-                    name='tags'
-                    render={({ field }) => {
-                        const selected = parseArtistListTags(field.value)
-                        // 並びはタグの一覧の順にそろえる
-                        const toggle = (id: string, checked: boolean) =>
-                            field.onChange(
-                                (tags.data ?? [])
-                                    .map((tag) => tag.id)
-                                    .filter((tagId) => (tagId === id ? checked : selected.includes(tagId)))
-                                    .join(','),
-                            )
-
-                        return (
-                            <div className='space-y-2'>
-                                {(tags.data ?? []).map((tag) => (
-                                    <div key={tag.id} className='flex items-center gap-2'>
-                                        <Checkbox
-                                            id={`artist-list-tag-${tag.id}`}
-                                            checked={selected.includes(tag.id)}
-                                            disabled={!showTagTabs}
-                                            onCheckedChange={(checked) => toggle(tag.id, checked === true)}
-                                        />
-                                        <Label htmlFor={`artist-list-tag-${tag.id}`} className='font-normal'>
-                                            {tag.name}
-                                        </Label>
-                                    </div>
-                                ))}
-                            </div>
-                        )
-                    }}
+                    name={name}
+                    render={({ field }) => (
+                        <SwitchField
+                            id={`artist-list-${name}`}
+                            label={label}
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            onBlur={field.onBlur}
+                        />
+                    )}
                 />
-            </fieldset>
+            ))}
+            <Controller
+                control={control}
+                name='tags'
+                render={({ field }) => (
+                    <IdListCheckboxes
+                        legend='タブに出すタグ'
+                        options={tags.data ?? []}
+                        value={field.value}
+                        onChange={field.onChange}
+                        idPrefix='artist-list-tag'
+                        disabled={!showTagTabs}
+                    />
+                )}
+            />
         </div>
     )
 }

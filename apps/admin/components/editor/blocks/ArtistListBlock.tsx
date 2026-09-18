@@ -4,7 +4,7 @@ import { createReactBlockSpec, useEditorState } from '@blocknote/react'
 import { useQuery } from '@tanstack/react-query'
 import { Music } from 'lucide-react'
 
-import { type ArtistListProps, parseArtistListTags } from '@fesp/schema'
+import { type ArtistListProps, parseIdListProp } from '@fesp/schema'
 
 import type { ArtistTag } from '~/lib/mock/artist'
 import { artistTagsQuery } from '~/lib/queries'
@@ -13,7 +13,7 @@ import { ComponentBlockCard } from './ComponentBlockCard'
 
 /** カードに出す設定の要約（1要素1行）。選んだタグはタグの一覧の順に並べ、一覧に無い ID は出さない */
 export function summarizeArtistListProps(props: ArtistListProps, tags: ArtistTag[]): string[] {
-    const tagIds = parseArtistListTags(props.tags)
+    const tagIds = parseIdListProp(props.tags)
     const tagNames = tags.filter((tag) => tagIds.includes(tag.id)).map((tag) => tag.name)
 
     return [

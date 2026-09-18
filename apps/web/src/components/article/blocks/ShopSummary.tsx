@@ -3,8 +3,8 @@ import { MapIcon, MapPin, Timer } from 'lucide-react'
 
 import { cn, dateFormatter } from '@fesp/ui'
 
+import { cardColors } from '~/components/list/card-color'
 import { QueryBoundary } from '~/components/QueryBoundary'
-import { shopColors } from '~/components/shop/shop-colors'
 import { currentShopQuery } from '~/lib/queries'
 
 import type { BlockComponentProps } from '../block-registry'
@@ -26,7 +26,7 @@ export function ShopSummary({ children }: BlockComponentProps) {
                                 <span
                                     className={cn(
                                         'rounded-full px-3 py-1 text-xs font-bold text-white',
-                                        shopColors[data.color].accent,
+                                        cardColors[data.color].accent,
                                     )}
                                 >
                                     Day{data.day}
