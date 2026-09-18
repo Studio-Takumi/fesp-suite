@@ -3,6 +3,7 @@ import type { ComponentType, ReactNode } from 'react'
 import type { ArticleBlock } from '@fesp/schema'
 
 import { AdjacentPosts } from './blocks/AdjacentPosts'
+import { BlogList } from './blocks/BlogList'
 import { Callout } from './blocks/Callout'
 import { CheckListItem } from './blocks/CheckListItem'
 import { CodeBlock } from './blocks/CodeBlock'
@@ -16,6 +17,7 @@ import { PageHeader } from './blocks/PageHeader'
 import { Paragraph } from './blocks/Paragraph'
 import { PostSummary } from './blocks/PostSummary'
 import { Quote } from './blocks/Quote'
+import { RelatedPosts } from './blocks/RelatedPosts'
 import { ScheduleTable } from './blocks/ScheduleTable'
 import { Table } from './blocks/Table'
 import { TodayWeather } from './blocks/TodayWeather'
@@ -58,6 +60,8 @@ export const blockRegistry: BlockRegistry = {
     coverImage: CoverImage,
     postSummary: PostSummary,
     adjacentPosts: AdjacentPosts,
+    blogList: BlogList,
+    relatedPosts: RelatedPosts,
     todayWeather: TodayWeather,
     weeklyForecast: WeeklyForecast,
     weatherAlert: WeatherAlert,

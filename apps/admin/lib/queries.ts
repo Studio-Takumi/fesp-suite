@@ -15,6 +15,7 @@ import {
 
 import { adminFetch } from './api'
 import { env } from './env'
+import { mockBlogTags } from './mock/blog'
 import { mockNewsTags } from './mock/news'
 
 /**
@@ -26,6 +27,7 @@ export const queryKeys = {
     articles: ['articles'] as const,
     article: (id: string) => ['articles', id] as const,
     newsTags: ['news', 'tags'] as const,
+    blogTags: ['blogs', 'tags'] as const,
 }
 
 export const exampleQuery = () =>
@@ -69,6 +71,13 @@ export const newsTagsQuery = () =>
     queryOptions({
         queryKey: queryKeys.newsTags,
         queryFn: () => Promise.resolve(mockNewsTags),
+    })
+
+/** ブログのタグ。API ができるまで仮データ（lib/mock/blog.ts）を返す。API ができたら queryFn を差し替える（#57） */
+export const blogTagsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.blogTags,
+        queryFn: () => Promise.resolve(mockBlogTags),
     })
 
 export function useCreateArticle() {

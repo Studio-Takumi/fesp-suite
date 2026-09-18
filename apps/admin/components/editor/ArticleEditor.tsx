@@ -23,8 +23,10 @@ import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultC
 import '@blocknote/shadcn/style.css'
 import {
     ArrowLeftRight,
+    BookOpen,
     CalendarClock,
     CalendarDays,
+    Files,
     FileText,
     ImageIcon,
     MapIcon,
@@ -41,12 +43,14 @@ import { createHighlighter } from 'shiki'
 import type { ArticleDocument } from '@fesp/schema'
 
 import { createAdjacentPostsBlock } from './blocks/AdjacentPostsBlock'
+import { createBlogListBlock } from './blocks/BlogListBlock'
 import { createCalloutBlock } from './blocks/CalloutBlock'
 import { createCoverImageBlock } from './blocks/CoverImageBlock'
 import { createMapBlock } from './blocks/MapBlock'
 import { createNewsListBlock } from './blocks/NewsListBlock'
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
 import { createPostSummaryBlock } from './blocks/PostSummaryBlock'
+import { createRelatedPostsBlock } from './blocks/RelatedPostsBlock'
 import { createScheduleTableBlock } from './blocks/ScheduleTableBlock'
 import { createTodayWeatherBlock } from './blocks/TodayWeatherBlock'
 import { createWbgtBlock } from './blocks/WbgtBlock'
@@ -105,6 +109,8 @@ export const articleSchema = BlockNoteSchema.create({
         coverImage: createCoverImageBlock(),
         postSummary: createPostSummaryBlock(),
         adjacentPosts: createAdjacentPostsBlock(),
+        blogList: createBlogListBlock(),
+        relatedPosts: createRelatedPostsBlock(),
         todayWeather: createTodayWeatherBlock(),
         weeklyForecast: createWeeklyForecastBlock(),
         weatherAlert: createWeatherAlertBlock(),
@@ -170,6 +176,20 @@ const componentSlashMenuItems: {
         subtext: '前の記事・次の記事へのリンク',
         aliases: ['adjacentposts', 'zengo', 'ぜんご'],
         icon: <ArrowLeftRight />,
+    },
+    {
+        type: 'blogList',
+        title: 'ブログ一覧',
+        subtext: 'タグで絞り込めるブログの一覧',
+        aliases: ['bloglist', 'blog', 'burogu', 'ぶろぐ'],
+        icon: <BookOpen />,
+    },
+    {
+        type: 'relatedPosts',
+        title: '関連する記事',
+        subtext: '表示中の記事に関連する記事のリスト',
+        aliases: ['relatedposts', 'related', 'kanren', 'かんれん'],
+        icon: <Files />,
     },
     {
         type: 'todayWeather',

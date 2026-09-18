@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { ArticleBlock, ArticleDocument, ArticleStyles } from '@fesp/schema'
 
+import { mockBlogPosts } from '~/lib/mock/blog'
 import { mockNewsPosts, type NewsPost } from '~/lib/mock/news'
 import { createMockWeather } from '~/lib/mock/weather'
 import { queryKeys, weatherQuery } from '~/lib/queries'
@@ -49,6 +50,9 @@ const componentBlock = (type: ArticleBlock['type'], props: Record<string, unknow
 
 const newsList = (props: Record<string, unknown> = {}) =>
     componentBlock('newsList', { showTagTabs: false, tags: '', showViewAll: false, ...props })
+
+const blogList = (props: Record<string, unknown> = {}) =>
+    componentBlock('blogList', { showTagTabs: false, tags: '', ...props })
 
 const newsPost = (id: string, title: string, tagIds: string[]): NewsPost => ({
     id,
@@ -405,6 +409,75 @@ describe('ArticleRenderer', () => {
 
         renderWithQuery([componentBlock('adjacentPosts')], [[queryKeys.adjacentPosts, { previous: null, next: null }]])
         expect(screen.queryByRole('navigation')).not.toBeInTheDocument()
+    })
+
+    it('ブログ一覧は日付（ゼロ埋めしない月と日）・投稿者・タイトル・抜粋・タグのカードを並べ、カードはブログへのリンクにする', async () => {
+        renderWithQuery([blogList()])
+
+        const cards = await screen.findAllByRole('listitem')
+        expect(cards).toHaveLength(mockBlogPosts.length)
+        const first = within(cards[0]!)
+        expect(first.getByRole('link')).toHaveAttribute('href', '/blogs/blog-5')
+        expect(first.getByText('準備期間の裏側をのぞいてみた')).toBeInTheDocument()
+        expect(first.getByText('6月2日')).toBeInTheDocument()
+        expect(first.getByText('広報委員会')).toBeInTheDocument()
+        expect(first.getByText(/開催まであと3日。/)).toBeInTheDocument()
+        expect(first.getByText('#準備')).toBeInTheDocument()
+        expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
+    })
+
+    it('ブログ一覧は「すべて」と選んだタグのタブを出し、タブで絞り込む', async () => {
+        const user = userEvent.setup()
+        renderWithQuery([blogList({ showTagTabs: true, tags: 'day,prep,unknown' })])
+
+        const tabs = await screen.findAllByRole('tab')
+        // 並びはタグの一覧の順。タグの一覧に無い ID は出さない
+        expect(tabs.map((tab) => tab.textContent)).toEqual(['すべて', '準備', '当日'])
+        expect(screen.getByRole('tab', { name: 'すべて' })).toHaveAttribute('aria-selected', 'true')
+
+        await user.click(screen.getByRole('tab', { name: '準備' }))
+
+        expect(screen.getByRole('tab', { name: '準備' })).toHaveAttribute('aria-selected', 'true')
+        const cards = screen.getAllByRole('listitem')
+        expect(cards).toHaveLength(2)
+        for (const card of cards) expect(within(card).getByText('#準備')).toBeInTheDocument()
+    })
+
+    it('ブログ一覧はタグタブを出す設定でも、タグを選んでいなければタブを出さない', async () => {
+        renderWithQuery([blogList({ showTagTabs: true, tags: '' })])
+
+        expect(await screen.findAllByRole('listitem')).toHaveLength(mockBlogPosts.length)
+        expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
+    })
+
+    it('ブログ一覧は0件なら空状態を出す', async () => {
+        renderWithQuery([blogList()], [[queryKeys.blogs, []]])
+
+        expect(await screen.findByRole('heading', { name: 'ブログはまだありません' })).toBeInTheDocument()
+        expect(screen.getByText('記事が投稿されると、ここに表示されます。')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: '再読み込み' })).toBeInTheDocument()
+        expect(screen.queryByRole('list')).not.toBeInTheDocument()
+    })
+
+    it('関連する記事は見出しと、タイトル・日付（ゼロ埋めしない月と日）のリンクを出す', async () => {
+        renderWithQuery([componentBlock('relatedPosts')])
+
+        expect(await screen.findByRole('heading', { name: '関連する記事' })).toBeInTheDocument()
+        const links = screen.getAllByRole('link')
+        expect(links).toHaveLength(2)
+        expect(links[0]).toHaveTextContent('今年のテーマが決まるまで5月28日')
+        expect(links[0]).toHaveAttribute('href', '/blogs/blog-4')
+        expect(links[1]).toHaveAttribute('href', '/blogs/blog-3')
+    })
+
+    it('関連する記事は0件ならブロックごと出さない', async () => {
+        renderWithQuery(
+            [componentBlock('relatedPosts'), block('2', 'paragraph', [text('本文')])],
+            [[queryKeys.relatedPosts, []]],
+        )
+
+        expect(await screen.findByText('本文')).toBeInTheDocument()
+        expect(screen.queryByRole('heading', { name: '関連する記事' })).not.toBeInTheDocument()
     })
 
     it('天気のブロック（今日・週間予報・警報・暑さ指数・概況・更新時刻と出典）を天気のデータから描画する', () => {

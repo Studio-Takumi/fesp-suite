@@ -29,6 +29,8 @@ describe('isComponentBlock', () => {
             'coverImage',
             'postSummary',
             'adjacentPosts',
+            'blogList',
+            'relatedPosts',
         ]) {
             expect(isComponentBlock({ type })).toBe(true)
         }
@@ -174,6 +176,44 @@ describe('ComponentPropsPanel（お知らせ一覧）', () => {
     })
 })
 
+describe('ComponentPropsPanel（ブログ一覧）', () => {
+    const block = { id: '1', type: 'blogList', props: { showTagTabs: true, tags: 'behind' } } as const
+
+    it('コンポーネント名と、ブロックの props を初期値にした入力欄を出す', async () => {
+        render(<ComponentPropsPanel block={block} onChange={vi.fn()} />)
+
+        expect(screen.getByRole('heading', { name: 'ブログ一覧' })).toBeInTheDocument()
+        expect(screen.getByRole('switch', { name: 'タグタブを出す' })).toBeChecked()
+        expect(await screen.findByRole('checkbox', { name: '裏側' })).toBeChecked()
+        expect(screen.getByRole('checkbox', { name: '準備' })).not.toBeChecked()
+        // 表示件数・「すべて見る」はお知らせ一覧だけの props
+        expect(screen.queryByLabelText('表示件数')).not.toBeInTheDocument()
+        expect(screen.queryByRole('switch', { name: '「すべて見る」を出す' })).not.toBeInTheDocument()
+    })
+
+    it('タグを選ぶと、タグの一覧の順に ID をカンマ区切りにして渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        await user.click(await screen.findByRole('checkbox', { name: '準備' }))
+        expect(onChange).toHaveBeenLastCalledWith({ ...block.props, tags: 'prep,behind' })
+
+        await user.click(screen.getByRole('checkbox', { name: '裏側' }))
+        expect(onChange).toHaveBeenLastCalledWith({ ...block.props, tags: 'prep' })
+    })
+
+    it('スイッチを切り替えると渡し、タグタブを出さない間はタグを選べない', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        await user.click(screen.getByRole('switch', { name: 'タグタブを出す' }))
+        expect(onChange).toHaveBeenLastCalledWith({ ...block.props, showTagTabs: false })
+        expect(await screen.findByRole('checkbox', { name: '裏側' })).toBeDisabled()
+    })
+})
+
 describe('ComponentPropsPanel（記事の画像）', () => {
     const block = { id: '1', type: 'coverImage', props: { imageUrl: '' } } as const
 
@@ -205,6 +245,10 @@ describe('ComponentPropsPanel（props を持たないコンポーネント）', 
 
         rerender(<ComponentPropsPanel block={{ id: '2', type: 'adjacentPosts', props: {} }} onChange={vi.fn()} />)
         expect(screen.getByRole('heading', { name: '前後の記事' })).toBeInTheDocument()
+        expect(screen.getByText('設定する項目はありません')).toBeInTheDocument()
+
+        rerender(<ComponentPropsPanel block={{ id: '3', type: 'relatedPosts', props: {} }} onChange={vi.fn()} />)
+        expect(screen.getByRole('heading', { name: '関連する記事' })).toBeInTheDocument()
         expect(screen.getByText('設定する項目はありません')).toBeInTheDocument()
     })
 
