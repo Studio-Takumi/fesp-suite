@@ -172,6 +172,25 @@ export const coverImagePropsSchema = z
 export type CoverImageProps = z.infer<typeof coverImagePropsSchema>
 
 /**
+ * ブログ一覧（`blogList`）の props。
+ * BlockNote の props は文字列・数値・真偽値しか持てないので、タブに出すタグは ID をカンマ区切りで並べた文字列で持つ
+ */
+export const blogListPropsSchema = z
+    .object({
+        /** タグのタブを出すか */
+        showTagTabs: z.boolean(),
+        /** タブに出すタグの ID をカンマ区切りで並べた文字列（例: `prep,day`）。空文字なら選んでいない */
+        tags: z.string().regex(/^([^,]+(,[^,]+)*)?$/, 'タグの指定が正しくありません'),
+    })
+    .strict()
+export type BlogListProps = z.infer<typeof blogListPropsSchema>
+
+/** ブログ一覧の props の `tags` を、タグの ID の配列にする */
+export function parseBlogListTags(tags: string): string[] {
+    return tags === '' ? [] : tags.split(',')
+}
+
+/**
  * props を持たない独自コンポーネント（記事のサマリー・前後の記事・天気の各ブロックなど）の props。
  * 表示するデータはコンポーネントが自分で読むので、記事には何も持たせない
  */
@@ -252,6 +271,8 @@ export type ArticleBlock = {
         | 'coverImage'
         | 'postSummary'
         | 'adjacentPosts'
+        | 'blogList'
+        | 'relatedPosts'
         | WeatherComponentType
     props: Record<string, unknown>
     content?: (ArticleStyledText | ArticleLink)[] | ArticleTableContent
@@ -367,9 +388,17 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             content: z.undefined().optional(),
             children: z.array(articleBlockSchema),
         }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('blogList'),
+            props: blogListPropsSchema,
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
         emptyComponentBlockSchema('map'),
         emptyComponentBlockSchema('postSummary'),
         emptyComponentBlockSchema('adjacentPosts'),
+        emptyComponentBlockSchema('relatedPosts'),
         emptyComponentBlockSchema('todayWeather'),
         emptyComponentBlockSchema('weeklyForecast'),
         emptyComponentBlockSchema('weatherAlert'),

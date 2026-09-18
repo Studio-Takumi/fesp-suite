@@ -3,6 +3,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { articleViewResponseSchema, exampleResponseSchema } from '@fesp/schema'
 
 import { apiFetch } from './api'
+import { mockBlogPosts, mockBlogTags, mockRelatedPosts } from './mock/blog'
 import { mapMock } from './mock/map'
 import { mockAdjacentPosts, mockCurrentPost, mockNewsPosts, mockNewsTags } from './mock/news'
 import { scheduleDays } from './mock/schedule'
@@ -23,6 +24,9 @@ export const queryKeys = {
     newsTags: ['news', 'tags'] as const,
     currentPost: ['posts', 'current'] as const,
     adjacentPosts: ['posts', 'current', 'adjacent'] as const,
+    relatedPosts: ['posts', 'current', 'related'] as const,
+    blogs: ['blogs'] as const,
+    blogTags: ['blogs', 'tags'] as const,
     weather: ['weather'] as const,
 }
 
@@ -81,6 +85,29 @@ export const adjacentPostsQuery = () =>
     queryOptions({
         queryKey: queryKeys.adjacentPosts,
         queryFn: () => Promise.resolve(mockAdjacentPosts),
+    })
+
+// ブログ（#14）は API ができるまで仮データ（lib/mock/blog.ts）を返す。API ができたら queryFn を差し替える（#57）
+
+/** ブログ（新しい順） */
+export const blogsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.blogs,
+        queryFn: () => Promise.resolve(mockBlogPosts),
+    })
+
+/** ブログのタグ */
+export const blogTagsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.blogTags,
+        queryFn: () => Promise.resolve(mockBlogTags),
+    })
+
+/** 表示中の記事に関連する記事 */
+export const relatedPostsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.relatedPosts,
+        queryFn: () => Promise.resolve(mockRelatedPosts),
     })
 
 /**

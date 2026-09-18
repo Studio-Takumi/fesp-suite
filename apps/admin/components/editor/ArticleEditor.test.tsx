@@ -22,10 +22,12 @@ function render(ui: ReactNode) {
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
 
 describe('articleSchema', () => {
-    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・注意書き・区切り線・表・コードブロックと、独自コンポーネント（ページ見出し・スケジュール表・マップ・お知らせ・天気）だけを許可する（画像・動画等は含まない）', () => {
+    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・注意書き・区切り線・表・コードブロックと、独自コンポーネント（ページ見出し・スケジュール表・マップ・お知らせ・ブログ・天気）だけを許可する（画像・動画等は含まない）', () => {
         expect(Object.keys(articleSchema.blockSchema).sort()).toEqual(
             [
                 'adjacentPosts',
+                'blogList',
+                'relatedPosts',
                 'coverImage',
                 'newsList',
                 'map',
@@ -258,6 +260,50 @@ describe('ArticleEditor', () => {
         const [block] = onChange.mock.lastCall?.[0] as ArticleDocument
         expect(block?.props.limit).toBeUndefined()
         expect(JSON.parse(JSON.stringify(block?.props))).toEqual({ showTagTabs: true, tags: '', showViewAll: false })
+    })
+
+    it('ブログ一覧はカードに設定の要約を出す（タグはタグの一覧の順に名前で出す）', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'paragraph', props: defaultBlockProps, content: [], children: [] },
+            { id: '2', type: 'blogList', props: { showTagTabs: true, tags: 'day,prep' }, children: [] },
+            { id: '3', type: 'blogList', props: { showTagTabs: true, tags: '' }, children: [] },
+            { id: '4', type: 'blogList', props: { showTagTabs: false, tags: 'prep' }, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('タグタブ: あり（準備・当日）')).toBeInTheDocument()
+        expect(screen.getByText('タグタブ: あり（タグ未選択）')).toBeInTheDocument()
+        expect(screen.getByText('タグタブ: なし')).toBeInTheDocument()
+        expect(screen.getAllByText('ブログ一覧', { selector: 'span' })).toHaveLength(3)
+    })
+
+    it('ブログ一覧のサイドパネルでタグを選ぶと、ブロックの props を変えて onChange に渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        const content: ArticleDocument = [
+            { id: '1', type: 'blogList', props: { showTagTabs: true, tags: '' }, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} onChange={onChange} />)
+
+        await user.click(await screen.findByRole('checkbox', { name: '当日' }))
+
+        expect(await screen.findByText('タグタブ: あり（当日）')).toBeInTheDocument()
+        expect(onChange).toHaveBeenLastCalledWith([
+            expect.objectContaining({ id: '1', type: 'blogList', props: { showTagTabs: true, tags: 'day' } }),
+        ])
+    })
+
+    it('関連する記事はカードに説明を出し、選択中はサイドパネルに「設定する項目はありません」と出す', async () => {
+        const content: ArticleDocument = [{ id: '1', type: 'relatedPosts', props: {}, children: [] }]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('表示中の記事に関連する記事を出します')).toBeInTheDocument()
+        const panel = await screen.findByRole('complementary', { name: 'コンポーネントの設定' })
+        expect(within(panel).getByRole('heading', { name: '関連する記事' })).toBeInTheDocument()
+        expect(within(panel).getByText('設定する項目はありません')).toBeInTheDocument()
     })
 
     it('天気のブロックは、カードに名前と説明の1文を出す', async () => {
