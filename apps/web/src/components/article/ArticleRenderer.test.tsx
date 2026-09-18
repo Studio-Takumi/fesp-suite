@@ -435,6 +435,83 @@ describe('ArticleRenderer', () => {
         expect(screen.getByText(/更新 ・ 出典: 気象庁/)).toBeInTheDocument()
     })
 
+    it('メインスライダーは画像・キャッチ・タイトルを出し、ドットでスライドを切り替える', async () => {
+        const user = userEvent.setup()
+        const { container } = renderBlocks([
+            componentBlock('mainHero', {
+                slides: [
+                    'https://example.com/1.jpg|第42回 あおば祭|あおば祭へ、ようこそ',
+                    'https://example.com/2.jpg|6月6日・7日|２日間、全力で楽しもう',
+                ].join('\n'),
+            }),
+        ])
+
+        expect(container.querySelector('img')).toHaveAttribute('src', 'https://example.com/1.jpg')
+        expect(screen.getByText('第42回 あおば祭')).toBeInTheDocument()
+        expect(screen.getByText('あおば祭へ、ようこそ')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: '1枚目' })).toHaveAttribute('aria-current', 'true')
+
+        await user.click(screen.getByRole('button', { name: '2枚目' }))
+
+        expect(container.querySelector('img')).toHaveAttribute('src', 'https://example.com/2.jpg')
+        expect(screen.getByText('２日間、全力で楽しもう')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: '2枚目' })).toHaveAttribute('aria-current', 'true')
+    })
+
+    it('メインスライダーは1枚ならドットを出さず、1枚も無い・props の形が合わないときは何も出さない', () => {
+        const { rerender } = renderBlocks([componentBlock('mainHero', { slides: 'https://example.com/1.jpg||' })])
+
+        expect(screen.getByRole('region', { name: 'メインスライダー' })).toBeInTheDocument()
+        expect(screen.queryByRole('button')).not.toBeInTheDocument()
+
+        rerender(<ArticleRenderer blocks={[componentBlock('mainHero', { slides: '' })]} />)
+        expect(screen.queryByRole('region', { name: 'メインスライダー' })).not.toBeInTheDocument()
+
+        rerender(<ArticleRenderer blocks={[componentBlock('mainHero', { slides: 'こわれた行' })]} />)
+        expect(screen.queryByRole('region', { name: 'メインスライダー' })).not.toBeInTheDocument()
+    })
+
+    it('日付・天気の帯は今日の日付・天気・最高/最低気温を出し、天気のページへのリンクにする', () => {
+        const queryClient = createTestQueryClient()
+        queryClient.setQueryData(weatherQuery().queryKey, createMockWeather(new Date('2026-06-06T02:30:00Z')))
+
+        renderWithQueryClient(<ArticleRenderer blocks={[componentBlock('weatherBar')]} />, queryClient)
+
+        const link = screen.getByRole('link')
+        expect(link).toHaveAttribute('href', '/weather')
+        expect(within(link).getByText('6/6')).toBeInTheDocument()
+        expect(within(link).getByText('(土)')).toBeInTheDocument()
+        expect(within(link).getByText('25°')).toBeInTheDocument()
+        expect(within(link).getByText('18°')).toBeInTheDocument()
+    })
+
+    it('日付・天気の帯は天気を読み込めていなければ何も出さない', () => {
+        renderWithQueryClient(<ArticleRenderer blocks={[componentBlock('weatherBar')]} />)
+
+        expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    })
+
+    it('その他のコンテンツは見出しとリンクのグリッドを出し、1件も無ければ何も出さない', () => {
+        const { rerender } = renderBlocks([
+            componentBlock('contentList', {
+                links: [
+                    'スケジュール|calendar-days|/schedule',
+                    'アンケート|clipboard-list|https://example.com/form',
+                ].join('\n'),
+            }),
+        ])
+
+        expect(screen.getByRole('heading', { level: 2, name: 'その他のコンテンツ' })).toBeInTheDocument()
+        const links = screen.getAllByRole('link')
+        expect(links).toHaveLength(2)
+        expect(links[0]).toHaveTextContent('スケジュール')
+        expect(links[0]).toHaveAttribute('href', '/schedule')
+        expect(links[1]).toHaveAttribute('href', 'https://example.com/form')
+
+        rerender(<ArticleRenderer blocks={[componentBlock('contentList', { links: '' })]} />)
+        expect(screen.queryByRole('heading', { name: 'その他のコンテンツ' })).not.toBeInTheDocument()
+    })
+
     it('スケジュール表は日付タブと会場ごとのタイムテーブルを出す（仮データ）', async () => {
         renderWithQuery([{ id: '1', type: 'scheduleTable', props: { showDateTabs: true }, children: [] }])
 

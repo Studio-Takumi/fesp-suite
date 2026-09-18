@@ -22,7 +22,7 @@ function render(ui: ReactNode) {
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
 
 describe('articleSchema', () => {
-    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・注意書き・区切り線・表・コードブロックと、独自コンポーネント（ページ見出し・スケジュール表・マップ・お知らせ・天気）だけを許可する（画像・動画等は含まない）', () => {
+    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・注意書き・区切り線・表・コードブロックと、独自コンポーネント（ページ見出し・スケジュール表・マップ・お知らせ・天気・ホーム）だけを許可する（画像・動画等は含まない）', () => {
         expect(Object.keys(articleSchema.blockSchema).sort()).toEqual(
             [
                 'adjacentPosts',
@@ -37,6 +37,9 @@ describe('articleSchema', () => {
                 'wbgt',
                 'weatherOverview',
                 'weatherCredit',
+                'mainHero',
+                'weatherBar',
+                'contentList',
                 'callout',
                 'bulletListItem',
                 'checkListItem',
@@ -296,6 +299,78 @@ describe('ArticleEditor', () => {
         expect(within(panel).getByRole('heading', { name: '暑さ指数' })).toBeInTheDocument()
         expect(within(panel).getByText('設定する項目はありません')).toBeInTheDocument()
         expect(within(panel).queryByRole('textbox')).not.toBeInTheDocument()
+    })
+
+    it('メインスライダーはカードに枚数とタイトルを出し、スライドが無ければ設定されていないことを出す', async () => {
+        const content: ArticleDocument = [
+            {
+                id: '1',
+                type: 'mainHero',
+                props: {
+                    slides: [
+                        'https://example.com/1.jpg|第42回 あおば祭|あおば祭へ、ようこそ',
+                        'https://example.com/2.jpg||',
+                    ].join('\n'),
+                },
+                children: [],
+            },
+            { id: '2', type: 'mainHero', props: { slides: '' }, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('スライド: 2枚')).toBeInTheDocument()
+        expect(screen.getByText('1. あおば祭へ、ようこそ')).toBeInTheDocument()
+        expect(screen.getByText('2. （タイトルなし）')).toBeInTheDocument()
+        expect(screen.getByText('スライドが設定されていません（ウェブアプリには何も出ません）')).toBeInTheDocument()
+    })
+
+    it('メインスライダーのサイドパネルで入力すると、ブロックの props を変えて onChange に渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        const content: ArticleDocument = [
+            { id: '1', type: 'mainHero', props: { slides: 'https://example.com/1.jpg||' }, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} onChange={onChange} />)
+
+        const titleInput = await screen.findByLabelText('タイトル')
+        await user.type(titleInput, 'ようこそ')
+
+        expect(await screen.findByText('1. ようこそ')).toBeInTheDocument()
+        expect(onChange).toHaveBeenLastCalledWith([
+            expect.objectContaining({
+                id: '1',
+                type: 'mainHero',
+                props: { slides: 'https://example.com/1.jpg||ようこそ' },
+            }),
+        ])
+    })
+
+    it('日付・天気の帯はカードに説明の一文を出し、カーソルがあればサイドパネルに「設定する項目はありません」と出す', async () => {
+        const content: ArticleDocument = [{ id: '1', type: 'weatherBar', props: {}, children: [] }]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(
+            await screen.findByText('今日の日付・天気を出します（押すと天気ページに移動します）'),
+        ).toBeInTheDocument()
+        const panel = await screen.findByRole('complementary', { name: 'コンポーネントの設定' })
+        expect(within(panel).getByRole('heading', { name: '日付・天気の帯' })).toBeInTheDocument()
+        expect(within(panel).getByText('設定する項目はありません')).toBeInTheDocument()
+    })
+
+    it('その他のコンテンツはカードに件数とリンク先を出し、リンクが無ければ設定されていないことを出す', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'contentList', props: { links: 'スケジュール|calendar-days|/schedule' }, children: [] },
+            { id: '2', type: 'contentList', props: { links: '' }, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('リンク: 1件')).toBeInTheDocument()
+        expect(screen.getByText('スケジュール → /schedule')).toBeInTheDocument()
+        expect(screen.getByText('リンクが設定されていません（ウェブアプリには何も出ません）')).toBeInTheDocument()
     })
 
     it('スケジュール表はカードに設定の要約（日付タブの有無）だけを出す', async () => {

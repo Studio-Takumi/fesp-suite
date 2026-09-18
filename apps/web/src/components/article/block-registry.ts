@@ -6,10 +6,12 @@ import { AdjacentPosts } from './blocks/AdjacentPosts'
 import { Callout } from './blocks/Callout'
 import { CheckListItem } from './blocks/CheckListItem'
 import { CodeBlock } from './blocks/CodeBlock'
+import { ContentList } from './blocks/ContentList'
 import { CoverImage } from './blocks/CoverImage'
 import { Divider } from './blocks/Divider'
 import { Heading } from './blocks/Heading'
 import { ListItem } from './blocks/ListItem'
+import { MainHero } from './blocks/MainHero'
 import { Map } from './blocks/Map'
 import { NewsList } from './blocks/NewsList'
 import { PageHeader } from './blocks/PageHeader'
@@ -22,6 +24,7 @@ import { TodayWeather } from './blocks/TodayWeather'
 import { ToggleListItem } from './blocks/ToggleListItem'
 import { Wbgt } from './blocks/Wbgt'
 import { WeatherAlert } from './blocks/WeatherAlert'
+import { WeatherBar } from './blocks/WeatherBar'
 import { WeatherCredit } from './blocks/WeatherCredit'
 import { WeatherOverview } from './blocks/WeatherOverview'
 import { WeeklyForecast } from './blocks/WeeklyForecast'
@@ -64,4 +67,7 @@ export const blockRegistry: BlockRegistry = {
     wbgt: Wbgt,
     weatherOverview: WeatherOverview,
     weatherCredit: WeatherCredit,
+    mainHero: MainHero,
+    weatherBar: WeatherBar,
+    contentList: ContentList,
 }

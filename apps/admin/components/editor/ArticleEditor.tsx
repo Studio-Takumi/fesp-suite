@@ -25,8 +25,11 @@ import {
     ArrowLeftRight,
     CalendarClock,
     CalendarDays,
+    CloudSun,
     FileText,
     ImageIcon,
+    Images,
+    LayoutGrid,
     MapIcon,
     Newspaper,
     PanelTop,
@@ -42,7 +45,9 @@ import type { ArticleDocument } from '@fesp/schema'
 
 import { createAdjacentPostsBlock } from './blocks/AdjacentPostsBlock'
 import { createCalloutBlock } from './blocks/CalloutBlock'
+import { createContentListBlock } from './blocks/ContentListBlock'
 import { createCoverImageBlock } from './blocks/CoverImageBlock'
+import { createMainHeroBlock } from './blocks/MainHeroBlock'
 import { createMapBlock } from './blocks/MapBlock'
 import { createNewsListBlock } from './blocks/NewsListBlock'
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
@@ -51,6 +56,7 @@ import { createScheduleTableBlock } from './blocks/ScheduleTableBlock'
 import { createTodayWeatherBlock } from './blocks/TodayWeatherBlock'
 import { createWbgtBlock } from './blocks/WbgtBlock'
 import { createWeatherAlertBlock } from './blocks/WeatherAlertBlock'
+import { createWeatherBarBlock } from './blocks/WeatherBarBlock'
 import { createWeatherCreditBlock } from './blocks/WeatherCreditBlock'
 import { createWeatherOverviewBlock } from './blocks/WeatherOverviewBlock'
 import { createWeeklyForecastBlock } from './blocks/WeeklyForecastBlock'
@@ -111,6 +117,9 @@ export const articleSchema = BlockNoteSchema.create({
         wbgt: createWbgtBlock(),
         weatherOverview: createWeatherOverviewBlock(),
         weatherCredit: createWeatherCreditBlock(),
+        mainHero: createMainHeroBlock(),
+        weatherBar: createWeatherBarBlock(),
+        contentList: createContentListBlock(),
     },
 })
 
@@ -212,6 +221,27 @@ const componentSlashMenuItems: {
         subtext: '天気の更新時刻と出典（気象庁）',
         aliases: ['weathercredit', 'weather', 'tenki', 'てんき', 'syutten', 'しゅってん'],
         icon: <RefreshCw />,
+    },
+    {
+        type: 'mainHero',
+        title: 'メインスライダー',
+        subtext: '画像・キャッチ・タイトルのスライダー',
+        aliases: ['mainhero', 'hero', 'slider', 'suraida', 'スライダー'],
+        icon: <Images />,
+    },
+    {
+        type: 'weatherBar',
+        title: '日付・天気の帯',
+        subtext: '今日の日付と天気（押すと天気ページへ）',
+        aliases: ['weatherbar', 'weather', 'tenki', 'てんき', 'hiduke', 'ひづけ'],
+        icon: <CloudSun />,
+    },
+    {
+        type: 'contentList',
+        title: 'その他のコンテンツ',
+        subtext: '各ページへのリンクのグリッド',
+        aliases: ['contentlist', 'link', 'rinku', 'リンク', 'kontentsu', 'コンテンツ'],
+        icon: <LayoutGrid />,
     },
 ]
 

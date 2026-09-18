@@ -3,15 +3,19 @@
 import type { ReactNode } from 'react'
 
 import type {
+    ContentListProps,
     CoverImageProps,
     EmptyComponentProps,
+    MainHeroProps,
     NewsListProps,
     PageHeaderProps,
     ScheduleTableProps,
     WeatherComponentType,
 } from '@fesp/schema'
 
+import { ContentListPropsForm } from './ContentListPropsForm'
 import { CoverImagePropsForm } from './CoverImagePropsForm'
+import { MainHeroPropsForm } from './MainHeroPropsForm'
 import { NewsListPropsForm } from './NewsListPropsForm'
 import { PageHeaderPropsForm } from './PageHeaderPropsForm'
 import { ScheduleTablePropsForm } from './ScheduleTablePropsForm'
@@ -22,7 +26,9 @@ export type ComponentBlock =
     | { id: string; type: 'scheduleTable'; props: ScheduleTableProps }
     | { id: string; type: 'newsList'; props: NewsListProps }
     | { id: string; type: 'coverImage'; props: CoverImageProps }
-    | { id: string; type: 'map' | 'postSummary' | 'adjacentPosts'; props: EmptyComponentProps }
+    | { id: string; type: 'mainHero'; props: MainHeroProps }
+    | { id: string; type: 'contentList'; props: ContentListProps }
+    | { id: string; type: 'map' | 'postSummary' | 'adjacentPosts' | 'weatherBar'; props: EmptyComponentProps }
     | { id: string; type: WeatherComponentType; props: EmptyComponentProps }
 
 /**
@@ -57,7 +63,16 @@ const componentPanels: {
         name: '記事の画像',
         renderForm: (block, onChange) => <CoverImagePropsForm defaultValues={block.props} onValidChange={onChange} />,
     },
+    mainHero: {
+        name: 'メインスライダー',
+        renderForm: (block, onChange) => <MainHeroPropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
+    contentList: {
+        name: 'その他のコンテンツ',
+        renderForm: (block, onChange) => <ContentListPropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
     map: { name: 'マップ' },
+    weatherBar: { name: '日付・天気の帯' },
     postSummary: { name: '記事のサマリー' },
     adjacentPosts: { name: '前後の記事' },
     todayWeather: { name: '今日の天気' },

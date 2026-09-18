@@ -198,6 +198,163 @@ export const scheduleTablePropsSchema = z
     .strict()
 export type ScheduleTableProps = z.infer<typeof scheduleTablePropsSchema>
 
+/**
+ * 複数件を1つの props にするときの区切り。1件の中の項目は縦棒、件と件の間は改行で区切る
+ * （BlockNote の props は文字列・数値・真偽値しか持てないため）
+ */
+const FIELD_SEPARATOR = '|'
+const ITEM_SEPARATOR = '\n'
+
+/** 区切りに使う文字（縦棒・改行）は値に入れられない */
+const separatorPattern = /^[^|\n]*$/
+
+/** 1件の中の項目（文字列）。文字数と、区切りの文字を含まないことを見る */
+const itemFieldSchema = (label: string, max: number) =>
+    z
+        .string()
+        .max(max, `${label}は${max}文字以内で入力してください`)
+        .regex(separatorPattern, `${label}に「${FIELD_SEPARATOR}」は使えません`)
+
+/** メインスライダー（`mainHero`）のスライド1枚。管理者サイトのサイドパネルのフォームでもこのスキーマで検証する */
+export const mainHeroSlideSchema = z
+    .object({
+        /** 画像の URL */
+        imageUrl: z
+            .url({ protocol: /^https?$/, error: 'http:// か https:// で始まる URL を入力してください' })
+            .regex(separatorPattern, `画像の URL に「${FIELD_SEPARATOR}」は使えません`),
+        /** タイトルの上に出す短い文（例: `第42回 あおば祭`） */
+        catchphrase: itemFieldSchema('キャッチ', 30),
+        title: itemFieldSchema('タイトル', 40),
+    })
+    .strict()
+export type MainHeroSlide = z.infer<typeof mainHeroSlideSchema>
+
+/** スライドの並び。管理者サイトのフォームは props の文字列ではなくこの形で扱う */
+export const mainHeroSlidesSchema = z.object({ slides: z.array(mainHeroSlideSchema) })
+export type MainHeroSlides = z.infer<typeof mainHeroSlidesSchema>
+
+/** 1行を項目に分ける。項目の数が合わなければ `null` */
+function splitItemFields(line: string, count: number): string[] | null {
+    const fields = line.split(FIELD_SEPARATOR)
+    return fields.length === count ? fields : null
+}
+
+/** `画像の URL|キャッチ|タイトル` の1行をスライド1枚にする。形が合わなければ `null` */
+function parseMainHeroSlide(line: string): MainHeroSlide | null {
+    const fields = splitItemFields(line, 3)
+    if (!fields) return null
+
+    const [imageUrl, catchphrase, title] = fields
+    const result = mainHeroSlideSchema.safeParse({ imageUrl, catchphrase, title })
+    return result.success ? result.data : null
+}
+
+/**
+ * メインスライダー（`mainHero`）の props。
+ * BlockNote の props は文字列・数値・真偽値しか持てないので、スライドは1行1枚の文字列で持つ
+ */
+export const mainHeroPropsSchema = z
+    .object({
+        /**
+         * スライドの並び。1行が1枚で、`画像の URL|キャッチ|タイトル` の形（例: `https://example.com/a.jpg|第42回 あおば祭|あおば祭へ、ようこそ`）。
+         * 空文字ならスライドなし
+         */
+        slides: z
+            .string()
+            .refine(
+                (value) => value === '' || value.split(ITEM_SEPARATOR).every((line) => parseMainHeroSlide(line)),
+                'スライドの指定が正しくありません',
+            ),
+    })
+    .strict()
+export type MainHeroProps = z.infer<typeof mainHeroPropsSchema>
+
+/** メインスライダーの props の `slides` を、スライドの配列にする。形の合わない行は読み飛ばす */
+export function parseMainHeroSlides(slides: string): MainHeroSlide[] {
+    if (slides === '') return []
+    return slides.split(ITEM_SEPARATOR).flatMap((line) => parseMainHeroSlide(line) ?? [])
+}
+
+/** スライドの配列を、メインスライダーの props の `slides`（1行1枚）にする */
+export function formatMainHeroSlides(slides: MainHeroSlide[]): string {
+    return slides
+        .map(({ imageUrl, catchphrase, title }) => [imageUrl, catchphrase, title].join(FIELD_SEPARATOR))
+        .join(ITEM_SEPARATOR)
+}
+
+/** その他のコンテンツ（`contentList`）のリンクに選べるアイコン（lucide の名前） */
+export const contentListIcons = [
+    'calendar-days',
+    'map',
+    'store',
+    'music',
+    'newspaper',
+    'cloud-sun',
+    'clipboard-list',
+] as const
+export type ContentListIcon = (typeof contentListIcons)[number]
+
+/** その他のコンテンツ（`contentList`）のリンク1件。管理者サイトのサイドパネルのフォームでもこのスキーマで検証する */
+export const contentListLinkSchema = z
+    .object({
+        label: itemFieldSchema('表示名', 20),
+        icon: z.enum(contentListIcons, 'アイコンを選んでください'),
+        /** `/` で始まるページのパスか、`http://` `https://` で始まる URL */
+        href: z
+            .string()
+            .regex(
+                /^(\/[^|\n\s]*|https?:\/\/[^|\n\s]+)$/,
+                '「/」で始まるページのパスか、http:// か https:// で始まる URL を入力してください',
+            ),
+    })
+    .strict()
+export type ContentListLink = z.infer<typeof contentListLinkSchema>
+
+/** リンクの並び。管理者サイトのフォームは props の文字列ではなくこの形で扱う */
+export const contentListLinksSchema = z.object({ links: z.array(contentListLinkSchema) })
+export type ContentListLinks = z.infer<typeof contentListLinksSchema>
+
+/** `表示名|アイコン|リンク先` の1行をリンク1件にする。形が合わなければ `null` */
+function parseContentListLink(line: string): ContentListLink | null {
+    const fields = splitItemFields(line, 3)
+    if (!fields) return null
+
+    const [label, icon, href] = fields
+    const result = contentListLinkSchema.safeParse({ label, icon, href })
+    return result.success ? result.data : null
+}
+
+/**
+ * その他のコンテンツ（`contentList`）の props。
+ * BlockNote の props は文字列・数値・真偽値しか持てないので、リンクは1行1件の文字列で持つ
+ */
+export const contentListPropsSchema = z
+    .object({
+        /**
+         * リンクの並び。1行が1件で、`表示名|アイコン|リンク先` の形（例: `スケジュール|calendar-days|/schedule`）。
+         * 空文字ならリンクなし
+         */
+        links: z
+            .string()
+            .refine(
+                (value) => value === '' || value.split(ITEM_SEPARATOR).every((line) => parseContentListLink(line)),
+                'リンクの指定が正しくありません',
+            ),
+    })
+    .strict()
+export type ContentListProps = z.infer<typeof contentListPropsSchema>
+
+/** その他のコンテンツの props の `links` を、リンクの配列にする。形の合わない行は読み飛ばす */
+export function parseContentListLinks(links: string): ContentListLink[] {
+    if (links === '') return []
+    return links.split(ITEM_SEPARATOR).flatMap((line) => parseContentListLink(line) ?? [])
+}
+
+/** リンクの配列を、その他のコンテンツの props の `links`（1行1件）にする */
+export function formatContentListLinks(links: ContentListLink[]): string {
+    return links.map(({ label, icon, href }) => [label, icon, href].join(FIELD_SEPARATOR)).join(ITEM_SEPARATOR)
+}
+
 /** コードブロックの中身はスタイル（太字等）を持たない「プレーンテキスト」 */
 const plainTextSchema = z.object({
     type: z.literal('text'),
@@ -252,6 +409,9 @@ export type ArticleBlock = {
         | 'coverImage'
         | 'postSummary'
         | 'adjacentPosts'
+        | 'mainHero'
+        | 'weatherBar'
+        | 'contentList'
         | WeatherComponentType
     props: Record<string, unknown>
     content?: (ArticleStyledText | ArticleLink)[] | ArticleTableContent
@@ -367,7 +527,22 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             content: z.undefined().optional(),
             children: z.array(articleBlockSchema),
         }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('mainHero'),
+            props: mainHeroPropsSchema,
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('contentList'),
+            props: contentListPropsSchema,
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
         emptyComponentBlockSchema('map'),
+        emptyComponentBlockSchema('weatherBar'),
         emptyComponentBlockSchema('postSummary'),
         emptyComponentBlockSchema('adjacentPosts'),
         emptyComponentBlockSchema('todayWeather'),
