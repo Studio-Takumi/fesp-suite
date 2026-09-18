@@ -24,11 +24,20 @@ export function ShopCard({ shop, showProducts }: ShopCardProps) {
                     color.surface,
                 )}
             >
-                <span className={cn('absolute top-0 left-0 size-16 rounded-br-full', color.accent)} aria-hidden />
-                <span className='flex size-20 items-center justify-center rounded-full bg-white/60'>
-                    <span className={cn('text-4xl', color.accentText)}>{[...shop.name][0]}</span>
-                </span>
-                <span className='text-lg font-bold text-slate-900'>{shop.name}</span>
+                {shop.image_url ? (
+                    <img src={shop.image_url} alt='' className='size-full object-cover' />
+                ) : (
+                    <>
+                        <span
+                            className={cn('absolute top-0 left-0 size-16 rounded-br-full', color.accent)}
+                            aria-hidden
+                        />
+                        <span className='flex size-20 items-center justify-center rounded-full bg-white/60'>
+                            <span className={cn('text-4xl', color.accentText)}>{[...shop.name][0]}</span>
+                        </span>
+                        <span className='text-lg font-bold text-slate-900'>{shop.name}</span>
+                    </>
+                )}
             </div>
             <div className='flex flex-col gap-2'>
                 <div className='flex flex-wrap items-center gap-2 text-xs text-slate-500'>
@@ -45,17 +54,23 @@ export function ShopCard({ shop, showProducts }: ShopCardProps) {
                             <div
                                 key={product.id}
                                 className={cn(
-                                    'relative flex size-24 items-center justify-center rounded-xl',
+                                    'relative flex size-24 items-center justify-center overflow-hidden rounded-xl',
                                     color.surface,
                                 )}
                             >
-                                <span
-                                    className={cn('absolute top-0 left-0 size-8 rounded-br-full', color.accent)}
-                                    aria-hidden
-                                />
-                                <span className='flex size-12 items-center justify-center rounded-full bg-white/60'>
-                                    <span className={cn('text-xl', color.accentText)}>{index + 1}</span>
-                                </span>
+                                {product.image_url ? (
+                                    <img src={product.image_url} alt='' className='size-full object-cover' />
+                                ) : (
+                                    <>
+                                        <span
+                                            className={cn('absolute top-0 left-0 size-8 rounded-br-full', color.accent)}
+                                            aria-hidden
+                                        />
+                                        <span className='flex size-12 items-center justify-center rounded-full bg-white/60'>
+                                            <span className={cn('text-xl', color.accentText)}>{index + 1}</span>
+                                        </span>
+                                    </>
+                                )}
                                 <span className='absolute bottom-2 left-2 rounded-lg bg-white px-2 py-1 text-xs font-semibold text-slate-900'>
                                     {product.price}円
                                 </span>
