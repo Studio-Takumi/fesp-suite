@@ -85,7 +85,7 @@ export const mockShops: Shop[] = [
             product('product-1', 'レモネード', 200, 'photo-1621263764928-df1444c5e859'),
             product('product-2', 'ピンクレモネード', 200, 'photo-1497534446932-c925b458314e'),
             product('product-3', 'はちみつレモン', 150, 'photo-1600271886742-f049cd451bba'),
-            product('product-4', 'レモンスカッシュ', 250),
+            product('product-4', 'レモンスカッシュ', 250, 'photo-1622483767028-3f66f32aef97'),
         ],
     },
     {
@@ -116,7 +116,10 @@ export const mockShops: Shop[] = [
         color: 'emerald',
         starts_at: '2026-06-07T10:00:00+09:00',
         ends_at: '2026-06-07T14:00:00+09:00',
-        products: [product('product-8', '射的（5発）', 100), product('product-9', '射的（10発）', 180)],
+        products: [
+            product('product-8', '射的（5発）', 100, 'photo-1530103862676-de8c9debad1d'),
+            product('product-9', '射的（10発）', 180, 'photo-1513151233558-d860c5398176'),
+        ],
     },
     {
         id: 'shop-4',
@@ -129,11 +132,11 @@ export const mockShops: Shop[] = [
         color: 'sky',
         starts_at: '2026-06-06T09:40:00+09:00',
         ends_at: '2026-06-06T15:00:00+09:00',
-        products: [product('product-10', '入場（1人）', 100)],
+        products: [product('product-10', '入場（1人）', 100, 'photo-1578662996442-48f60103fc96')],
     },
     {
         id: 'shop-5',
-        image_url: photo('photo-1502920917128-1aa500764cbd'),
+        image_url: photo('photo-1518998053901-5348d3961a04'),
         name: '写真部展示',
         group: '写真部',
         location: '第2校舎 2F',
@@ -146,7 +149,7 @@ export const mockShops: Shop[] = [
     },
     {
         id: 'shop-6',
-        image_url: '',
+        image_url: photo('photo-1523381210434-271e8be1f52b'),
         name: '文化祭Tシャツ',
         group: '文化祭実行委員会',
         location: '本校舎 1F 昇降口',
@@ -157,7 +160,7 @@ export const mockShops: Shop[] = [
         ends_at: '2026-06-07T15:00:00+09:00',
         products: [
             product('product-11', 'Tシャツ', 1200, 'photo-1521572163474-6864f9cf17ab'),
-            product('product-12', 'タオル', 800),
+            product('product-12', 'タオル', 800, 'photo-1556905055-8f358a7a47b2'),
         ],
     },
 ]

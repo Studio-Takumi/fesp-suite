@@ -127,7 +127,7 @@ export const mockArtists: Artist[] = [
     }),
     artist({
         id: 'artist-5',
-        image_url: '',
+        image_url: photo('photo-1530103862676-de8c9debad1d'),
         name: 'ダンス部',
         program: 'ダンスステージ',
         group: 'ダンス部',
