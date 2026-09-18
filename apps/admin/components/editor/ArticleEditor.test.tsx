@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import type { ArticleDocument } from '@fesp/schema'
 
-import { ArticleEditor, articleSchema } from './ArticleEditor'
+import { ArticleEditor, articleSchema, componentSlashMenuItems } from './ArticleEditor'
 
 // 独自コンポーネント（お知らせ一覧）が lib/queries.ts を読むので、env と API クライアントを差し替える
 vi.mock('~/lib/env', () => ({ env: { NEXT_PUBLIC_EVENT_ID: '0b7e6d5c-4a3b-4c2d-9e1f-a2b3c4d5e6f7' } }))
@@ -973,5 +973,50 @@ describe('ArticleEditor', () => {
         expect(code.closest('pre')).toBeInTheDocument()
         // シンタックスハイライトはShikiの非同期・WASM読み込みに依存するため、
         // 実際の色付けの検証はPlaywright（実ブラウザ）での手動確認で担保している
+    })
+})
+
+describe('componentSlashMenuItems', () => {
+    it('ページごとのグループに分け、グループはこの順に出す', () => {
+        // グループの順番は、配列に最初に出てきた順で決まる
+        const groups = [...new Set(componentSlashMenuItems.map((item) => item.group))]
+
+        expect(groups).toEqual(['共通', 'Home', 'News', 'Blog', 'Schedule', 'Map', 'Weather', 'Shop', 'Artist'])
+    })
+
+    it('グループごとに、決めた順番で項目を並べる', () => {
+        const titlesOf = (group: string) =>
+            componentSlashMenuItems.filter((item) => item.group === group).map((item) => item.title)
+
+        expect(titlesOf('共通')).toEqual(['ページ見出し'])
+        expect(titlesOf('Home')).toEqual(['メインスライダー', '日付・天気の帯', 'その他のコンテンツ'])
+        expect(titlesOf('News')).toEqual(['お知らせ一覧', '記事の画像', '記事のサマリー', '前後の記事'])
+        expect(titlesOf('Blog')).toEqual(['ブログ一覧', '関連する記事'])
+        expect(titlesOf('Schedule')).toEqual(['スケジュール表'])
+        expect(titlesOf('Map')).toEqual(['マップ'])
+        expect(titlesOf('Weather')).toEqual([
+            '今日の天気',
+            '週間予報',
+            '気象警報・注意報',
+            '暑さ指数',
+            '天気概況',
+            '天気の更新時刻・出典',
+        ])
+        expect(titlesOf('Shop')).toEqual(['模擬店一覧', '模擬店のサマリー', '商品一覧'])
+        expect(titlesOf('Artist')).toEqual(['出演者一覧', '出演者のサマリー', 'セットリスト'])
+    })
+
+    it('独自コンポーネントのブロックをすべて、重複なく出す', () => {
+        const types = componentSlashMenuItems.map((item) => item.type)
+
+        expect(new Set(types).size).toBe(types.length)
+        // コードブロック（裏機能）と、文章を直接書くブロックはスラッシュメニューの対象外
+        expect(types).toHaveLength(Object.keys(articleSchema.blockSchema).length - 11)
+    })
+
+    it('アイコンは、エディタに元からある項目と同じ大きさ（18）で出す', () => {
+        for (const { icon } of componentSlashMenuItems) {
+            expect(icon.props).toMatchObject({ size: 18 })
+        }
     })
 })
