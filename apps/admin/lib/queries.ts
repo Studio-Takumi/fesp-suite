@@ -16,7 +16,9 @@ import {
 import { adminFetch } from './api'
 import { env } from './env'
 import { mockArtistTags } from './mock/artist'
+import { mockBlogTags } from './mock/blog'
 import { mockNewsTags } from './mock/news'
+import { mockShopProducts, mockShopTags } from './mock/shop'
 
 /**
  * サーバー状態は TanStack Query が担当する。
@@ -28,6 +30,9 @@ export const queryKeys = {
     article: (id: string) => ['articles', id] as const,
     newsTags: ['news', 'tags'] as const,
     artistTags: ['artists', 'tags'] as const,
+    shopTags: ['shops', 'tags'] as const,
+    shopProducts: ['shops', 'current', 'products'] as const,
+    blogTags: ['blogs', 'tags'] as const,
 }
 
 export const exampleQuery = () =>
@@ -71,6 +76,27 @@ export const newsTagsQuery = () =>
     queryOptions({
         queryKey: queryKeys.newsTags,
         queryFn: () => Promise.resolve(mockNewsTags),
+    })
+
+/** ブログのタグ。API ができるまで仮データ（lib/mock/blog.ts）を返す。API ができたら queryFn を差し替える（#57） */
+export const blogTagsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.blogTags,
+        queryFn: () => Promise.resolve(mockBlogTags),
+    })
+
+/** 模擬店のタグ。API ができるまで仮データ（lib/mock/shop.ts）を返す。API ができたら queryFn を差し替える（#59） */
+export const shopTagsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.shopTags,
+        queryFn: () => Promise.resolve(mockShopTags),
+    })
+
+/** 表示中の模擬店の商品。API ができるまで仮データ（lib/mock/shop.ts）を返す。API ができたら queryFn を差し替える（#59） */
+export const shopProductsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.shopProducts,
+        queryFn: () => Promise.resolve(mockShopProducts),
     })
 
 /** 出演者のタグ。API ができるまで仮データ（lib/mock/artist.ts）を返す。API ができたら queryFn を差し替える（#60） */
