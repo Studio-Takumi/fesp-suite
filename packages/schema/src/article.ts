@@ -673,6 +673,26 @@ function emptyComponentBlockSchema<Type extends string>(type: Type) {
 export const articleDocumentSchema = z.array(articleBlockSchema)
 export type ArticleDocument = z.infer<typeof articleDocumentSchema>
 
+/** ウェブアプリが固定で持つパス。記事の slug には使えない（DBのcheck制約と同じ並び） */
+export const reservedArticleSlugs = ['login', 'signup', 'settings', 'articles'] as const
+
+/** ホームの slug。ウェブアプリは `/` でこの記事を引く */
+export const homeArticleSlug = 'home'
+
+/**
+ * 記事の slug（ウェブアプリのパス）。英小文字・数字・ハイフンで、ハイフンは先頭・末尾に置けず、続けて並べられない。
+ * slug を持つ記事は `/<slug>` で開ける（docs/app.md の「固定ページ」）
+ */
+export const articleSlugSchema = z
+    .string()
+    .min(1, 'slugを入力してください')
+    .max(32, 'slugは32文字以内で入力してください')
+    .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slugは英小文字・数字・ハイフンで入力してください')
+    .refine(
+        (slug) => !(reservedArticleSlugs as readonly string[]).includes(slug),
+        'このslugはウェブアプリのパスで使われています',
+    )
+
 /** 記事のタイトル。空文字も許す */
 export const articleTitleSchema = z.string().trim().max(100, 'タイトルは100文字以内で入力してください')
 
@@ -717,6 +737,8 @@ export type ArticleSchedule = z.infer<typeof articleScheduleSchema>
 export const articleResponseSchema = z.object({
     id: uuidSchema,
     event_id: uuidSchema,
+    /** ウェブアプリのパス。`/articles/:id` でだけ開く記事なら `null` */
+    slug: articleSlugSchema.nullable(),
     created_by: uuidSchema,
     creator: articleCreatorSchema,
     /** 公開中なら公開している版の、下書きなら最新の版のタイトル */
@@ -791,6 +813,11 @@ export type ArticleListQuery = z.infer<typeof articleListQuerySchema>
 /** 記事IDのパスパラメータ */
 export const articleIdParamSchema = z.object({
     id: uuidSchema,
+})
+
+/** 記事の slug のパスパラメータ */
+export const articleSlugParamSchema = z.object({
+    slug: articleSlugSchema,
 })
 
 /** PUT /api/articles/:id のリクエストボディ。記事のイベントは変えられないので `event_id` を持たない */

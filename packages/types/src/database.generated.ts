@@ -114,6 +114,7 @@ export type Database = {
                     latest_version: number
                     published_at: string | null
                     published_version: number | null
+                    slug: string | null
                     status: Database['public']['Enums']['article_status']
                     updated_at: string
                 }
@@ -125,6 +126,7 @@ export type Database = {
                     latest_version: number
                     published_at?: string | null
                     published_version?: number | null
+                    slug?: string | null
                     status?: Database['public']['Enums']['article_status']
                     updated_at?: string
                 }
@@ -136,6 +138,7 @@ export type Database = {
                     latest_version?: number
                     published_at?: string | null
                     published_version?: number | null
+                    slug?: string | null
                     status?: Database['public']['Enums']['article_status']
                     updated_at?: string
                 }
