@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 import {
     anonClient,
@@ -14,6 +14,15 @@ const f = useRlsFixture()
 
 /** Postgres の foreign_key_violation */
 const FOREIGN_KEY_VIOLATION = '23503'
+
+/** Postgres の unique_violation / check_violation */
+const UNIQUE_VIOLATION = '23505'
+const CHECK_VIOLATION = '23514'
+
+async function slugOf(articleId: string): Promise<string | null | undefined> {
+    const { data } = await serviceClient.from('articles').select('slug').eq('id', articleId).single()
+    return data?.slug
+}
 
 async function publishedVersionOf(articleId: string): Promise<number | null | undefined> {
     const { data } = await serviceClient.from('articles').select('published_version').eq('id', articleId).single()
@@ -261,6 +270,81 @@ describe('articles の公開状態と公開日時', () => {
         const published = await publicationOf(id)
         await update(id, { published_at: '2000-01-01T00:00:00+00:00' })
         expect((await publicationOf(id))?.published_at).toBe(published?.published_at)
+    })
+})
+
+describe('articles の slug', () => {
+    /** slug を付ける。RLS で更新できなければ空の配列が返る */
+    function setSlug(articleId: string, slug: string | null) {
+        return f.staff.client.from('articles').update({ slug }).eq('id', articleId).select('id, slug')
+    }
+
+    // slug はイベント内で一意なので、テストごとに前のテストの slug を消しておく
+    beforeEach(async () => {
+        await serviceClient.from('articles').update({ slug: null }).in('id', [f.articleA, f.draftA, f.articleB])
+    })
+
+    it('staff は自分のイベントの記事に slug を付けられる', async () => {
+        const { data, error } = await setSlug(f.articleA, 'rls-home')
+
+        expect(error).toBeNull()
+        expect(data).toEqual([{ id: f.articleA, slug: 'rls-home' }])
+    })
+
+    it('同じイベントで同じ slug は2つ持てない', async () => {
+        await setSlug(f.articleA, 'rls-news')
+
+        const { error } = await setSlug(f.draftA, 'rls-news')
+
+        expect(error?.code).toBe(UNIQUE_VIOLATION)
+    })
+
+    it('イベントが違えば同じ slug を持てる', async () => {
+        await setSlug(f.articleA, 'rls-news')
+
+        // f.staff は eventB では visitor なので、イベントをまたぐ確認は service_role で行う
+        const { error } = await serviceClient.from('articles').update({ slug: 'rls-news' }).eq('id', f.articleB)
+
+        expect(error).toBeNull()
+        expect(await slugOf(f.articleB)).toBe('rls-news')
+    })
+
+    it('slug を持たない記事はいくつあってもよい', async () => {
+        const { error } = await setSlug(f.draftA, null)
+
+        expect(error).toBeNull()
+        expect(await slugOf(f.articleA)).toBeNull()
+        expect(await slugOf(f.draftA)).toBeNull()
+    })
+
+    it.each(['News', 'news_list', 'news/1', '-news', 'news-', 'a'.repeat(33)])(
+        '形式の合わない slug（%s）は書き込めない',
+        async (slug) => {
+            const { error } = await setSlug(f.articleA, slug)
+
+            expect(error?.code).toBe(CHECK_VIOLATION)
+        },
+    )
+
+    it.each(['login', 'signup', 'settings', 'articles'])(
+        'ウェブアプリのパスと同じ slug（%s）は書き込めない',
+        async (slug) => {
+            const { error } = await setSlug(f.articleA, slug)
+
+            expect(error?.code).toBe(CHECK_VIOLATION)
+        },
+    )
+
+    it('staff でないメンバーは slug を書き換えられない', async () => {
+        const { data, error } = await f.visitor.client
+            .from('articles')
+            .update({ slug: 'rls-visitor' })
+            .eq('id', f.articleA)
+            .select('id')
+
+        expect(error).toBeNull()
+        expect(data).toEqual([])
+        expect(await slugOf(f.articleA)).toBeNull()
     })
 })
 

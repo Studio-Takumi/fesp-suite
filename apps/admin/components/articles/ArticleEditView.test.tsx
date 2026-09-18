@@ -40,6 +40,7 @@ function paragraph(text: string): ArticleDocument {
 const article: ArticleResponse = {
     id: ARTICLE_ID,
     event_id: EVENT_ID,
+    slug: null,
     created_by: USER_ID,
     creator: { display_name: '山田太郎' },
     status: 'draft',

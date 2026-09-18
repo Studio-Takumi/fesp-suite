@@ -22,6 +22,7 @@ erDiagram
     articles {
         uuid id PK
         uuid event_id FK
+        text slug UK
         uuid created_by FK
         integer latest_version FK
         integer published_version FK
@@ -99,6 +100,7 @@ erDiagram
 | ------------------- | ---------------- | ---- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `id`                | `uuid`           | NO   | `gen_random_uuid()` | 主キー                                                                                                                                                                                                                                                                        |
 | `event_id`          | `uuid`           | NO   |                     | `events.id`。イベントを消すと一緒に消える                                                                                                                                                                                                                                     |
+| `slug`              | `text`           | YES  |                     | ウェブアプリのパス（`/news` なら `news`）。イベント内で一意。`null` なら `/articles/:id` でだけ開く                                                                                                                                                                           |
 | `created_by`        | `uuid`           | NO   |                     | `users.id`。記事を作成したユーザー。更新時はトリガーで元の値に戻す（変えられない）                                                                                                                                                                                            |
 | `latest_version`    | `integer`        | NO   |                     | 最新の版（`article_histories.version`）。`create_article` と `save_article` で決める                                                                                                                                                                                          |
 | `published_version` | `integer`        | YES  |                     | 公開中の版（`article_histories.version`）。下書きなら `NULL`。`save_article` と予約の公開（`publish_scheduled_articles`）で決める                                                                                                                                             |
@@ -109,12 +111,17 @@ erDiagram
 
 公開中の記事のタイトル・本文は `published_version` の版、下書きの記事のタイトル・本文は `latest_version` の版のもの。
 
+`slug` を持つ記事は、ウェブアプリの `/<slug>` で開ける。ホームの `slug` は `home`（ウェブアプリは `/` でこの記事を引く）。
+
 ### 制約・インデックス
 
 - `foreign key (event_id) references events (id) on delete cascade`
 - `foreign key (created_by) references users (id)` … ユーザーは論理削除するので、記事を持つユーザーの行は消せない
 - `foreign key (id, latest_version) references article_histories (article_id, version) deferrable initially deferred` … 存在しない版を最新にできない。記事と版1を同じトランザクションで作るので、確かめるのはコミット時
 - `foreign key (id, published_version) references article_histories (article_id, version)` … 存在しない版を公開中にできない
+- `unique (event_id, slug)` … slugはイベント内で一意。イベントをまたいだ一意性は持たせない。slugを持たない記事はいくつあってもよい
+- `check (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$' and length(slug) <= 32)` … 英小文字・数字・ハイフンで、ハイフンは先頭・末尾に置けず、続けて2つ以上並べられない
+- `check (slug not in ('login', 'signup', 'settings', 'articles'))` … ウェブアプリが固定で持つパスは予約語として使えない
 - `index (event_id, updated_at desc)` … 一覧（イベント内で更新日時の新しい順）用
 - `index (created_by)` … `users` の RLS で作成者を引く用
 

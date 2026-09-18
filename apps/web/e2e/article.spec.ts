@@ -17,6 +17,7 @@ test.beforeEach(async ({ page }) => {
             json: {
                 id: ARTICLE_ID,
                 event_id: '00000000-0000-4000-8000-000000000000',
+                slug: null,
                 title: '模擬店のお知らせ',
                 content: [
                     { id: '0', type: 'pageHeader', props: { label: 'news', title: 'お知らせ' }, children: [] },

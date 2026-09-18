@@ -9,5 +9,28 @@ export const exampleFixture: ExampleResponse = {
     now: '2026-09-01T10:00:00Z',
 }
 
+/** slug で引いた記事。本文はページ見出し1つだけで、slug ごとに見出しを変える */
+export function slugArticleFixture(slug: string) {
+    return {
+        id: '7f1c2a9e-3b4d-4e5f-8a6b-1c2d3e4f5a6b',
+        event_id: '00000000-0000-4000-8000-000000000000',
+        slug,
+        created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
+        creator: { display_name: '山田太郎' },
+        title: slug,
+        content: [{ id: '1', type: 'pageHeader', props: { label: slug.toUpperCase(), title: slug }, children: [] }],
+        status: 'published',
+        published_version: 1,
+        published_at: '2026-09-19T12:00:00+09:00',
+        created_at: '2026-09-19T12:00:00+09:00',
+        updated_at: '2026-09-19T12:00:00+09:00',
+    }
+}
+
 /** 既定のハッピーパス。個別テストで server.use() して上書きする */
-export const handlers = [http.get(`${API}/api/example`, () => HttpResponse.json(exampleFixture))]
+export const handlers = [
+    http.get(`${API}/api/example`, () => HttpResponse.json(exampleFixture)),
+    http.get(`${API}/api/articles/slug/:slug`, ({ params }) =>
+        HttpResponse.json(slugArticleFixture(String(params.slug))),
+    ),
+]

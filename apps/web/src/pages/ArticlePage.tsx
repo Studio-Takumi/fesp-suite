@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 
-import { ArticleRenderer } from '~/components/article/ArticleRenderer'
+import { ArticleBody } from '~/components/article/ArticleBody'
 import { QueryBoundary } from '~/components/QueryBoundary'
 import { articleQuery } from '~/lib/queries'
 
@@ -12,11 +12,7 @@ export function ArticlePage() {
 
     return (
         <QueryBoundary isPending={article.isPending} error={article.error} data={article.data}>
-            {(data) => (
-                <article className='space-y-6'>
-                    <ArticleRenderer blocks={data.content} />
-                </article>
-            )}
+            {(data) => <ArticleBody blocks={data.content} />}
         </QueryBoundary>
     )
 }

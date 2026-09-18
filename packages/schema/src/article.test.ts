@@ -7,6 +7,8 @@ import {
     articleListQuerySchema,
     articleResponseSchema,
     articleScheduleInputSchema,
+    articleSlugParamSchema,
+    articleSlugSchema,
     articleViewResponseSchema,
     blogListPropsSchema,
     contentListLinkSchema,
@@ -18,6 +20,7 @@ import {
     parseArticleDocument,
     parseIdListProp,
     productListPropsSchema,
+    reservedArticleSlugs,
     shopListPropsSchema,
     weatherComponentTypes,
 } from './article'
@@ -1133,10 +1136,49 @@ describe('articleListQuerySchema', () => {
     })
 })
 
+describe('articleSlugSchema', () => {
+    it('英小文字・数字・ハイフンのslugを受理する', () => {
+        for (const slug of ['home', 'news', 'shop2', 'set-list']) {
+            expect(articleSlugSchema.safeParse(slug).success).toBe(true)
+        }
+    })
+
+    it('大文字・記号・日本語・空文字を弾く', () => {
+        for (const slug of ['News', 'news_list', 'news/1', 'お知らせ', '']) {
+            expect(articleSlugSchema.safeParse(slug).success).toBe(false)
+        }
+    })
+
+    it('先頭・末尾・連続のハイフンを弾く', () => {
+        for (const slug of ['-news', 'news-', 'set--list']) {
+            expect(articleSlugSchema.safeParse(slug).success).toBe(false)
+        }
+    })
+
+    it('32文字までを受理する', () => {
+        expect(articleSlugSchema.safeParse('a'.repeat(32)).success).toBe(true)
+        expect(articleSlugSchema.safeParse('a'.repeat(33)).success).toBe(false)
+    })
+
+    it('ウェブアプリのパスと同じslugを弾く', () => {
+        for (const slug of reservedArticleSlugs) {
+            expect(articleSlugSchema.safeParse(slug).success).toBe(false)
+        }
+    })
+})
+
+describe('articleSlugParamSchema', () => {
+    it('slugの形式を見る', () => {
+        expect(articleSlugParamSchema.safeParse({ slug: 'news' }).success).toBe(true)
+        expect(articleSlugParamSchema.safeParse({ slug: 'News' }).success).toBe(false)
+    })
+})
+
 describe('articleResponseSchema', () => {
     const article = {
         id: '7f1c2a9e-3b4d-4e5f-8a6b-1c2d3e4f5a6b',
         event_id: EVENT_ID,
+        slug: null,
         created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
         creator: { display_name: '山田太郎' },
         title: '',
@@ -1156,6 +1198,12 @@ describe('articleResponseSchema', () => {
         },
         schedule: null,
     }
+
+    it('slug を持つ記事を受理し、形式の合わない slug を弾く', () => {
+        expect(articleResponseSchema.safeParse({ ...article, slug: 'news' }).success).toBe(true)
+        expect(articleResponseSchema.safeParse({ ...article, slug: 'News' }).success).toBe(false)
+        expect(articleResponseSchema.safeParse({ ...article, slug: 'settings' }).success).toBe(false)
+    })
 
     const schedule = {
         version: 2,
@@ -1320,6 +1368,7 @@ describe('articleViewResponseSchema', () => {
     const article = {
         id: '7f1c2a9e-3b4d-4e5f-8a6b-1c2d3e4f5a6b',
         event_id: EVENT_ID,
+        slug: null,
         created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
         creator: { display_name: '山田太郎' },
         title: '模擬店のお知らせ',
