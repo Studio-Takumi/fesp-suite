@@ -22,20 +22,30 @@ export function ArtistCard({ artist }: ArtistCardProps) {
                     color.surface,
                 )}
             >
-                {/* デザインの「コーナー」（左上の三角の飾り） */}
-                <svg viewBox='0 0 64 64' aria-hidden className={cn('absolute top-0 left-0 size-16', color.accentText)}>
-                    <path d='M0 0l64 0-64 64z' fill='currentColor' />
-                </svg>
-                <span
-                    className={cn(
-                        'font-en flex size-20 items-center justify-center rounded-full bg-white/60 text-4xl',
-                        color.accentText,
-                    )}
-                >
-                    {[...artist.name][0]}
-                </span>
-                <span className='text-lg font-bold text-slate-900'>{artist.name}</span>
-                <span className='text-xs text-slate-900/60'>{artist.program}</span>
+                {artist.image_url ? (
+                    <img src={artist.image_url} alt='' className='size-full object-cover' />
+                ) : (
+                    <>
+                        {/* デザインの「コーナー」（左上の三角の飾り） */}
+                        <svg
+                            viewBox='0 0 64 64'
+                            aria-hidden
+                            className={cn('absolute top-0 left-0 size-16', color.accentText)}
+                        >
+                            <path d='M0 0l64 0-64 64z' fill='currentColor' />
+                        </svg>
+                        <span
+                            className={cn(
+                                'font-en flex size-20 items-center justify-center rounded-full bg-white/60 text-4xl',
+                                color.accentText,
+                            )}
+                        >
+                            {[...artist.name][0]}
+                        </span>
+                        <span className='text-lg font-bold text-slate-900'>{artist.name}</span>
+                        <span className='text-xs text-slate-900/60'>{artist.program}</span>
+                    </>
+                )}
             </div>
             <div className='flex flex-col gap-2'>
                 <div className='flex items-center gap-2'>

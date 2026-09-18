@@ -81,6 +81,7 @@ const artistList = (props: Record<string, unknown> = {}) =>
 
 const artist = (id: string, name: string, startsAt: string): Artist => ({
     id,
+    image_url: '',
     name,
     program: '有志ステージ',
     group: '有志',
@@ -628,7 +629,8 @@ describe('ArticleRenderer', () => {
         expect(cards).toHaveLength(mockShops.length)
         const first = within(cards[0]!)
         expect(first.getByRole('link')).toHaveAttribute('href', '/shops/shop-1')
-        expect(first.getAllByText('レモネードスタンド')).toHaveLength(2)
+        // 写真のある模擬店は、カードの上半分が写真になるので店名は1か所だけ
+        expect(first.getAllByText('レモネードスタンド')).toHaveLength(1)
         expect(first.getByText('Day1')).toBeInTheDocument()
         expect(first.getByText('2年1組')).toBeInTheDocument()
         expect(first.getByText('@ 特別教室A')).toBeInTheDocument()
@@ -672,8 +674,11 @@ describe('ArticleRenderer', () => {
         await screen.findAllByRole('listitem')
         await user.selectOptions(screen.getByRole('combobox', { name: '並び替え' }), 'name')
 
-        const names = screen.getAllByRole('listitem').map((card) => within(card).getAllByText(/./)[1]?.textContent)
-        expect(names).toEqual([...names].sort((a, b) => (a ?? '').localeCompare(b ?? '', 'ja')))
+        const hrefs = screen.getAllByRole('listitem').map((card) => within(card).getByRole('link').getAttribute('href'))
+        const expected = [...mockShops]
+            .sort((a, b) => a.name.localeCompare(b.name, 'ja'))
+            .map((shop) => `/shops/${shop.id}`)
+        expect(hrefs).toEqual(expected)
     })
 
     it('模擬店一覧は出さない設定の日付タブ・検索・並び替え・タグタブを出さず、タグ未選択ならタグタブを出さない', async () => {
@@ -734,7 +739,7 @@ describe('ArticleRenderer', () => {
 
         renderWithQuery([productList({ products: 'product-3,product-1,unknown' })])
         const items = await screen.findAllByRole('listitem')
-        expect(items.map((item) => item.textContent)).toEqual(['レレモネード200円', 'ははちみつレモン150円'])
+        expect(items.map((item) => item.textContent)).toEqual(['レモネード200円', 'はちみつレモン150円'])
     })
 
     it('商品一覧は出す商品が0件なら空状態を出す', async () => {
@@ -853,8 +858,8 @@ describe('ArticleRenderer', () => {
         expect(rows).toHaveLength(mockArtists.length)
         const first = within(rows[0]!)
         expect(first.getByRole('link')).toHaveAttribute('href', '/artists/artist-1')
-        expect(first.getAllByText('ソラノネ')).toHaveLength(2)
-        expect(first.getByText('アコースティックライブ')).toBeInTheDocument()
+        // 写真のある出演者は、カードの上半分が写真になるので出演者名は1か所だけ
+        expect(first.getAllByText('ソラノネ')).toHaveLength(1)
         expect(first.getByText('Day1')).toBeInTheDocument()
         expect(first.getByText('軽音楽部')).toBeInTheDocument()
         expect(first.getByText('10:20 - 11:00')).toBeInTheDocument()

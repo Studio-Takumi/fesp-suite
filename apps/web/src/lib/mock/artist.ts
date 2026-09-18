@@ -10,6 +10,8 @@ export type ArtistTag = {
 
 export type Artist = {
     id: string
+    /** 出演者の写真。無ければ空文字（カードは色の枠を出す） */
+    image_url: string
     /** 出演者名（例: `ソラノネ`） */
     name: string
     /** 演目（例: `アコースティックライブ`） */
@@ -35,6 +37,9 @@ export type SetListSong = {
     /** 原曲のアーティスト */
     artist: string
 }
+
+/** 仮データの写真（Unsplash）。本物のデータ（#60）が入るまでの見本 */
+const photo = (id: string) => `https://images.unsplash.com/${id}?w=1080&q=80`
 
 export const mockArtistTags: ArtistTag[] = [
     { id: 'band', name: 'バンド' },
@@ -62,6 +67,7 @@ const artist = ({ date, startsAt, endsAt, tagIds, ...rest }: ArtistSeed): Artist
 /** 表示中の出演者。記事と出演者を結び付ける仕組み（#60・#64）ができるまで、この1件を返す */
 export const mockCurrentArtist: Artist = artist({
     id: 'artist-1',
+    image_url: photo('photo-1514525253161-7a46d19cd819'),
     name: 'ソラノネ',
     program: 'アコースティックライブ',
     group: '軽音楽部',
@@ -79,6 +85,7 @@ export const mockArtists: Artist[] = [
     mockCurrentArtist,
     artist({
         id: 'artist-2',
+        image_url: photo('photo-1501281668745-f7f57925c3b4'),
         name: 'ハルカゼ団',
         program: '有志ステージ',
         group: '有志',
@@ -92,6 +99,7 @@ export const mockArtists: Artist[] = [
     }),
     artist({
         id: 'artist-3',
+        image_url: photo('photo-1459749411175-04bf5292ceea'),
         name: '吹奏楽部',
         program: '吹奏楽コンサート',
         group: '吹奏楽部',
@@ -105,6 +113,7 @@ export const mockArtists: Artist[] = [
     }),
     artist({
         id: 'artist-4',
+        image_url: photo('photo-1470225620780-dba8ba36b745'),
         name: 'ミント・パレード',
         program: '有志ステージ',
         group: '軽音楽部',
@@ -118,6 +127,7 @@ export const mockArtists: Artist[] = [
     }),
     artist({
         id: 'artist-5',
+        image_url: photo('photo-1530103862676-de8c9debad1d'),
         name: 'ダンス部',
         program: 'ダンスステージ',
         group: 'ダンス部',
