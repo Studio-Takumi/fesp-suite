@@ -8,18 +8,20 @@ import {
     articleResponseSchema,
     articleScheduleInputSchema,
     articleViewResponseSchema,
+    blogListPropsSchema,
     contentListLinkSchema,
     coverImagePropsSchema,
     emptyComponentPropsSchema,
-    formatContentListLinks,
-    formatMainHeroSlides,
     mainHeroSlideSchema,
     newsListPropsSchema,
     pageHeaderPropsSchema,
     parseArticleDocument,
-    parseContentListLinks,
-    parseMainHeroSlides,
+    parseBlogListTags,
     parseNewsListTags,
+    parseProductListIds,
+    parseShopListTags,
+    productListPropsSchema,
+    shopListPropsSchema,
     weatherComponentTypes,
 } from './article'
 
@@ -567,16 +569,66 @@ describe('coverImagePropsSchema', () => {
     })
 })
 
-describe('articleDocumentSchema の props を持たない独自コンポーネント（postSummary / adjacentPosts）', () => {
+describe('articleDocumentSchema のブログ一覧（blogList）', () => {
+    const props = { showTagTabs: true, tags: 'prep,day' }
+
+    it('タグタブ・タグを受理する（JSONを経由してcontentキーが消えていてもよい）', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('blogList', props)).success).toBe(true)
+        expect(
+            articleDocumentSchema.safeParse([{ id: '1', type: 'blogList', props, content: undefined, children: [] }])
+                .success,
+        ).toBe(true)
+    })
+
+    it('挿入した直後（タグ未選択）を受理する', () => {
+        expect(
+            articleDocumentSchema.safeParse(componentBlock('blogList', { showTagTabs: true, tags: '' })).success,
+        ).toBe(true)
+    })
+
+    it('タグが空の ID を含む（カンマが続く・端にある）と拒否する', () => {
+        for (const tags of [',', 'prep,', ',prep', 'prep,,day']) {
+            expect(articleDocumentSchema.safeParse(componentBlock('blogList', { ...props, tags })).success).toBe(false)
+        }
+    })
+
+    it('props が欠けている・型が違う・知らない props があれば拒否する', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('blogList', { showTagTabs: true })).success).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse(componentBlock('blogList', { ...props, showTagTabs: 'true' })).success,
+        ).toBe(false)
+        expect(articleDocumentSchema.safeParse(componentBlock('blogList', { ...props, tags: ['prep'] })).success).toBe(
+            false,
+        )
+        expect(articleDocumentSchema.safeParse(componentBlock('blogList', { ...props, limit: 3 })).success).toBe(false)
+    })
+})
+
+describe('blogListPropsSchema', () => {
+    it('タグの指定が正しくなければエラーメッセージを返す', () => {
+        const result = blogListPropsSchema.safeParse({ showTagTabs: true, tags: 'prep,' })
+
+        expect(result.error?.issues.map((issue) => issue.message)).toEqual(['タグの指定が正しくありません'])
+    })
+})
+
+describe('parseBlogListTags', () => {
+    it('カンマ区切りのタグを ID の配列にし、空文字なら空の配列にする', () => {
+        expect(parseBlogListTags('prep,day')).toEqual(['prep', 'day'])
+        expect(parseBlogListTags('')).toEqual([])
+    })
+})
+
+describe('articleDocumentSchema の props を持たない独自コンポーネント（postSummary / adjacentPosts / relatedPosts）', () => {
     it('props が空なら受理し、props があれば拒否する', () => {
-        for (const type of ['postSummary', 'adjacentPosts']) {
+        for (const type of ['postSummary', 'adjacentPosts', 'relatedPosts']) {
             expect(articleDocumentSchema.safeParse(componentBlock(type, {})).success).toBe(true)
             expect(articleDocumentSchema.safeParse(componentBlock(type, { id: 'x' })).success).toBe(false)
         }
     })
 
     it('中身（content）を持っていたら拒否する', () => {
-        for (const type of ['newsList', 'coverImage', 'postSummary', 'adjacentPosts']) {
+        for (const type of ['newsList', 'coverImage', 'blogList', 'postSummary', 'adjacentPosts', 'relatedPosts']) {
             expect(
                 articleDocumentSchema.safeParse([
                     { id: '1', type, props: {}, content: [{ type: 'text', text: 'x', styles: {} }], children: [] },
@@ -686,6 +738,187 @@ describe('articleDocumentSchema のマップ（map）', () => {
     })
 })
 
+describe('articleDocumentSchema の模擬店一覧（shopList）', () => {
+    const props = {
+        showDateTabs: true,
+        showSearch: true,
+        showSort: true,
+        showTagTabs: true,
+        tags: 'food,experience',
+        showProducts: true,
+    }
+
+    it('日付タブ・検索・並び替え・タグタブ・タグ・カードの商品を受理する（JSONを経由してcontentキーが消えていてもよい）', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('shopList', props)).success).toBe(true)
+        expect(
+            articleDocumentSchema.safeParse([{ id: '1', type: 'shopList', props, content: undefined, children: [] }])
+                .success,
+        ).toBe(true)
+    })
+
+    it('挿入した直後（タグ未選択）を受理する', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('shopList', { ...props, tags: '' })).success).toBe(true)
+    })
+
+    it('タグが空の ID を含む（カンマが続く・端にある）と拒否する', () => {
+        for (const tags of [',', 'food,', ',food', 'food,,experience']) {
+            expect(articleDocumentSchema.safeParse(componentBlock('shopList', { ...props, tags })).success).toBe(false)
+        }
+    })
+
+    it('props が欠けている・型が違う・知らない props があれば拒否する', () => {
+        expect(
+            articleDocumentSchema.safeParse(componentBlock('shopList', { ...props, showProducts: undefined })).success,
+        ).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse(componentBlock('shopList', { ...props, showSearch: 'true' })).success,
+        ).toBe(false)
+        expect(articleDocumentSchema.safeParse(componentBlock('shopList', { ...props, tags: ['food'] })).success).toBe(
+            false,
+        )
+        expect(articleDocumentSchema.safeParse(componentBlock('shopList', { ...props, sort: 'name' })).success).toBe(
+            false,
+        )
+    })
+
+    it('中身（content）を持っていたら拒否する', () => {
+        expect(
+            articleDocumentSchema.safeParse([
+                {
+                    id: '1',
+                    type: 'shopList',
+                    props,
+                    content: [{ type: 'text', text: '模擬店', styles: {} }],
+                    children: [],
+                },
+            ]).success,
+        ).toBe(false)
+    })
+})
+
+describe('articleDocumentSchema の模擬店のサマリー（shopSummary）', () => {
+    it('props なしを受理する（JSONを経由してcontentキーが消えていてもよい）', () => {
+        expect(
+            articleDocumentSchema.safeParse([
+                { id: '1', type: 'shopSummary', props: {}, content: undefined, children: [] },
+            ]).success,
+        ).toBe(true)
+        expect(articleDocumentSchema.safeParse(componentBlock('shopSummary', {})).success).toBe(true)
+    })
+
+    it('props がある・中身（content）を持っていたら拒否する', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('shopSummary', { shopId: '1' })).success).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse([
+                {
+                    id: '1',
+                    type: 'shopSummary',
+                    props: {},
+                    content: [{ type: 'text', text: '模擬店', styles: {} }],
+                    children: [],
+                },
+            ]).success,
+        ).toBe(false)
+    })
+})
+
+describe('articleDocumentSchema の商品一覧（productList）', () => {
+    it('表示する商品と、選んでいない（空文字）を受理する', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('productList', { products: 'p1,p2' })).success).toBe(true)
+        expect(articleDocumentSchema.safeParse(componentBlock('productList', { products: '' })).success).toBe(true)
+    })
+
+    it('商品が空の ID を含む・props が欠けている・型が違う・知らない props があれば拒否する', () => {
+        for (const products of [',', 'p1,', ',p1', 'p1,,p2']) {
+            expect(articleDocumentSchema.safeParse(componentBlock('productList', { products })).success).toBe(false)
+        }
+        expect(articleDocumentSchema.safeParse(componentBlock('productList', {})).success).toBe(false)
+        expect(articleDocumentSchema.safeParse(componentBlock('productList', { products: ['p1'] })).success).toBe(false)
+        expect(articleDocumentSchema.safeParse(componentBlock('productList', { products: '', limit: 4 })).success).toBe(
+            false,
+        )
+    })
+})
+
+describe('shopListPropsSchema / productListPropsSchema', () => {
+    it('タグ・商品の指定が正しくなければ入力欄に出すエラーメッセージを返す', () => {
+        const shopList = shopListPropsSchema.safeParse({
+            showDateTabs: true,
+            showSearch: true,
+            showSort: true,
+            showTagTabs: true,
+            tags: 'food,,experience',
+            showProducts: true,
+        })
+        expect(shopList.error?.issues.map((issue) => issue.message)).toEqual(['タグの指定が正しくありません'])
+
+        const productList = productListPropsSchema.safeParse({ products: 'p1,' })
+        expect(productList.error?.issues.map((issue) => issue.message)).toEqual(['商品の指定が正しくありません'])
+    })
+})
+
+describe('parseShopListTags / parseProductListIds', () => {
+    it('カンマ区切りの ID を配列にし、空文字なら空の配列にする', () => {
+        expect(parseShopListTags('food,experience')).toEqual(['food', 'experience'])
+        expect(parseShopListTags('')).toEqual([])
+        expect(parseProductListIds('p1,p2')).toEqual(['p1', 'p2'])
+        expect(parseProductListIds('')).toEqual([])
+    })
+})
+
+describe('articleDocumentSchema の出演者一覧（artistList）', () => {
+    const props = { showDateTabs: true, showSearch: true, showSort: true, showTagTabs: true, tags: 'band,dance' }
+
+    it('日付タブ・検索・並び替え・タグタブ・タグを受理する（JSONを経由してcontentキーが消えていてもよい）', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('artistList', props)).success).toBe(true)
+        expect(
+            articleDocumentSchema.safeParse([{ id: '1', type: 'artistList', props, content: undefined, children: [] }])
+                .success,
+        ).toBe(true)
+    })
+
+    it('挿入した直後（タグ未選択）を受理する', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('artistList', { ...props, tags: '' })).success).toBe(true)
+    })
+
+    it('タグが空の ID を含む（カンマが続く・端にある）と拒否する', () => {
+        for (const tags of [',', 'band,', ',band', 'band,,dance']) {
+            expect(articleDocumentSchema.safeParse(componentBlock('artistList', { ...props, tags })).success).toBe(
+                false,
+            )
+        }
+    })
+
+    it('props が欠けている・型が違う・知らない props があれば拒否する', () => {
+        expect(
+            articleDocumentSchema.safeParse(componentBlock('artistList', { ...props, showSearch: undefined })).success,
+        ).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse(componentBlock('artistList', { ...props, showDateTabs: 'true' })).success,
+        ).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse(componentBlock('artistList', { ...props, tags: ['band'] })).success,
+        ).toBe(false)
+        expect(articleDocumentSchema.safeParse(componentBlock('artistList', { ...props, limit: 3 })).success).toBe(
+            false,
+        )
+    })
+
+    it('中身（content）を持っていたら拒否する', () => {
+        expect(
+            articleDocumentSchema.safeParse([
+                {
+                    id: '1',
+                    type: 'artistList',
+                    props,
+                    content: [{ type: 'text', text: '出演者', styles: {} }],
+                    children: [],
+                },
+            ]).success,
+        ).toBe(false)
+    })
+})
+
 describe('articleDocumentSchema のメインスライダー（mainHero）', () => {
     const slides = [
         'https://example.com/a.jpg|第42回 あおば祭|あおば祭へ、ようこそ',
@@ -722,27 +955,6 @@ describe('articleDocumentSchema のメインスライダー（mainHero）', () =
         expect(
             articleDocumentSchema.safeParse(componentBlock('mainHero', { slides: '', autoplay: true })).success,
         ).toBe(false)
-    })
-})
-
-describe('parseMainHeroSlides / formatMainHeroSlides', () => {
-    it('1行1枚のスライドを配列にし、形の合わない行は読み飛ばす', () => {
-        expect(
-            parseMainHeroSlides(['https://example.com/a.jpg|第42回 あおば祭|ようこそ', 'こわれた行'].join('\n')),
-        ).toEqual([{ imageUrl: 'https://example.com/a.jpg', catchphrase: '第42回 あおば祭', title: 'ようこそ' }])
-        expect(parseMainHeroSlides('')).toEqual([])
-    })
-
-    it('スライドの配列を1行1枚の文字列に戻す', () => {
-        const slides = [
-            { imageUrl: 'https://example.com/a.jpg', catchphrase: 'キャッチ', title: 'タイトル' },
-            { imageUrl: 'https://example.com/b.jpg', catchphrase: '', title: '' },
-        ]
-
-        expect(formatMainHeroSlides(slides)).toBe(
-            'https://example.com/a.jpg|キャッチ|タイトル\nhttps://example.com/b.jpg||',
-        )
-        expect(parseMainHeroSlides(formatMainHeroSlides(slides))).toEqual(slides)
     })
 })
 
@@ -798,25 +1010,6 @@ describe('articleDocumentSchema のその他のコンテンツ（contentList）'
         expect(articleDocumentSchema.safeParse(componentBlock('contentList', { links: '', columns: 2 })).success).toBe(
             false,
         )
-    })
-})
-
-describe('parseContentListLinks / formatContentListLinks', () => {
-    it('1行1件のリンクを配列にし、形の合わない行は読み飛ばす', () => {
-        expect(parseContentListLinks(['マップ|map|/map', 'こわれた行'].join('\n'))).toEqual([
-            { label: 'マップ', icon: 'map', href: '/map' },
-        ])
-        expect(parseContentListLinks('')).toEqual([])
-    })
-
-    it('リンクの配列を1行1件の文字列に戻す', () => {
-        const links = [
-            { label: 'マップ', icon: 'map', href: '/map' } as const,
-            { label: '天気', icon: 'cloud-sun', href: 'https://example.com/weather' } as const,
-        ]
-
-        expect(formatContentListLinks(links)).toBe('マップ|map|/map\n天気|cloud-sun|https://example.com/weather')
-        expect(parseContentListLinks(formatContentListLinks(links))).toEqual(links)
     })
 })
 

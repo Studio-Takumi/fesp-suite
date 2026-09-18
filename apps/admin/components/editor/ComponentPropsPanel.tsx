@@ -3,32 +3,56 @@
 import type { ReactNode } from 'react'
 
 import type {
+    ArtistListProps,
+    BlogListProps,
     ContentListProps,
     CoverImageProps,
     EmptyComponentProps,
     MainHeroProps,
     NewsListProps,
     PageHeaderProps,
+    ProductListProps,
     ScheduleTableProps,
+    ShopListProps,
     WeatherComponentType,
 } from '@fesp/schema'
 
+import { ArtistListPropsForm } from './ArtistListPropsForm'
+import { BlogListPropsForm } from './BlogListPropsForm'
 import { ContentListPropsForm } from './ContentListPropsForm'
 import { CoverImagePropsForm } from './CoverImagePropsForm'
 import { MainHeroPropsForm } from './MainHeroPropsForm'
 import { NewsListPropsForm } from './NewsListPropsForm'
 import { PageHeaderPropsForm } from './PageHeaderPropsForm'
+import { ProductListPropsForm } from './ProductListPropsForm'
 import { ScheduleTablePropsForm } from './ScheduleTablePropsForm'
+import { ShopListPropsForm } from './ShopListPropsForm'
 
 /** props をサイドパネルで編集する、独自コンポーネントのブロック */
 export type ComponentBlock =
     | { id: string; type: 'pageHeader'; props: PageHeaderProps }
     | { id: string; type: 'scheduleTable'; props: ScheduleTableProps }
-    | { id: string; type: 'newsList'; props: NewsListProps }
-    | { id: string; type: 'coverImage'; props: CoverImageProps }
+    | { id: string; type: 'shopList'; props: ShopListProps }
+    | { id: string; type: 'productList'; props: ProductListProps }
+    | { id: string; type: 'artistList'; props: ArtistListProps }
     | { id: string; type: 'mainHero'; props: MainHeroProps }
     | { id: string; type: 'contentList'; props: ContentListProps }
-    | { id: string; type: 'map' | 'postSummary' | 'adjacentPosts' | 'weatherBar'; props: EmptyComponentProps }
+    | { id: string; type: 'newsList'; props: NewsListProps }
+    | { id: string; type: 'coverImage'; props: CoverImageProps }
+    | { id: string; type: 'blogList'; props: BlogListProps }
+    | {
+          id: string
+          type:
+              | 'weatherBar'
+              | 'shopSummary'
+              | 'artistSummary'
+              | 'setList'
+              | 'map'
+              | 'postSummary'
+              | 'adjacentPosts'
+              | 'relatedPosts'
+          props: EmptyComponentProps
+      }
     | { id: string; type: WeatherComponentType; props: EmptyComponentProps }
 
 /**
@@ -55,14 +79,21 @@ const componentPanels: {
             <ScheduleTablePropsForm defaultValues={block.props} onValidChange={onChange} />
         ),
     },
-    newsList: {
-        name: 'お知らせ一覧',
-        renderForm: (block, onChange) => <NewsListPropsForm defaultValues={block.props} onValidChange={onChange} />,
+    shopList: {
+        name: '模擬店一覧',
+        renderForm: (block, onChange) => <ShopListPropsForm defaultValues={block.props} onValidChange={onChange} />,
     },
-    coverImage: {
-        name: '記事の画像',
-        renderForm: (block, onChange) => <CoverImagePropsForm defaultValues={block.props} onValidChange={onChange} />,
+    productList: {
+        name: '商品一覧',
+        renderForm: (block, onChange) => <ProductListPropsForm defaultValues={block.props} onValidChange={onChange} />,
     },
+    shopSummary: { name: '模擬店のサマリー' },
+    artistList: {
+        name: '出演者一覧',
+        renderForm: (block, onChange) => <ArtistListPropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
+    artistSummary: { name: '出演者のサマリー' },
+    setList: { name: 'セットリスト' },
     mainHero: {
         name: 'メインスライダー',
         renderForm: (block, onChange) => <MainHeroPropsForm defaultValues={block.props} onValidChange={onChange} />,
@@ -71,10 +102,23 @@ const componentPanels: {
         name: 'その他のコンテンツ',
         renderForm: (block, onChange) => <ContentListPropsForm defaultValues={block.props} onValidChange={onChange} />,
     },
-    map: { name: 'マップ' },
     weatherBar: { name: '日付・天気の帯' },
+    newsList: {
+        name: 'お知らせ一覧',
+        renderForm: (block, onChange) => <NewsListPropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
+    coverImage: {
+        name: '記事の画像',
+        renderForm: (block, onChange) => <CoverImagePropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
+    blogList: {
+        name: 'ブログ一覧',
+        renderForm: (block, onChange) => <BlogListPropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
+    map: { name: 'マップ' },
     postSummary: { name: '記事のサマリー' },
     adjacentPosts: { name: '前後の記事' },
+    relatedPosts: { name: '関連する記事' },
     todayWeather: { name: '今日の天気' },
     weeklyForecast: { name: '週間予報' },
     weatherAlert: { name: '気象警報・注意報' },

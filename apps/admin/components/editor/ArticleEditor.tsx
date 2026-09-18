@@ -23,17 +23,25 @@ import { components as shadcnComponents, ShadCNComponentsContext, ShadCNDefaultC
 import '@blocknote/shadcn/style.css'
 import {
     ArrowLeftRight,
+    BookOpen,
     CalendarClock,
     CalendarDays,
     CloudSun,
+    Files,
     FileText,
     ImageIcon,
     Images,
+    Info,
     LayoutGrid,
+    ListMusic,
     MapIcon,
+    Mic,
+    Music,
     Newspaper,
     PanelTop,
     RefreshCw,
+    ShoppingBag,
+    Store,
     Sun,
     Thermometer,
     TriangleAlert,
@@ -44,6 +52,9 @@ import { createHighlighter } from 'shiki'
 import type { ArticleDocument } from '@fesp/schema'
 
 import { createAdjacentPostsBlock } from './blocks/AdjacentPostsBlock'
+import { createArtistListBlock } from './blocks/ArtistListBlock'
+import { createArtistSummaryBlock } from './blocks/ArtistSummaryBlock'
+import { createBlogListBlock } from './blocks/BlogListBlock'
 import { createCalloutBlock } from './blocks/CalloutBlock'
 import { createContentListBlock } from './blocks/ContentListBlock'
 import { createCoverImageBlock } from './blocks/CoverImageBlock'
@@ -52,7 +63,12 @@ import { createMapBlock } from './blocks/MapBlock'
 import { createNewsListBlock } from './blocks/NewsListBlock'
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
 import { createPostSummaryBlock } from './blocks/PostSummaryBlock'
+import { createProductListBlock } from './blocks/ProductListBlock'
+import { createRelatedPostsBlock } from './blocks/RelatedPostsBlock'
 import { createScheduleTableBlock } from './blocks/ScheduleTableBlock'
+import { createSetListBlock } from './blocks/SetListBlock'
+import { createShopListBlock } from './blocks/ShopListBlock'
+import { createShopSummaryBlock } from './blocks/ShopSummaryBlock'
 import { createTodayWeatherBlock } from './blocks/TodayWeatherBlock'
 import { createWbgtBlock } from './blocks/WbgtBlock'
 import { createWeatherAlertBlock } from './blocks/WeatherAlertBlock'
@@ -107,19 +123,27 @@ export const articleSchema = BlockNoteSchema.create({
         pageHeader: createPageHeaderBlock(),
         scheduleTable: createScheduleTableBlock(),
         map: createMapBlock(),
+        shopList: createShopListBlock(),
+        shopSummary: createShopSummaryBlock(),
+        productList: createProductListBlock(),
+        artistList: createArtistListBlock(),
+        artistSummary: createArtistSummaryBlock(),
+        setList: createSetListBlock(),
+        mainHero: createMainHeroBlock(),
+        weatherBar: createWeatherBarBlock(),
+        contentList: createContentListBlock(),
         newsList: createNewsListBlock(),
         coverImage: createCoverImageBlock(),
         postSummary: createPostSummaryBlock(),
         adjacentPosts: createAdjacentPostsBlock(),
+        blogList: createBlogListBlock(),
+        relatedPosts: createRelatedPostsBlock(),
         todayWeather: createTodayWeatherBlock(),
         weeklyForecast: createWeeklyForecastBlock(),
         weatherAlert: createWeatherAlertBlock(),
         wbgt: createWbgtBlock(),
         weatherOverview: createWeatherOverviewBlock(),
         weatherCredit: createWeatherCreditBlock(),
-        mainHero: createMainHeroBlock(),
-        weatherBar: createWeatherBarBlock(),
-        contentList: createContentListBlock(),
     },
 })
 
@@ -153,6 +177,69 @@ const componentSlashMenuItems: {
         icon: <MapIcon />,
     },
     {
+        type: 'shopList',
+        title: '模擬店一覧',
+        subtext: '日付・検索・タグで絞り込める模擬店の一覧',
+        aliases: ['shoplist', 'shop', 'mogiten', 'もぎてん', '模擬店'],
+        icon: <Store />,
+    },
+    {
+        type: 'shopSummary',
+        title: '模擬店のサマリー',
+        subtext: '表示中の模擬店の Day・団体・店名・時間・場所',
+        aliases: ['shopsummary', 'shop', 'mogiten', 'もぎてん', 'sama', 'さまりー'],
+        icon: <Info />,
+    },
+    {
+        type: 'productList',
+        title: '商品一覧',
+        subtext: '表示中の模擬店の商品（メニュー）の一覧',
+        aliases: ['productlist', 'product', 'menu', 'syouhin', 'しょうひん', 'めにゅー'],
+        icon: <ShoppingBag />,
+    },
+    {
+        type: 'artistList',
+        title: '出演者一覧',
+        subtext: '日付・検索・タグで絞り込める出演者の一覧',
+        aliases: ['artistlist', 'artist', 'syutuensya', 'しゅつえんしゃ', '出演者'],
+        icon: <Music />,
+    },
+    {
+        type: 'artistSummary',
+        title: '出演者のサマリー',
+        subtext: '表示中の出演者の Day・団体・演目・出演日時・会場・人数',
+        aliases: ['artistsummary', 'artist', 'summary', 'しゅつえんしゃ', '出演者'],
+        icon: <Mic />,
+    },
+    {
+        type: 'setList',
+        title: 'セットリスト',
+        subtext: '表示中の出演者のセットリスト',
+        aliases: ['setlist', 'setto', 'セトリ', 'せっとりすと'],
+        icon: <ListMusic />,
+    },
+    {
+        type: 'mainHero',
+        title: 'メインスライダー',
+        subtext: '画像・キャッチ・タイトルのスライダー',
+        aliases: ['mainhero', 'hero', 'slider', 'suraida', 'スライダー'],
+        icon: <Images />,
+    },
+    {
+        type: 'weatherBar',
+        title: '日付・天気の帯',
+        subtext: '今日の日付と天気（押すと天気ページへ）',
+        aliases: ['weatherbar', 'weather', 'tenki', 'てんき', 'hiduke', 'ひづけ'],
+        icon: <CloudSun />,
+    },
+    {
+        type: 'contentList',
+        title: 'その他のコンテンツ',
+        subtext: '各ページへのリンクのグリッド',
+        aliases: ['contentlist', 'link', 'rinku', 'リンク', 'kontentsu', 'コンテンツ'],
+        icon: <LayoutGrid />,
+    },
+    {
         type: 'newsList',
         title: 'お知らせ一覧',
         subtext: 'タグで絞り込めるお知らせの一覧',
@@ -179,6 +266,20 @@ const componentSlashMenuItems: {
         subtext: '前の記事・次の記事へのリンク',
         aliases: ['adjacentposts', 'zengo', 'ぜんご'],
         icon: <ArrowLeftRight />,
+    },
+    {
+        type: 'blogList',
+        title: 'ブログ一覧',
+        subtext: 'タグで絞り込めるブログの一覧',
+        aliases: ['bloglist', 'blog', 'burogu', 'ぶろぐ'],
+        icon: <BookOpen />,
+    },
+    {
+        type: 'relatedPosts',
+        title: '関連する記事',
+        subtext: '表示中の記事に関連する記事のリスト',
+        aliases: ['relatedposts', 'related', 'kanren', 'かんれん'],
+        icon: <Files />,
     },
     {
         type: 'todayWeather',
@@ -221,27 +322,6 @@ const componentSlashMenuItems: {
         subtext: '天気の更新時刻と出典（気象庁）',
         aliases: ['weathercredit', 'weather', 'tenki', 'てんき', 'syutten', 'しゅってん'],
         icon: <RefreshCw />,
-    },
-    {
-        type: 'mainHero',
-        title: 'メインスライダー',
-        subtext: '画像・キャッチ・タイトルのスライダー',
-        aliases: ['mainhero', 'hero', 'slider', 'suraida', 'スライダー'],
-        icon: <Images />,
-    },
-    {
-        type: 'weatherBar',
-        title: '日付・天気の帯',
-        subtext: '今日の日付と天気（押すと天気ページへ）',
-        aliases: ['weatherbar', 'weather', 'tenki', 'てんき', 'hiduke', 'ひづけ'],
-        icon: <CloudSun />,
-    },
-    {
-        type: 'contentList',
-        title: 'その他のコンテンツ',
-        subtext: '各ページへのリンクのグリッド',
-        aliases: ['contentlist', 'link', 'rinku', 'リンク', 'kontentsu', 'コンテンツ'],
-        icon: <LayoutGrid />,
     },
 ]
 
