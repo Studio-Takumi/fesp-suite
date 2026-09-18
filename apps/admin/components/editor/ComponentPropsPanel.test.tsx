@@ -311,6 +311,51 @@ describe('ComponentPropsPanel（商品一覧）', () => {
     })
 })
 
+describe('ComponentPropsPanel（出演者一覧）', () => {
+    const block = {
+        id: '1',
+        type: 'artistList',
+        props: { showDateTabs: true, showSearch: false, showSort: true, showTagTabs: true, tags: 'dance' },
+    } as const
+
+    it('コンポーネント名と、ブロックの props を初期値にした入力欄を出す', async () => {
+        render(<ComponentPropsPanel block={block} onChange={vi.fn()} />)
+
+        expect(screen.getByRole('heading', { name: '出演者一覧' })).toBeInTheDocument()
+        expect(screen.getByRole('switch', { name: '日付タブを出す' })).toBeChecked()
+        expect(screen.getByRole('switch', { name: '検索を出す' })).not.toBeChecked()
+        expect(screen.getByRole('switch', { name: '並び替えを出す' })).toBeChecked()
+        expect(screen.getByRole('switch', { name: 'タグタブを出す' })).toBeChecked()
+        expect(await screen.findByRole('checkbox', { name: 'ダンス' })).toBeChecked()
+        expect(screen.getByRole('checkbox', { name: 'バンド' })).not.toBeChecked()
+    })
+
+    it('タグを選ぶと、タグの一覧の順に ID をカンマ区切りにして渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        await user.click(await screen.findByRole('checkbox', { name: 'バンド' }))
+        expect(onChange).toHaveBeenLastCalledWith({ ...block.props, tags: 'band,dance' })
+
+        await user.click(screen.getByRole('checkbox', { name: 'ダンス' }))
+        expect(onChange).toHaveBeenLastCalledWith({ ...block.props, tags: 'band' })
+    })
+
+    it('スイッチを切り替えると渡し、タグタブを出さない間はタグを選べない', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        render(<ComponentPropsPanel block={block} onChange={onChange} />)
+
+        await user.click(screen.getByRole('switch', { name: '検索を出す' }))
+        expect(onChange).toHaveBeenLastCalledWith({ ...block.props, showSearch: true })
+
+        await user.click(screen.getByRole('switch', { name: 'タグタブを出す' }))
+        expect(onChange).toHaveBeenLastCalledWith({ ...block.props, showSearch: true, showTagTabs: false })
+        expect(await screen.findByRole('checkbox', { name: 'ダンス' })).toBeDisabled()
+    })
+})
+
 describe('ComponentPropsPanel（props を持たないコンポーネント）', () => {
     it('コンポーネント名の下に「設定する項目はありません」と出す', () => {
         const { rerender } = render(

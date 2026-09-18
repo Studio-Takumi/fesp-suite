@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { ArticleBlock, ArticleDocument, ArticleStyles } from '@fesp/schema'
 
+import { type Artist, mockArtists } from '~/lib/mock/artist'
 import { mockBlogPosts } from '~/lib/mock/blog'
 import { mockNewsPosts, type NewsPost } from '~/lib/mock/news'
 import { mockCurrentShop, mockShops } from '~/lib/mock/shop'
@@ -67,6 +68,31 @@ const shopList = (props: Record<string, unknown> = {}) =>
     })
 
 const productList = (props: Record<string, unknown> = {}) => componentBlock('productList', { products: '', ...props })
+
+const artistList = (props: Record<string, unknown> = {}) =>
+    componentBlock('artistList', {
+        showDateTabs: false,
+        showSearch: false,
+        showSort: false,
+        showTagTabs: false,
+        tags: '',
+        ...props,
+    })
+
+const artist = (id: string, name: string, startsAt: string): Artist => ({
+    id,
+    name,
+    program: '有志ステージ',
+    group: '有志',
+    day: 1,
+    starts_at: startsAt,
+    ends_at: startsAt,
+    venue: '中庭ステージ',
+    member_count: 3,
+    tags: [],
+})
+
+const artistNames = () => screen.getAllByRole('listitem').map((item) => within(item).getByRole('heading').textContent)
 
 const newsPost = (id: string, title: string, tagIds: string[]): NewsPost => ({
     id,
@@ -717,6 +743,231 @@ describe('ArticleRenderer', () => {
         expect(await screen.findByRole('heading', { name: '商品はまだありません' })).toBeInTheDocument()
         expect(screen.getByText('商品が登録されると、ここに表示されます。')).toBeInTheDocument()
         expect(screen.queryByRole('list')).not.toBeInTheDocument()
+    })
+
+    it('天気のブロック（今日・週間予報・警報・暑さ指数・概況・更新時刻と出典）を天気のデータから描画する', () => {
+        const queryClient = createTestQueryClient()
+        queryClient.setQueryData(weatherQuery().queryKey, createMockWeather())
+
+        renderWithQueryClient(
+            <ArticleRenderer
+                blocks={(
+                    [
+                        'todayWeather',
+                        'weeklyForecast',
+                        'weatherAlert',
+                        'wbgt',
+                        'weatherOverview',
+                        'weatherCredit',
+                    ] as const
+                ).map((type) => ({ id: type, type, props: {}, children: [] }))}
+            />,
+            queryClient,
+        )
+
+        expect(screen.getByRole('region', { name: '今日の天気' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2, name: '週間予報' })).toBeInTheDocument()
+        expect(screen.getByRole('region', { name: '気象警報・注意報' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2, name: '暑さ指数（WBGT）' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2, name: '今日の天気概況' })).toBeInTheDocument()
+        expect(screen.getByText(/更新 ・ 出典: 気象庁/)).toBeInTheDocument()
+    })
+
+    it('スケジュール表は日付タブと会場ごとのタイムテーブルを出す（仮データ）', async () => {
+        renderWithQuery([{ id: '1', type: 'scheduleTable', props: { showDateTabs: true }, children: [] }])
+
+        expect(await screen.findByRole('tablist', { name: '日付' })).toBeInTheDocument()
+        expect(screen.getByRole('region', { name: 'スケジュール' })).toContainElement(
+            screen.getByRole('list', { name: '体育館' }),
+        )
+    })
+
+    it('マップは地図の領域とボトムシートの場所の一覧を出し、そのあとのブロックの描画を続ける', async () => {
+        renderWithQuery([
+            { id: '1', type: 'map', props: {}, children: [] },
+            block('2', 'paragraph', [text('続きの段落')]),
+        ])
+
+        expect(screen.getByRole('region', { name: 'マップ' })).toHaveClass('h-dvh')
+        expect(screen.getByRole('searchbox', { name: '場所・模擬店を検索' })).toBeInTheDocument()
+        expect(await screen.findByRole('list', { name: '場所の一覧' })).toBeInTheDocument()
+        expect(screen.getByText('続きの段落')).toBeInTheDocument()
+    })
+
+    it('注意書きは種類ごとの見出し・色の枠に本文を出す', () => {
+        const callout = (id: string, variant: string, value: string): ArticleBlock => ({
+            id,
+            type: 'callout',
+            props: { variant },
+            content: [text(value)],
+            children: [],
+        })
+        renderBlocks([
+            callout('1', 'info', '入場は無料です'),
+            callout('2', 'caution', '現金のみです'),
+            callout('3', 'warning', '火気厳禁です'),
+        ])
+
+        const info = screen.getByRole('note', { name: '情報' })
+        expect(info).toHaveClass('bg-emerald-50', 'border-emerald-300')
+        expect(within(info).getByText('情報')).toHaveClass('font-bold', 'text-emerald-800')
+        expect(info).toHaveTextContent('入場は無料です')
+
+        const caution = screen.getByRole('note', { name: '注意' })
+        expect(caution).toHaveClass('bg-amber-50', 'border-amber-300')
+        expect(within(caution).getByText('注意')).toHaveClass('text-amber-800')
+        expect(caution).toHaveTextContent('現金のみです')
+
+        const warning = screen.getByRole('note', { name: '警告' })
+        expect(warning).toHaveClass('bg-red-50', 'border-red-300')
+        expect(within(warning).getByText('警告')).toHaveClass('text-red-800')
+        expect(warning).toHaveTextContent('火気厳禁です')
+    })
+
+    it('注意書きの子ブロックは1段下げずに枠の中に出し、本文が空なら本文の行を出さない', () => {
+        renderBlocks([
+            {
+                id: '1',
+                type: 'callout',
+                props: { variant: 'caution' },
+                content: [],
+                children: [
+                    block('1-1', 'bulletListItem', [text('整理券を配ることがあります')]),
+                    block('1-2', 'bulletListItem', [text('値段が変わることがあります')]),
+                ],
+            },
+            block('2', 'paragraph', [text('枠の外')]),
+        ])
+
+        const note = screen.getByRole('note', { name: '注意' })
+        expect(within(note).getAllByRole('listitem')).toHaveLength(2)
+        expect(within(note).getByRole('list').parentElement).not.toHaveClass('pl-6')
+        expect(note.querySelector('p')).not.toBeInTheDocument()
+        expect(note).not.toHaveTextContent('枠の外')
+    })
+
+    it('出演者一覧はカードを出演の早い順に並べ、カードは出演者へのリンクにする', async () => {
+        renderWithQuery([artistList()])
+
+        const rows = await screen.findAllByRole('listitem')
+        expect(rows).toHaveLength(mockArtists.length)
+        const first = within(rows[0]!)
+        expect(first.getByRole('link')).toHaveAttribute('href', '/artists/artist-1')
+        expect(first.getAllByText('ソラノネ')).toHaveLength(2)
+        expect(first.getByText('アコースティックライブ')).toBeInTheDocument()
+        expect(first.getByText('Day1')).toBeInTheDocument()
+        expect(first.getByText('軽音楽部')).toBeInTheDocument()
+        expect(first.getByText('10:20 - 11:00')).toBeInTheDocument()
+        expect(first.getByText('体育館ステージ')).toBeInTheDocument()
+        expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
+        expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
+        expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+    })
+
+    it('出演者一覧は「すべて」と出演する日のタブを出し、日で絞り込む', async () => {
+        const user = userEvent.setup()
+        renderWithQuery([artistList({ showDateTabs: true })])
+
+        const tabs = await screen.findAllByRole('tab')
+        expect(tabs.map((tab) => tab.textContent)).toEqual(['すべて', 'Day16/6(土)', 'Day26/7(日)'])
+        expect(screen.getByRole('tab', { name: 'すべて' })).toHaveAttribute('aria-selected', 'true')
+
+        await user.click(tabs[2]!)
+
+        expect(tabs[2]!).toHaveAttribute('aria-selected', 'true')
+        expect(screen.getAllByRole('listitem')).toHaveLength(3)
+    })
+
+    it('出演者一覧は検索の文字で出演者名・演目・団体名を絞り込む', async () => {
+        const user = userEvent.setup()
+        renderWithQuery([artistList({ showSearch: true })])
+
+        expect(await screen.findAllByRole('listitem')).toHaveLength(mockArtists.length)
+
+        await user.type(screen.getByRole('searchbox', { name: '出演者・演目で検索' }), ' ダンス ')
+
+        expect(artistNames()).toEqual(['ダンス部'])
+    })
+
+    it('出演者一覧は並び替えで出演順・名前順を切り替える', async () => {
+        const user = userEvent.setup()
+        renderWithQuery(
+            [artistList({ showSort: true })],
+            [
+                [
+                    queryKeys.artists,
+                    [
+                        artist('a', 'サクラ', '2026-06-06T10:00:00+09:00'),
+                        artist('b', 'カエデ', '2026-06-06T11:00:00+09:00'),
+                        artist('c', 'アオイ', '2026-06-06T12:00:00+09:00'),
+                    ],
+                ],
+            ],
+        )
+
+        expect(await screen.findAllByRole('listitem')).toHaveLength(3)
+        expect(artistNames()).toEqual(['サクラ', 'カエデ', 'アオイ'])
+
+        await user.selectOptions(screen.getByRole('combobox', { name: '並び替え' }), '名前順')
+
+        expect(artistNames()).toEqual(['アオイ', 'カエデ', 'サクラ'])
+    })
+
+    it('出演者一覧は「すべて」と選んだタグのタブを出し、タブで絞り込む', async () => {
+        const user = userEvent.setup()
+        renderWithQuery([artistList({ showTagTabs: true, tags: 'dance,band,unknown' })])
+
+        const tabs = await screen.findAllByRole('tab')
+        // 並びはタグの一覧の順。タグの一覧に無い ID は出さない
+        expect(tabs.map((tab) => tab.textContent)).toEqual(['すべて', 'バンド', 'ダンス'])
+
+        await user.click(screen.getByRole('tab', { name: 'ダンス' }))
+
+        expect(artistNames()).toEqual(['ハルカゼ団', 'ダンス部'])
+    })
+
+    it('出演者一覧はタグタブを出す設定でも、タグを選んでいなければタブを出さない', async () => {
+        renderWithQuery([artistList({ showTagTabs: true, tags: '' })])
+
+        expect(await screen.findAllByRole('listitem')).toHaveLength(mockArtists.length)
+        expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
+    })
+
+    it('出演者一覧は0件なら空状態を出す', async () => {
+        renderWithQuery([artistList({ showDateTabs: true })], [[queryKeys.artists, []]])
+
+        expect(await screen.findByRole('heading', { name: '出演者はまだありません' })).toBeInTheDocument()
+        expect(screen.getByText('出演者が公開されると、ここに表示されます。')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: '再読み込み' })).toBeInTheDocument()
+        expect(screen.queryByRole('list')).not.toBeInTheDocument()
+    })
+
+    it('出演者のサマリーは Day・団体・演目・出演日時・会場・人数と、スケジュール・マップへのボタンを出す', async () => {
+        renderWithQuery([componentBlock('artistSummary')])
+
+        expect(await screen.findByRole('heading', { level: 1, name: 'ソラノネ' })).toBeInTheDocument()
+        expect(screen.getByText('Day1')).toBeInTheDocument()
+        expect(screen.getByText('軽音楽部')).toBeInTheDocument()
+        expect(screen.getByText('アコースティックライブ')).toBeInTheDocument()
+        expect(screen.getByText('1日目 10:20 - 11:00')).toBeInTheDocument()
+        expect(screen.getByText('体育館ステージ')).toBeInTheDocument()
+        expect(screen.getByText('5名')).toBeInTheDocument()
+        expect(screen.getByRole('link', { name: 'スケジュールで見る' })).toHaveAttribute('href', '/schedule')
+        expect(screen.getByRole('link', { name: '会場をマップで見る' })).toHaveAttribute('href', '/map')
+    })
+
+    it('セットリストは曲名と原曲のアーティストを順番に並べ、曲が無ければ何も出さない', async () => {
+        const { unmount } = renderWithQuery([componentBlock('setList')])
+
+        expect(await screen.findByRole('heading', { level: 2, name: 'セットリスト' })).toBeInTheDocument()
+        const songs = screen.getAllByRole('listitem')
+        expect(songs).toHaveLength(4)
+        expect(songs[0]).toHaveTextContent('1Take the A TrainDuke Ellington')
+        expect(songs[3]).toHaveTextContent('4情熱大陸葉加瀬太郎')
+        unmount()
+
+        renderWithQuery([componentBlock('setList')], [[queryKeys.setList, []]])
+        expect(screen.queryByRole('heading', { name: 'セットリスト' })).not.toBeInTheDocument()
     })
 
     it('天気のブロック（今日・週間予報・警報・暑さ指数・概況・更新時刻と出典）を天気のデータから描画する', () => {

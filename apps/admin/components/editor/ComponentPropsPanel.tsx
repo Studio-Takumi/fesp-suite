@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 
 import type {
+    ArtistListProps,
     BlogListProps,
     CoverImageProps,
     EmptyComponentProps,
@@ -14,6 +15,7 @@ import type {
     WeatherComponentType,
 } from '@fesp/schema'
 
+import { ArtistListPropsForm } from './ArtistListPropsForm'
 import { BlogListPropsForm } from './BlogListPropsForm'
 import { CoverImagePropsForm } from './CoverImagePropsForm'
 import { NewsListPropsForm } from './NewsListPropsForm'
@@ -28,12 +30,13 @@ export type ComponentBlock =
     | { id: string; type: 'scheduleTable'; props: ScheduleTableProps }
     | { id: string; type: 'shopList'; props: ShopListProps }
     | { id: string; type: 'productList'; props: ProductListProps }
+    | { id: string; type: 'artistList'; props: ArtistListProps }
     | { id: string; type: 'newsList'; props: NewsListProps }
     | { id: string; type: 'coverImage'; props: CoverImageProps }
     | { id: string; type: 'blogList'; props: BlogListProps }
     | {
           id: string
-          type: 'shopSummary' | 'map' | 'postSummary' | 'adjacentPosts' | 'relatedPosts'
+          type: 'shopSummary' | 'artistSummary' | 'setList' | 'map' | 'postSummary' | 'adjacentPosts' | 'relatedPosts'
           props: EmptyComponentProps
       }
     | { id: string; type: WeatherComponentType; props: EmptyComponentProps }
@@ -71,6 +74,12 @@ const componentPanels: {
         renderForm: (block, onChange) => <ProductListPropsForm defaultValues={block.props} onValidChange={onChange} />,
     },
     shopSummary: { name: '模擬店のサマリー' },
+    artistList: {
+        name: '出演者一覧',
+        renderForm: (block, onChange) => <ArtistListPropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
+    artistSummary: { name: '出演者のサマリー' },
+    setList: { name: 'セットリスト' },
     newsList: {
         name: 'お知らせ一覧',
         renderForm: (block, onChange) => <NewsListPropsForm defaultValues={block.props} onValidChange={onChange} />,

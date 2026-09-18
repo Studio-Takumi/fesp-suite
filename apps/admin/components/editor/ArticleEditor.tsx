@@ -30,7 +30,10 @@ import {
     FileText,
     ImageIcon,
     Info,
+    ListMusic,
     MapIcon,
+    Mic,
+    Music,
     Newspaper,
     PanelTop,
     RefreshCw,
@@ -46,6 +49,8 @@ import { createHighlighter } from 'shiki'
 import type { ArticleDocument } from '@fesp/schema'
 
 import { createAdjacentPostsBlock } from './blocks/AdjacentPostsBlock'
+import { createArtistListBlock } from './blocks/ArtistListBlock'
+import { createArtistSummaryBlock } from './blocks/ArtistSummaryBlock'
 import { createBlogListBlock } from './blocks/BlogListBlock'
 import { createCalloutBlock } from './blocks/CalloutBlock'
 import { createCoverImageBlock } from './blocks/CoverImageBlock'
@@ -56,6 +61,7 @@ import { createPostSummaryBlock } from './blocks/PostSummaryBlock'
 import { createProductListBlock } from './blocks/ProductListBlock'
 import { createRelatedPostsBlock } from './blocks/RelatedPostsBlock'
 import { createScheduleTableBlock } from './blocks/ScheduleTableBlock'
+import { createSetListBlock } from './blocks/SetListBlock'
 import { createShopListBlock } from './blocks/ShopListBlock'
 import { createShopSummaryBlock } from './blocks/ShopSummaryBlock'
 import { createTodayWeatherBlock } from './blocks/TodayWeatherBlock'
@@ -114,6 +120,9 @@ export const articleSchema = BlockNoteSchema.create({
         shopList: createShopListBlock(),
         shopSummary: createShopSummaryBlock(),
         productList: createProductListBlock(),
+        artistList: createArtistListBlock(),
+        artistSummary: createArtistSummaryBlock(),
+        setList: createSetListBlock(),
         newsList: createNewsListBlock(),
         coverImage: createCoverImageBlock(),
         postSummary: createPostSummaryBlock(),
@@ -178,6 +187,27 @@ const componentSlashMenuItems: {
         subtext: '表示中の模擬店の商品（メニュー）の一覧',
         aliases: ['productlist', 'product', 'menu', 'syouhin', 'しょうひん', 'めにゅー'],
         icon: <ShoppingBag />,
+    },
+    {
+        type: 'artistList',
+        title: '出演者一覧',
+        subtext: '日付・検索・タグで絞り込める出演者の一覧',
+        aliases: ['artistlist', 'artist', 'syutuensya', 'しゅつえんしゃ', '出演者'],
+        icon: <Music />,
+    },
+    {
+        type: 'artistSummary',
+        title: '出演者のサマリー',
+        subtext: '表示中の出演者の Day・団体・演目・出演日時・会場・人数',
+        aliases: ['artistsummary', 'artist', 'summary', 'しゅつえんしゃ', '出演者'],
+        icon: <Mic />,
+    },
+    {
+        type: 'setList',
+        title: 'セットリスト',
+        subtext: '表示中の出演者のセットリスト',
+        aliases: ['setlist', 'setto', 'セトリ', 'せっとりすと'],
+        icon: <ListMusic />,
     },
     {
         type: 'newsList',

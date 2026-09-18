@@ -15,6 +15,7 @@ import {
 
 import { adminFetch } from './api'
 import { env } from './env'
+import { mockArtistTags } from './mock/artist'
 import { mockBlogTags } from './mock/blog'
 import { mockNewsTags } from './mock/news'
 import { mockShopProducts, mockShopTags } from './mock/shop'
@@ -28,6 +29,7 @@ export const queryKeys = {
     articles: ['articles'] as const,
     article: (id: string) => ['articles', id] as const,
     newsTags: ['news', 'tags'] as const,
+    artistTags: ['artists', 'tags'] as const,
     shopTags: ['shops', 'tags'] as const,
     shopProducts: ['shops', 'current', 'products'] as const,
     blogTags: ['blogs', 'tags'] as const,
@@ -95,6 +97,13 @@ export const shopProductsQuery = () =>
     queryOptions({
         queryKey: queryKeys.shopProducts,
         queryFn: () => Promise.resolve(mockShopProducts),
+    })
+
+/** 出演者のタグ。API ができるまで仮データ（lib/mock/artist.ts）を返す。API ができたら queryFn を差し替える（#60） */
+export const artistTagsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.artistTags,
+        queryFn: () => Promise.resolve(mockArtistTags),
     })
 
 export function useCreateArticle() {

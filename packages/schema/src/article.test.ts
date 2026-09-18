@@ -864,6 +864,59 @@ describe('parseShopListTags / parseProductListIds', () => {
     })
 })
 
+describe('articleDocumentSchema の出演者一覧（artistList）', () => {
+    const props = { showDateTabs: true, showSearch: true, showSort: true, showTagTabs: true, tags: 'band,dance' }
+
+    it('日付タブ・検索・並び替え・タグタブ・タグを受理する（JSONを経由してcontentキーが消えていてもよい）', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('artistList', props)).success).toBe(true)
+        expect(
+            articleDocumentSchema.safeParse([{ id: '1', type: 'artistList', props, content: undefined, children: [] }])
+                .success,
+        ).toBe(true)
+    })
+
+    it('挿入した直後（タグ未選択）を受理する', () => {
+        expect(articleDocumentSchema.safeParse(componentBlock('artistList', { ...props, tags: '' })).success).toBe(true)
+    })
+
+    it('タグが空の ID を含む（カンマが続く・端にある）と拒否する', () => {
+        for (const tags of [',', 'band,', ',band', 'band,,dance']) {
+            expect(articleDocumentSchema.safeParse(componentBlock('artistList', { ...props, tags })).success).toBe(
+                false,
+            )
+        }
+    })
+
+    it('props が欠けている・型が違う・知らない props があれば拒否する', () => {
+        expect(
+            articleDocumentSchema.safeParse(componentBlock('artistList', { ...props, showSearch: undefined })).success,
+        ).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse(componentBlock('artistList', { ...props, showDateTabs: 'true' })).success,
+        ).toBe(false)
+        expect(
+            articleDocumentSchema.safeParse(componentBlock('artistList', { ...props, tags: ['band'] })).success,
+        ).toBe(false)
+        expect(articleDocumentSchema.safeParse(componentBlock('artistList', { ...props, limit: 3 })).success).toBe(
+            false,
+        )
+    })
+
+    it('中身（content）を持っていたら拒否する', () => {
+        expect(
+            articleDocumentSchema.safeParse([
+                {
+                    id: '1',
+                    type: 'artistList',
+                    props,
+                    content: [{ type: 'text', text: '出演者', styles: {} }],
+                    children: [],
+                },
+            ]).success,
+        ).toBe(false)
+    })
+})
+
 describe('emptyComponentPropsSchema', () => {
     it('空の props だけ受理する', () => {
         expect(emptyComponentPropsSchema.safeParse({}).success).toBe(true)
