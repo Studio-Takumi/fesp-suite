@@ -84,6 +84,7 @@ const latestHistory = {
 const article = {
     id: ARTICLE_ID,
     event_id: EVENT_ID,
+    slug: null,
     created_by: USER_ID,
     creator: { display_name: '山田太郎' },
     title: '模擬店のお知らせ',
@@ -107,7 +108,7 @@ const articleRow = {
 }
 
 const BASE_COLUMNS =
-    'id, event_id, created_by, creator:users!created_by(display_name), status, published_version, published_at, created_at, updated_at, schedule:article_schedules!article_schedules_article_id_fkey(version, publish_at, created_by, created_at, updated_at)'
+    'id, event_id, slug, created_by, creator:users!created_by(display_name), status, published_version, published_at, created_at, updated_at, schedule:article_schedules!article_schedules_article_id_fkey(version, publish_at, created_by, created_at, updated_at)'
 const ARTICLE_COLUMNS = `${BASE_COLUMNS}, published_history:article_histories!articles_published_version_fkey(title, content), latest_history:article_histories!articles_latest_version_fkey(version, title, content, created_by, created_at, updated_at)`
 const OTHER_USER_ID = '1d2e3f4a-5b6c-4d7e-8f9a-0b1c2d3e4f5a'
 
@@ -162,6 +163,7 @@ beforeEach(() => {
 describe('認証', () => {
     it.each([
         ['GET', '/api/articles?event_id=' + EVENT_ID],
+        ['GET', `/api/articles/slug/news?event_id=${EVENT_ID}`],
         ['GET', `/api/articles/${ARTICLE_ID}`],
         ['POST', '/api/articles'],
         ['PUT', `/api/articles/${ARTICLE_ID}`],
@@ -263,6 +265,46 @@ describe('GET /api/articles', () => {
         const body = (await res.json()) as { error: { code: string; details?: Record<string, string[]> } }
         expect(body.error.code).toBe('bad_request')
         expect(body.error.details?.event_id).toBeDefined()
+        expect(calls).toHaveLength(0)
+    })
+})
+
+describe('GET /api/articles/slug/:slug', () => {
+    it('イベントと slug で絞り込んで、記事1件と同じ形で返す', async () => {
+        result = { data: { ...articleRow, slug: 'news' }, error: null }
+
+        const res = await get(`/api/articles/slug/news?event_id=${EVENT_ID}`)
+
+        expect(res.status).toBe(200)
+        await expect(res.json()).resolves.toEqual({ ...article, slug: 'news' })
+        expect(argsOf('select')).toEqual([[ARTICLE_COLUMNS]])
+        expect(argsOf('eq')).toEqual([
+            ['event_id', EVENT_ID],
+            ['slug', 'news'],
+        ])
+        expect(clientToken).toBe('valid-token')
+    })
+
+    it('その slug の記事が無い（所属していないイベントを含む）と 404', async () => {
+        const res = await get(`/api/articles/slug/news?event_id=${EVENT_ID}`)
+
+        expect(res.status).toBe(404)
+        expect(await errorCodeOf(res)).toBe('not_found')
+    })
+
+    it.each(['News', 'settings'])('slug の形式が合わない（%s）と 400 で、DB を読まない', async (slug) => {
+        const res = await get(`/api/articles/slug/${slug}?event_id=${EVENT_ID}`)
+
+        expect(res.status).toBe(400)
+        expect(await errorCodeOf(res)).toBe('bad_request')
+        expect(calls).toHaveLength(0)
+    })
+
+    it('event_id が無いと 400 で、DB を読まない', async () => {
+        const res = await get('/api/articles/slug/news')
+
+        expect(res.status).toBe(400)
+        expect(await errorCodeOf(res)).toBe('bad_request')
         expect(calls).toHaveLength(0)
     })
 })

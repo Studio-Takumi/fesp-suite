@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 
 import {
     articleCreateInputSchema,
+    articleEventQuerySchema,
     type ArticleHistory,
     articleIdParamSchema,
     articleInputSchema,
@@ -11,6 +12,7 @@ import {
     type ArticleListResponse,
     type ArticleResponse,
     articleScheduleInputSchema,
+    articleSlugParamSchema,
 } from '@fesp/schema'
 import type { Json } from '@fesp/types'
 
@@ -31,7 +33,7 @@ const VERSION_CONFLICT = 'PT409'
  * （読める範囲はそれぞれの RLS。予約は staff にしか読めず、読めなければ null になる）
  */
 const ARTICLE_BASE_COLUMNS =
-    'id, event_id, created_by, creator:users!created_by(display_name), status, published_version, published_at, created_at, updated_at, schedule:article_schedules!article_schedules_article_id_fkey(version, publish_at, created_by, created_at, updated_at)'
+    'id, event_id, slug, created_by, creator:users!created_by(display_name), status, published_version, published_at, created_at, updated_at, schedule:article_schedules!article_schedules_article_id_fkey(version, publish_at, created_by, created_at, updated_at)'
 
 /**
  * 記事オブジェクトの列。タイトル・本文は記事が指す版（公開中の版・最新の版）から埋め込む。
@@ -82,6 +84,11 @@ function selectArticle(supabase: UserClient, id: string) {
     return supabase.from('articles').select(ARTICLE_COLUMNS).eq('id', id).maybeSingle()
 }
 
+/** 記事を1件、slug で読む。slug はイベント内で一意（docs/db.md） */
+function selectArticleBySlug(supabase: UserClient, eventId: string, slug: string) {
+    return supabase.from('articles').select(ARTICLE_COLUMNS).eq('event_id', eventId).eq('slug', slug).maybeSingle()
+}
+
 /**
  * 記事を書き換える DB の関数（保存・予約・予約の取り消し）のあとに、記事を読み直して返す。
  * 関数は staff でない行（RLS で更新できない行）なら false を返すので、そのときは読めるかどうかで 403 と 404 を分ける
@@ -128,6 +135,27 @@ export const articlesRoute = new Hono<AppEnv>()
             offset,
         })
     })
+
+    // `/:id` より先に置く。パスの形が違う（セグメントが2つ）ので、記事IDと取り違えない
+    .get(
+        '/slug/:slug',
+        zValidator('param', articleSlugParamSchema, validationHook),
+        zValidator('query', articleEventQuerySchema, validationHook),
+        async (c) => {
+            const { slug } = c.req.valid('param')
+            const { event_id } = c.req.valid('query')
+
+            const { data, error } = await selectArticleBySlug(
+                createUserClient(c.env, c.get('accessToken')),
+                event_id,
+                slug,
+            )
+            if (error) throw error
+            if (!data) throw notFound('記事が見つかりません')
+
+            return c.json<ArticleResponse>(toArticleResponse(data as ArticleRow))
+        },
+    )
 
     .get('/:id', zValidator('param', articleIdParamSchema, validationHook), async (c) => {
         const { id } = c.req.valid('param')
