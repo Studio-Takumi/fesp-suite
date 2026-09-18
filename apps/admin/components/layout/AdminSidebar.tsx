@@ -120,7 +120,7 @@ export function AdminSidebar() {
                     )}
                 >
                     {isOpen ? <PanelLeftClose size={ICON_SIZE} /> : <PanelLeft size={ICON_SIZE} />}
-                    {isOpen ? <span className='text-sm'>折りたたむ</span> : null}
+                    {isOpen ? <span className='text-sm'>たたむ</span> : null}
                 </button>
             </div>
 
