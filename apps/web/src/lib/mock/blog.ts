@@ -68,7 +68,7 @@ export const mockBlogPosts: BlogPost[] = [
         title: '模擬店の仕込みは前日から始まる',
         excerpt: '当日の朝だけでは間に合わない。前日の調理室をのぞいてきました。',
         author: '広報委員会',
-        image_url: '',
+        image_url: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=1080&q=80',
         published_at: '2026-05-14T09:30:00+09:00',
         tags: [tag('prep'), tag('day')],
     },

@@ -31,6 +31,8 @@ export type ShopProduct = {
 export type Shop = {
     id: string
     name: string
+    /** 模擬店の写真。無ければ空文字（カードは色の枠を出す） */
+    image_url: string
     /** 出している団体（クラス・部活など） */
     group: string
     /** 場所（例: `特別教室A`） */
@@ -57,11 +59,20 @@ export const mockShopTags: ShopTag[] = [
     { id: 'goods', name: '物販' },
 ]
 
-const product = (id: string, name: string, price: number): ShopProduct => ({ id, name, price, image_url: null })
+/** 仮データの写真（Unsplash）。本物のデータ（#59）が入るまでの見本 */
+const photo = (id: string) => `https://images.unsplash.com/${id}?w=1080&q=80`
+
+const product = (id: string, name: string, price: number, photoId?: string): ShopProduct => ({
+    id,
+    name,
+    price,
+    image_url: photoId ? photo(photoId) : null,
+})
 
 export const mockShops: Shop[] = [
     {
         id: 'shop-1',
+        image_url: photo('photo-1527661591475-527312dd65f5'),
         name: 'レモネードスタンド',
         group: '2年1組',
         location: '特別教室A',
@@ -71,14 +82,15 @@ export const mockShops: Shop[] = [
         starts_at: '2026-06-06T09:10:00+09:00',
         ends_at: '2026-06-06T14:30:00+09:00',
         products: [
-            product('product-1', 'レモネード', 200),
-            product('product-2', 'ピンクレモネード', 200),
-            product('product-3', 'はちみつレモン', 150),
-            product('product-4', 'レモンスカッシュ', 250),
+            product('product-1', 'レモネード', 200, 'photo-1621263764928-df1444c5e859'),
+            product('product-2', 'ピンクレモネード', 200, 'photo-1497534446932-c925b458314e'),
+            product('product-3', 'はちみつレモン', 150, 'photo-1600271886742-f049cd451bba'),
+            product('product-4', 'レモンスカッシュ', 250, 'photo-1622483767028-3f66f32aef97'),
         ],
     },
     {
         id: 'shop-2',
+        image_url: photo('photo-1567620905732-2d1ec7ab7445'),
         name: 'クレープ屋さん',
         group: '1年5組',
         location: '1年5組教室',
@@ -88,13 +100,14 @@ export const mockShops: Shop[] = [
         starts_at: '2026-06-06T09:40:00+09:00',
         ends_at: '2026-06-06T15:00:00+09:00',
         products: [
-            product('product-5', 'チョコクレープ', 300),
-            product('product-6', 'いちごクレープ', 350),
-            product('product-7', 'ツナクレープ', 300),
+            product('product-5', 'チョコクレープ', 300, 'photo-1567620905732-2d1ec7ab7445'),
+            product('product-6', 'いちごクレープ', 350, 'photo-1519676867240-f03562e64548'),
+            product('product-7', 'ツナクレープ', 300, 'photo-1558961363-fa8fdf82db35'),
         ],
     },
     {
         id: 'shop-3',
+        image_url: photo('photo-1533900298318-6b8da08a523e'),
         name: '射的横丁',
         group: '3年2組',
         location: '第2校舎 1F',
@@ -103,10 +116,14 @@ export const mockShops: Shop[] = [
         color: 'emerald',
         starts_at: '2026-06-07T10:00:00+09:00',
         ends_at: '2026-06-07T14:00:00+09:00',
-        products: [product('product-8', '射的（5発）', 100), product('product-9', '射的（10発）', 180)],
+        products: [
+            product('product-8', '射的（5発）', 100, 'photo-1530103862676-de8c9debad1d'),
+            product('product-9', '射的（10発）', 180, 'photo-1513151233558-d860c5398176'),
+        ],
     },
     {
         id: 'shop-4',
+        image_url: photo('photo-1524230572899-a752b3835840'),
         name: 'お化け屋敷',
         group: '2年4組',
         location: '本校舎 3F',
@@ -115,10 +132,11 @@ export const mockShops: Shop[] = [
         color: 'sky',
         starts_at: '2026-06-06T09:40:00+09:00',
         ends_at: '2026-06-06T15:00:00+09:00',
-        products: [product('product-10', '入場（1人）', 100)],
+        products: [product('product-10', '入場（1人）', 100, 'photo-1578662996442-48f60103fc96')],
     },
     {
         id: 'shop-5',
+        image_url: photo('photo-1518998053901-5348d3961a04'),
         name: '写真部展示',
         group: '写真部',
         location: '第2校舎 2F',
@@ -131,6 +149,7 @@ export const mockShops: Shop[] = [
     },
     {
         id: 'shop-6',
+        image_url: photo('photo-1523381210434-271e8be1f52b'),
         name: '文化祭Tシャツ',
         group: '文化祭実行委員会',
         location: '本校舎 1F 昇降口',
@@ -139,7 +158,10 @@ export const mockShops: Shop[] = [
         color: 'rose',
         starts_at: '2026-06-07T09:00:00+09:00',
         ends_at: '2026-06-07T15:00:00+09:00',
-        products: [product('product-11', 'Tシャツ', 1200), product('product-12', 'タオル', 800)],
+        products: [
+            product('product-11', 'Tシャツ', 1200, 'photo-1521572163474-6864f9cf17ab'),
+            product('product-12', 'タオル', 800, 'photo-1556905055-8f358a7a47b2'),
+        ],
     },
 ]
 
