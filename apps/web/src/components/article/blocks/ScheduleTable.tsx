@@ -2,9 +2,10 @@ import { useState } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 
-import { cn, dateFormatter } from '@fesp/ui'
+import { dateFormatter } from '@fesp/ui'
 
 import { EmptyState } from '~/components/EmptyState'
+import { DateTabs } from '~/components/list/DateTabs'
 import { QueryBoundary } from '~/components/QueryBoundary'
 import type { ScheduleDay } from '~/lib/mock/schedule'
 import { scheduleQuery } from '~/lib/queries'
@@ -38,7 +39,13 @@ export function ScheduleTable({ block, children }: BlockComponentProps) {
                         return (
                             <div className='flex flex-col gap-3'>
                                 {showDateTabs && days.length > 0 && (
-                                    <DateTabs days={days} selectedIndex={dayIndex} onSelect={setSelectedIndex} />
+                                    <DateTabs
+                                        days={days.map(({ date }, index) => ({ day: index + 1, date }))}
+                                        selected={String(dayIndex + 1)}
+                                        onSelect={(value) => setSelectedIndex(Number(value) - 1)}
+                                        showAll={false}
+                                        align='center'
+                                    />
                                 )}
                                 {day && day.venues.some((venue) => venue.items.length > 0) ? (
                                     <Timetable day={day} />
@@ -56,45 +63,6 @@ export function ScheduleTable({ block, children }: BlockComponentProps) {
             </section>
             {children}
         </>
-    )
-}
-
-type DateTabsProps = {
-    days: ScheduleDay[]
-    selectedIndex: number
-    onSelect: (index: number) => void
-}
-
-function DateTabs({ days, selectedIndex, onSelect }: DateTabsProps) {
-    return (
-        <div role='tablist' aria-label='日付' className='flex justify-center gap-2'>
-            {days.map((day, index) => {
-                const isSelected = index === selectedIndex
-                return (
-                    <button
-                        key={day.date}
-                        type='button'
-                        role='tab'
-                        aria-selected={isSelected}
-                        onClick={() => onSelect(index)}
-                        className={cn(
-                            'flex items-baseline gap-2 rounded-full px-4 py-2',
-                            isSelected ? 'bg-sky-500' : 'bg-slate-100',
-                        )}
-                    >
-                        <span className={cn('text-xs font-bold', isSelected ? 'text-white/80' : 'text-slate-400')}>
-                            Day{index + 1}
-                        </span>
-                        <span className={cn('text-xl font-bold', isSelected ? 'text-white' : 'text-slate-900')}>
-                            {dateFormatter(day.date, 'M/D')}
-                        </span>
-                        <span className={cn('text-xs', isSelected ? 'text-white/80' : 'text-slate-400')}>
-                            {dateFormatter(day.date, '(EEE)')}
-                        </span>
-                    </button>
-                )
-            })}
-        </div>
     )
 }
 

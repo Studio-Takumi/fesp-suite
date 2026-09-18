@@ -2,36 +2,46 @@ import { cn, dateFormatter } from '@fesp/ui'
 
 import { ALL_TAB } from './ListTagTabs'
 
-export type ListDateTab = {
+export type DateTab = {
     /** 開催日の順番（1日目なら `1`） */
     day: number
     /** その日の日付（ISO文字列） */
     date: string
 }
 
-export type ListDateTabsProps = {
-    days: ListDateTab[]
+export type DateTabsProps = {
+    days: DateTab[]
     /** 選んでいる日。「すべて」なら `all`、日を選んでいればその順番の文字列 */
     selected: string
     onSelect: (value: string) => void
+    /** 先頭に「すべて」を出すか */
+    showAll: boolean
+    /** タブの並べ方。`start` は左寄せで横スクロール、`center` は中央寄せ */
+    align?: 'start' | 'center'
 }
 
-/** 一覧の日付のタブ（先頭に「すべて」）。選んでいるタブは水色の塗りに白い文字 */
-export function ListDateTabs({ days, selected, onSelect }: ListDateTabsProps) {
+/** 日付のタブ。選んでいるタブは水色の塗りに白い文字。一覧（先頭に「すべて」）とスケジュール表で使う */
+export function DateTabs({ days, selected, onSelect, showAll, align = 'start' }: DateTabsProps) {
     return (
-        <div role='tablist' aria-label='日付' className='flex gap-2 overflow-x-auto'>
-            <button
-                type='button'
-                role='tab'
-                aria-selected={selected === ALL_TAB}
-                onClick={() => onSelect(ALL_TAB)}
-                className={cn(
-                    'flex h-10 shrink-0 items-center rounded-full px-5 text-sm font-semibold',
-                    selected === ALL_TAB ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-900',
-                )}
-            >
-                すべて
-            </button>
+        <div
+            role='tablist'
+            aria-label='日付'
+            className={cn('flex gap-2', align === 'center' ? 'justify-center' : 'overflow-x-auto')}
+        >
+            {showAll && (
+                <button
+                    type='button'
+                    role='tab'
+                    aria-selected={selected === ALL_TAB}
+                    onClick={() => onSelect(ALL_TAB)}
+                    className={cn(
+                        'flex h-10 shrink-0 items-center rounded-full px-5 text-sm font-semibold',
+                        selected === ALL_TAB ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-900',
+                    )}
+                >
+                    すべて
+                </button>
+            )}
             {days.map(({ day, date }) => {
                 const isSelected = selected === String(day)
                 return (

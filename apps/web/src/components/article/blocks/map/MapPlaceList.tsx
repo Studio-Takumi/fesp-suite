@@ -2,6 +2,7 @@ import { ChevronRight } from 'lucide-react'
 
 import { cn } from '@fesp/ui'
 
+import { DayBadge } from '~/components/common/DayBadge'
 import type { MapPlace } from '~/lib/mock/map'
 
 /** サムネと開催日のバッジの色。場所の並び順で順番に使う */
@@ -40,14 +41,7 @@ export function MapPlaceList({ places }: MapPlaceListProps) {
                         </span>
                         <div className='flex min-w-0 flex-1 flex-col gap-1'>
                             <div className='flex items-center gap-2'>
-                                <span
-                                    className={cn(
-                                        'font-en rounded-full px-2 text-xs font-semibold text-white',
-                                        color.badge,
-                                    )}
-                                >
-                                    Day{place.day}
-                                </span>
+                                <DayBadge day={place.day} className={color.badge} />
                                 <span className='truncate text-xs text-slate-400'>{place.group}</span>
                             </div>
                             <p className='truncate text-base font-semibold text-slate-900'>{place.name}</p>

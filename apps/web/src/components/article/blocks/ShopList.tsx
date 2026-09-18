@@ -5,8 +5,8 @@ import { useQuery } from '@tanstack/react-query'
 import { parseIdListProp, shopListPropsSchema } from '@fesp/schema'
 
 import { EmptyState } from '~/components/EmptyState'
+import { DateTabs } from '~/components/list/DateTabs'
 import { filterList, type ListSortDefinition, sortList } from '~/components/list/filter-list'
-import { ListDateTabs } from '~/components/list/ListDateTabs'
 import { ListSearch } from '~/components/list/ListSearch'
 import { ListSort } from '~/components/list/ListSort'
 import { ALL_TAB, ListTagTabs } from '~/components/list/ListTagTabs'
@@ -81,7 +81,7 @@ export function ShopList({ block, children }: BlockComponentProps) {
                         return (
                             <>
                                 {showDateTabs && allDays.length > 0 && (
-                                    <ListDateTabs days={allDays} selected={selectedDay} onSelect={setSelectedDay} />
+                                    <DateTabs days={allDays} selected={selectedDay} onSelect={setSelectedDay} showAll />
                                 )}
                                 {(showSearch || showSort) && (
                                     <div className='flex items-center gap-2'>

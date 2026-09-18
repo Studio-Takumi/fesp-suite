@@ -48,7 +48,10 @@ export type BlockRegistry = Partial<Record<ArticleBlock['type'], ComponentType<B
 /**
  * ブロックの `type` → 描画するコンポーネント。ここに無い `type` は描画しない。
  * 独自コンポーネント（`pageHeader` など）もここに足す。足すときは `packages/schema` の記事ドキュメントと
- * 管理者サイトのブロック定義も同時に足すこと（docs/article-system.md 参照）
+ * 管理者サイトのブロック定義も同時に足すこと（docs/article-system.md 参照）。
+ *
+ * 独自コンポーネントの並びは、管理者サイトのスラッシュメニュー（`ArticleEditor.tsx` の
+ * `componentSlashMenuItems`）に揃える。メニューのグループの切れ目は空行で表す
  */
 export const blockRegistry: BlockRegistry = {
     paragraph: Paragraph,
@@ -62,28 +65,37 @@ export const blockRegistry: BlockRegistry = {
     divider: Divider,
     table: Table,
     codeBlock: CodeBlock,
-    pageHeader: PageHeader,
-    scheduleTable: ScheduleTable,
-    map: Map,
-    shopList: ShopList,
-    shopSummary: ShopSummary,
-    productList: ProductList,
-    artistList: ArtistList,
-    artistSummary: ArtistSummary,
-    setList: SetList,
-    newsList: NewsList,
-    coverImage: CoverImage,
-    postSummary: PostSummary,
-    adjacentPosts: AdjacentPosts,
-    blogList: BlogList,
-    relatedPosts: RelatedPosts,
-    todayWeather: TodayWeather,
-    weeklyForecast: WeeklyForecast,
-    weatherAlert: WeatherAlert,
-    wbgt: Wbgt,
-    weatherOverview: WeatherOverview,
-    weatherCredit: WeatherCredit,
-    mainHero: MainHero,
-    weatherBar: WeatherBar,
-    contentList: ContentList,
+
+    pageHeader: PageHeader, // ページ見出し
+
+    mainHero: MainHero, // メインスライダー
+    weatherBar: WeatherBar, // 日付・天気の帯
+    contentList: ContentList, // その他のコンテンツ
+
+    newsList: NewsList, // お知らせ一覧
+    coverImage: CoverImage, // 記事の画像
+    postSummary: PostSummary, // 記事のサマリー
+    adjacentPosts: AdjacentPosts, // 前後の記事
+
+    blogList: BlogList, // ブログ一覧
+    relatedPosts: RelatedPosts, // 関連する記事
+
+    scheduleTable: ScheduleTable, // スケジュール表
+
+    map: Map, // マップ
+
+    todayWeather: TodayWeather, // 今日の天気
+    weeklyForecast: WeeklyForecast, // 週間予報
+    weatherAlert: WeatherAlert, // 気象警報・注意報
+    wbgt: Wbgt, // 暑さ指数
+    weatherOverview: WeatherOverview, // 天気概況
+    weatherCredit: WeatherCredit, // 天気の更新時刻・出典
+
+    shopList: ShopList, // 模擬店一覧
+    shopSummary: ShopSummary, // 模擬店のサマリー
+    productList: ProductList, // 商品一覧
+
+    artistList: ArtistList, // 出演者一覧
+    artistSummary: ArtistSummary, // 出演者のサマリー
+    setList: SetList, // セットリスト
 }

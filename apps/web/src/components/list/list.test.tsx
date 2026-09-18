@@ -2,8 +2,8 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
+import { DateTabs } from './DateTabs'
 import { filterList, type ListSortDefinition, sortList } from './filter-list'
-import { ListDateTabs } from './ListDateTabs'
 import { ListSearch } from './ListSearch'
 import { ListSort } from './ListSort'
 import { ALL_TAB, ListTagTabs } from './ListTagTabs'
@@ -82,20 +82,16 @@ describe('ListTagTabs', () => {
     })
 })
 
-describe('ListDateTabs', () => {
+describe('DateTabs', () => {
+    const days = [
+        { day: 1, date: '2026-06-06T09:00:00+09:00' },
+        { day: 2, date: '2026-06-07T09:00:00+09:00' },
+    ]
+
     it('「すべて」と、Day・日付・曜日のタブを出し、押すと開催日の順番を渡す', async () => {
         const user = userEvent.setup()
         const onSelect = vi.fn()
-        render(
-            <ListDateTabs
-                days={[
-                    { day: 1, date: '2026-06-06T09:00:00+09:00' },
-                    { day: 2, date: '2026-06-07T09:00:00+09:00' },
-                ]}
-                selected='1'
-                onSelect={onSelect}
-            />,
-        )
+        render(<DateTabs days={days} selected='1' onSelect={onSelect} showAll />)
 
         const tabs = screen.getAllByRole('tab')
         expect(within(tabs[1]!).getByText('Day1')).toBeInTheDocument()
@@ -106,6 +102,13 @@ describe('ListDateTabs', () => {
         await user.click(screen.getByRole('tab', { name: /Day2/ }))
 
         expect(onSelect).toHaveBeenCalledWith('2')
+    })
+
+    it('「すべて」を出さないときは、開催日のタブだけを出す', () => {
+        render(<DateTabs days={days} selected='1' onSelect={vi.fn()} showAll={false} />)
+
+        expect(screen.queryByRole('tab', { name: 'すべて' })).not.toBeInTheDocument()
+        expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual(['Day16/6(土)', 'Day26/7(日)'])
     })
 })
 
