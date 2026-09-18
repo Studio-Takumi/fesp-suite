@@ -2,6 +2,7 @@ import { MapPin, Timer } from 'lucide-react'
 
 import { cn, dateFormatter } from '@fesp/ui'
 
+import { DayBadge } from '~/components/common/DayBadge'
 import { cardColorFromId } from '~/components/list/card-color'
 import type { Artist } from '~/lib/mock/artist'
 
@@ -49,9 +50,7 @@ export function ArtistCard({ artist }: ArtistCardProps) {
             </div>
             <div className='flex flex-col gap-2'>
                 <div className='flex items-center gap-2'>
-                    <span className={cn('font-en rounded-full px-3 py-1 text-xs font-bold text-white', color.accent)}>
-                        Day{artist.day}
-                    </span>
+                    <DayBadge day={artist.day} className={color.accent} />
                     <span className='text-xs text-slate-500'>{artist.group}</span>
                 </div>
                 <h2 className='text-lg leading-snug font-bold text-slate-900'>{artist.name}</h2>

@@ -1,5 +1,6 @@
 import { cn } from '@fesp/ui'
 
+import { DayBadge } from '~/components/common/DayBadge'
 import { cardColors } from '~/components/list/card-color'
 import type { Shop } from '~/lib/mock/shop'
 
@@ -41,9 +42,7 @@ export function ShopCard({ shop, showProducts }: ShopCardProps) {
             </div>
             <div className='flex flex-col gap-2'>
                 <div className='flex flex-wrap items-center gap-2 text-xs text-slate-500'>
-                    <span className={cn('rounded-full px-3 py-1 font-bold text-white', color.accent)}>
-                        Day{shop.day}
-                    </span>
+                    <DayBadge day={shop.day} className={color.accent} />
                     <span>{shop.group}</span>
                     <span>@ {shop.location}</span>
                 </div>

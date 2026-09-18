@@ -6,8 +6,8 @@ import { artistListPropsSchema, parseIdListProp } from '@fesp/schema'
 
 import { ArtistCard } from '~/components/artist/ArtistCard'
 import { EmptyState } from '~/components/EmptyState'
+import { DateTabs } from '~/components/list/DateTabs'
 import { filterList, type ListSortDefinition, sortList } from '~/components/list/filter-list'
-import { ListDateTabs } from '~/components/list/ListDateTabs'
 import { ListSearch } from '~/components/list/ListSearch'
 import { ListSort } from '~/components/list/ListSort'
 import { ALL_TAB, ListTagTabs } from '~/components/list/ListTagTabs'
@@ -83,10 +83,11 @@ export function ArtistList({ block, children }: BlockComponentProps) {
                         return (
                             <>
                                 {showDateTabs && (
-                                    <ListDateTabs
+                                    <DateTabs
                                         days={performanceDays(items)}
                                         selected={selectedDay}
                                         onSelect={setSelectedDay}
+                                        showAll
                                     />
                                 )}
                                 {(showSearch || showSort) && (

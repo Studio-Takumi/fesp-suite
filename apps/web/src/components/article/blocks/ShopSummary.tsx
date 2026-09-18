@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { MapIcon, MapPin, Timer } from 'lucide-react'
 
-import { cn, dateFormatter } from '@fesp/ui'
+import { dateFormatter } from '@fesp/ui'
 
+import { ActionLink } from '~/components/common/ActionLink'
+import { DayBadge } from '~/components/common/DayBadge'
 import { cardColors } from '~/components/list/card-color'
 import { QueryBoundary } from '~/components/QueryBoundary'
 import { currentShopQuery } from '~/lib/queries'
@@ -23,14 +25,7 @@ export function ShopSummary({ children }: BlockComponentProps) {
                     {(data) => (
                         <>
                             <div className='flex items-center gap-2'>
-                                <span
-                                    className={cn(
-                                        'rounded-full px-3 py-1 text-xs font-bold text-white',
-                                        cardColors[data.color].accent,
-                                    )}
-                                >
-                                    Day{data.day}
-                                </span>
+                                <DayBadge day={data.day} className={cardColors[data.color].accent} />
                                 <span className='text-sm text-slate-500'>{data.group}</span>
                             </div>
                             <h2 className='text-2xl leading-snug font-bold text-slate-900'>{data.name}</h2>
@@ -40,7 +35,7 @@ export function ShopSummary({ children }: BlockComponentProps) {
                                         <Timer size={16} aria-hidden />
                                         時間
                                     </dt>
-                                    <dd className='text-sm font-medium text-slate-900'>
+                                    <dd className='min-w-0 flex-1 text-sm font-medium text-slate-900'>
                                         {`${dateFormatter(data.starts_at, 'H:mm')} - ${dateFormatter(data.ends_at, 'H:mm')}`}
                                     </dd>
                                 </div>
@@ -49,16 +44,14 @@ export function ShopSummary({ children }: BlockComponentProps) {
                                         <MapPin size={16} aria-hidden />
                                         場所
                                     </dt>
-                                    <dd className='text-sm font-medium text-slate-900'>{data.location}</dd>
+                                    <dd className='min-w-0 flex-1 text-sm font-medium text-slate-900'>
+                                        {data.location}
+                                    </dd>
                                 </div>
                             </dl>
-                            <a
-                                href='/map'
-                                className='flex h-12 items-center justify-center gap-2 rounded-full bg-sky-500 text-sm font-semibold text-white'
-                            >
-                                <MapIcon size={18} aria-hidden />
+                            <ActionLink href='/map' icon={<MapIcon size={18} aria-hidden />}>
                                 マップで見る
-                            </a>
+                            </ActionLink>
                         </>
                     )}
                 </QueryBoundary>
