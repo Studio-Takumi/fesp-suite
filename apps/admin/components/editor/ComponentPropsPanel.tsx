@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 
 import type {
+    ArtistListProps,
     CoverImageProps,
     EmptyComponentProps,
     NewsListProps,
@@ -11,6 +12,7 @@ import type {
     WeatherComponentType,
 } from '@fesp/schema'
 
+import { ArtistListPropsForm } from './ArtistListPropsForm'
 import { CoverImagePropsForm } from './CoverImagePropsForm'
 import { NewsListPropsForm } from './NewsListPropsForm'
 import { PageHeaderPropsForm } from './PageHeaderPropsForm'
@@ -22,7 +24,9 @@ export type ComponentBlock =
     | { id: string; type: 'scheduleTable'; props: ScheduleTableProps }
     | { id: string; type: 'newsList'; props: NewsListProps }
     | { id: string; type: 'coverImage'; props: CoverImageProps }
+    | { id: string; type: 'artistList'; props: ArtistListProps }
     | { id: string; type: 'map' | 'postSummary' | 'adjacentPosts'; props: EmptyComponentProps }
+    | { id: string; type: 'artistSummary' | 'setList'; props: EmptyComponentProps }
     | { id: string; type: WeatherComponentType; props: EmptyComponentProps }
 
 /**
@@ -57,9 +61,15 @@ const componentPanels: {
         name: '記事の画像',
         renderForm: (block, onChange) => <CoverImagePropsForm defaultValues={block.props} onValidChange={onChange} />,
     },
+    artistList: {
+        name: '出演者一覧',
+        renderForm: (block, onChange) => <ArtistListPropsForm defaultValues={block.props} onValidChange={onChange} />,
+    },
     map: { name: 'マップ' },
     postSummary: { name: '記事のサマリー' },
     adjacentPosts: { name: '前後の記事' },
+    artistSummary: { name: '出演者のサマリー' },
+    setList: { name: 'セットリスト' },
     todayWeather: { name: '今日の天気' },
     weeklyForecast: { name: '週間予報' },
     weatherAlert: { name: '気象警報・注意報' },

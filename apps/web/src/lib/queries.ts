@@ -3,6 +3,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { articleViewResponseSchema, exampleResponseSchema } from '@fesp/schema'
 
 import { apiFetch } from './api'
+import { mockArtists, mockArtistTags, mockCurrentArtist, mockSetList } from './mock/artist'
 import { mapMock } from './mock/map'
 import { mockAdjacentPosts, mockCurrentPost, mockNewsPosts, mockNewsTags } from './mock/news'
 import { scheduleDays } from './mock/schedule'
@@ -24,6 +25,10 @@ export const queryKeys = {
     currentPost: ['posts', 'current'] as const,
     adjacentPosts: ['posts', 'current', 'adjacent'] as const,
     weather: ['weather'] as const,
+    artists: ['artists'] as const,
+    artistTags: ['artists', 'tags'] as const,
+    currentArtist: ['artists', 'current'] as const,
+    setList: ['artists', 'current', 'set-list'] as const,
 }
 
 export const exampleQuery = () =>
@@ -81,6 +86,36 @@ export const adjacentPostsQuery = () =>
     queryOptions({
         queryKey: queryKeys.adjacentPosts,
         queryFn: () => Promise.resolve(mockAdjacentPosts),
+    })
+
+// 出演者（#17）は API ができるまで仮データ（lib/mock/artist.ts）を返す。API ができたら queryFn を差し替える（#60）
+
+/** 出演者（出演の早い順） */
+export const artistsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.artists,
+        queryFn: () => Promise.resolve(mockArtists),
+    })
+
+/** 出演者のタグ */
+export const artistTagsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.artistTags,
+        queryFn: () => Promise.resolve(mockArtistTags),
+    })
+
+/** 表示中の出演者の Day・団体・演目・出演日時・会場・人数 */
+export const currentArtistQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.currentArtist,
+        queryFn: () => Promise.resolve(mockCurrentArtist),
+    })
+
+/** 表示中の出演者のセットリスト */
+export const setListQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.setList,
+        queryFn: () => Promise.resolve(mockSetList),
     })
 
 /**

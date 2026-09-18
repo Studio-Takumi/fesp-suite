@@ -22,10 +22,13 @@ function render(ui: ReactNode) {
 const defaultBlockProps = { backgroundColor: 'default', textColor: 'default', textAlignment: 'left' } as const
 
 describe('articleSchema', () => {
-    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・注意書き・区切り線・表・コードブロックと、独自コンポーネント（ページ見出し・スケジュール表・マップ・お知らせ・天気）だけを許可する（画像・動画等は含まない）', () => {
+    it('テキスト・見出し・リスト・チェックリスト・トグルリスト・引用・注意書き・区切り線・表・コードブロックと、独自コンポーネント（ページ見出し・スケジュール表・マップ・お知らせ・出演者・天気）だけを許可する（画像・動画等は含まない）', () => {
         expect(Object.keys(articleSchema.blockSchema).sort()).toEqual(
             [
                 'adjacentPosts',
+                'artistList',
+                'artistSummary',
+                'setList',
                 'coverImage',
                 'newsList',
                 'map',
@@ -258,6 +261,86 @@ describe('ArticleEditor', () => {
         const [block] = onChange.mock.lastCall?.[0] as ArticleDocument
         expect(block?.props.limit).toBeUndefined()
         expect(JSON.parse(JSON.stringify(block?.props))).toEqual({ showTagTabs: true, tags: '', showViewAll: false })
+    })
+
+    it('出演者一覧はカードに設定の要約を出す（タグはタグの一覧の順に名前で出す）', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'paragraph', props: defaultBlockProps, content: [], children: [] },
+            {
+                id: '2',
+                type: 'artistList',
+                props: {
+                    showDateTabs: true,
+                    showSearch: true,
+                    showSort: false,
+                    showTagTabs: true,
+                    tags: 'dance,band',
+                },
+                children: [],
+            },
+            {
+                id: '3',
+                type: 'artistList',
+                props: {
+                    showDateTabs: false,
+                    showSearch: false,
+                    showSort: true,
+                    showTagTabs: true,
+                    tags: '',
+                },
+                children: [],
+            },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(await screen.findByText('タグタブ: あり（バンド・ダンス）')).toBeInTheDocument()
+        expect(screen.getByText('タグタブ: あり（タグ未選択）')).toBeInTheDocument()
+        expect(screen.getAllByText('日付タブ: あり')).toHaveLength(1)
+        expect(screen.getAllByText('検索: なし')).toHaveLength(1)
+        expect(screen.getAllByText('並び替え: あり')).toHaveLength(1)
+    })
+
+    it('出演者一覧のサイドパネルでスイッチを切り替えると、ブロックの props を変えて onChange に渡す', async () => {
+        const user = userEvent.setup()
+        const onChange = vi.fn()
+        const props = {
+            showDateTabs: true,
+            showSearch: true,
+            showSort: true,
+            showTagTabs: true,
+            tags: '',
+        }
+        const content: ArticleDocument = [{ id: '1', type: 'artistList', props, children: [] }]
+
+        render(<ArticleEditor content={content} onChange={onChange} />)
+
+        await user.click(await screen.findByRole('switch', { name: '検索を出す' }))
+
+        expect(await screen.findByText('検索: なし')).toBeInTheDocument()
+        expect(onChange).toHaveBeenLastCalledWith([
+            expect.objectContaining({ id: '1', type: 'artistList', props: { ...props, showSearch: false } }),
+        ])
+    })
+
+    it('出演者のサマリー・セットリストはカードに説明を出し、選択中はサイドパネルに「設定する項目はありません」と出す', async () => {
+        const content: ArticleDocument = [
+            { id: '1', type: 'artistSummary', props: {}, children: [] },
+            { id: '2', type: 'setList', props: {}, children: [] },
+        ]
+
+        render(<ArticleEditor content={content} />)
+
+        expect(
+            await screen.findByText(
+                '表示中の出演者の Day・団体・演目・出演日時・会場・人数と、スケジュール・マップへのボタンを出します',
+            ),
+        ).toBeInTheDocument()
+        expect(screen.getByText('表示中の出演者のセットリストを出します')).toBeInTheDocument()
+        // 開いた直後はカーソルが先頭のブロック（出演者のサマリー）にある
+        const panel = await screen.findByRole('complementary', { name: 'コンポーネントの設定' })
+        expect(within(panel).getByRole('heading', { name: '出演者のサマリー' })).toBeInTheDocument()
+        expect(within(panel).getByText('設定する項目はありません')).toBeInTheDocument()
     })
 
     it('天気のブロックは、カードに名前と説明の1文を出す', async () => {

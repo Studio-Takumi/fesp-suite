@@ -198,6 +198,31 @@ export const scheduleTablePropsSchema = z
     .strict()
 export type ScheduleTableProps = z.infer<typeof scheduleTablePropsSchema>
 
+/**
+ * 出演者一覧（`artistList`）の props。
+ * BlockNote の props は文字列・数値・真偽値しか持てないので、タブに出すタグは ID をカンマ区切りで並べた文字列で持つ
+ */
+export const artistListPropsSchema = z
+    .object({
+        /** 日付のタブを出すか */
+        showDateTabs: z.boolean(),
+        /** 検索を出すか */
+        showSearch: z.boolean(),
+        /** 並び替えを出すか */
+        showSort: z.boolean(),
+        /** タグのタブを出すか */
+        showTagTabs: z.boolean(),
+        /** タブに出すタグの ID をカンマ区切りで並べた文字列（例: `band,dance`）。空文字なら選んでいない */
+        tags: z.string().regex(/^([^,]+(,[^,]+)*)?$/, 'タグの指定が正しくありません'),
+    })
+    .strict()
+export type ArtistListProps = z.infer<typeof artistListPropsSchema>
+
+/** 出演者一覧の props の `tags` を、タグの ID の配列にする */
+export function parseArtistListTags(tags: string): string[] {
+    return tags === '' ? [] : tags.split(',')
+}
+
 /** コードブロックの中身はスタイル（太字等）を持たない「プレーンテキスト」 */
 const plainTextSchema = z.object({
     type: z.literal('text'),
@@ -252,6 +277,9 @@ export type ArticleBlock = {
         | 'coverImage'
         | 'postSummary'
         | 'adjacentPosts'
+        | 'artistList'
+        | 'artistSummary'
+        | 'setList'
         | WeatherComponentType
     props: Record<string, unknown>
     content?: (ArticleStyledText | ArticleLink)[] | ArticleTableContent
@@ -367,9 +395,18 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             content: z.undefined().optional(),
             children: z.array(articleBlockSchema),
         }),
+        z.object({
+            id: z.string().min(1),
+            type: z.literal('artistList'),
+            props: artistListPropsSchema,
+            content: z.undefined().optional(),
+            children: z.array(articleBlockSchema),
+        }),
         emptyComponentBlockSchema('map'),
         emptyComponentBlockSchema('postSummary'),
         emptyComponentBlockSchema('adjacentPosts'),
+        emptyComponentBlockSchema('artistSummary'),
+        emptyComponentBlockSchema('setList'),
         emptyComponentBlockSchema('todayWeather'),
         emptyComponentBlockSchema('weeklyForecast'),
         emptyComponentBlockSchema('weatherAlert'),

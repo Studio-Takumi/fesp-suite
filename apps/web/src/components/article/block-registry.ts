@@ -3,6 +3,8 @@ import type { ComponentType, ReactNode } from 'react'
 import type { ArticleBlock } from '@fesp/schema'
 
 import { AdjacentPosts } from './blocks/AdjacentPosts'
+import { ArtistList } from './blocks/ArtistList'
+import { ArtistSummary } from './blocks/ArtistSummary'
 import { Callout } from './blocks/Callout'
 import { CheckListItem } from './blocks/CheckListItem'
 import { CodeBlock } from './blocks/CodeBlock'
@@ -17,6 +19,7 @@ import { Paragraph } from './blocks/Paragraph'
 import { PostSummary } from './blocks/PostSummary'
 import { Quote } from './blocks/Quote'
 import { ScheduleTable } from './blocks/ScheduleTable'
+import { SetList } from './blocks/SetList'
 import { Table } from './blocks/Table'
 import { TodayWeather } from './blocks/TodayWeather'
 import { ToggleListItem } from './blocks/ToggleListItem'
@@ -58,6 +61,9 @@ export const blockRegistry: BlockRegistry = {
     coverImage: CoverImage,
     postSummary: PostSummary,
     adjacentPosts: AdjacentPosts,
+    artistList: ArtistList,
+    artistSummary: ArtistSummary,
+    setList: SetList,
     todayWeather: TodayWeather,
     weeklyForecast: WeeklyForecast,
     weatherAlert: WeatherAlert,

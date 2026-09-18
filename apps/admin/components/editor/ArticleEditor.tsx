@@ -27,7 +27,10 @@ import {
     CalendarDays,
     FileText,
     ImageIcon,
+    ListMusic,
     MapIcon,
+    Mic,
+    Music,
     Newspaper,
     PanelTop,
     RefreshCw,
@@ -41,6 +44,8 @@ import { createHighlighter } from 'shiki'
 import type { ArticleDocument } from '@fesp/schema'
 
 import { createAdjacentPostsBlock } from './blocks/AdjacentPostsBlock'
+import { createArtistListBlock } from './blocks/ArtistListBlock'
+import { createArtistSummaryBlock } from './blocks/ArtistSummaryBlock'
 import { createCalloutBlock } from './blocks/CalloutBlock'
 import { createCoverImageBlock } from './blocks/CoverImageBlock'
 import { createMapBlock } from './blocks/MapBlock'
@@ -48,6 +53,7 @@ import { createNewsListBlock } from './blocks/NewsListBlock'
 import { createPageHeaderBlock } from './blocks/PageHeaderBlock'
 import { createPostSummaryBlock } from './blocks/PostSummaryBlock'
 import { createScheduleTableBlock } from './blocks/ScheduleTableBlock'
+import { createSetListBlock } from './blocks/SetListBlock'
 import { createTodayWeatherBlock } from './blocks/TodayWeatherBlock'
 import { createWbgtBlock } from './blocks/WbgtBlock'
 import { createWeatherAlertBlock } from './blocks/WeatherAlertBlock'
@@ -105,6 +111,9 @@ export const articleSchema = BlockNoteSchema.create({
         coverImage: createCoverImageBlock(),
         postSummary: createPostSummaryBlock(),
         adjacentPosts: createAdjacentPostsBlock(),
+        artistList: createArtistListBlock(),
+        artistSummary: createArtistSummaryBlock(),
+        setList: createSetListBlock(),
         todayWeather: createTodayWeatherBlock(),
         weeklyForecast: createWeeklyForecastBlock(),
         weatherAlert: createWeatherAlertBlock(),
@@ -170,6 +179,27 @@ const componentSlashMenuItems: {
         subtext: '前の記事・次の記事へのリンク',
         aliases: ['adjacentposts', 'zengo', 'ぜんご'],
         icon: <ArrowLeftRight />,
+    },
+    {
+        type: 'artistList',
+        title: '出演者一覧',
+        subtext: '日付・検索・タグで絞り込める出演者の一覧',
+        aliases: ['artistlist', 'artist', 'syutuensya', 'しゅつえんしゃ', '出演者'],
+        icon: <Music />,
+    },
+    {
+        type: 'artistSummary',
+        title: '出演者のサマリー',
+        subtext: '表示中の出演者の Day・団体・演目・出演日時・会場・人数',
+        aliases: ['artistsummary', 'artist', 'summary', 'しゅつえんしゃ', '出演者'],
+        icon: <Mic />,
+    },
+    {
+        type: 'setList',
+        title: 'セットリスト',
+        subtext: '表示中の出演者のセットリスト',
+        aliases: ['setlist', 'setto', 'セトリ', 'せっとりすと'],
+        icon: <ListMusic />,
     },
     {
         type: 'todayWeather',
