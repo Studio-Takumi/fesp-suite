@@ -21,6 +21,7 @@ const paragraph = (id: string, text: string) => ({
 const articleFixture = {
     id: ARTICLE_ID,
     event_id: EVENT_ID,
+    slug: null,
     created_by: '3c9d1e2f-4a5b-4c6d-8e7f-9a0b1c2d3e4f',
     creator: { display_name: '山田太郎' },
     status: 'published',

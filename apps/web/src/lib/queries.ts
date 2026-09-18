@@ -3,6 +3,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { articleViewResponseSchema, exampleResponseSchema } from '@fesp/schema'
 
 import { apiFetch } from './api'
+import { env } from './env'
 import { mockArtists, mockArtistTags, mockCurrentArtist, mockSetList } from './mock/artist'
 import { mockBlogPosts, mockBlogTags, mockRelatedPosts } from './mock/blog'
 import { mapMock } from './mock/map'
@@ -20,6 +21,7 @@ import { createMockWeather } from './mock/weather'
 export const queryKeys = {
     example: ['example'] as const,
     article: (id: string) => ['articles', id] as const,
+    articleBySlug: (slug: string) => ['articles', 'slug', slug] as const,
     schedules: ['schedules'] as const,
     map: ['map'] as const,
     shops: ['shops'] as const,
@@ -51,6 +53,17 @@ export const articleQuery = (id: string) =>
         queryKey: queryKeys.article(id),
         queryFn: ({ signal }) =>
             apiFetch(`/api/articles/${id}`, articleViewResponseSchema, { signal, authenticated: true }),
+    })
+
+/** slug（ウェブアプリのパス）で引く記事。固定ページ（`/` `/:articleSlug`）が使う */
+export const articleBySlugQuery = (slug: string) =>
+    queryOptions({
+        queryKey: queryKeys.articleBySlug(slug),
+        queryFn: ({ signal }) =>
+            apiFetch(`/api/articles/slug/${slug}?event_id=${env.VITE_EVENT_ID}`, articleViewResponseSchema, {
+                signal,
+                authenticated: true,
+            }),
     })
 
 /** スケジュール（日付 → 会場 → 項目）。スケジュールの API ができるまでは仮データ（`lib/mock/schedule.ts`）を返す */

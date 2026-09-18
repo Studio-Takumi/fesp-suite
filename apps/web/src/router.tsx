@@ -5,10 +5,15 @@ import { redirectPathSchema } from '@fesp/schema'
 import { AppShell } from './components/AppShell'
 import { supabase } from './lib/supabase'
 import { ArticlePage } from './pages/ArticlePage'
+import { ArtistPage } from './pages/ArtistPage'
+import { BlogPostPage } from './pages/BlogPostPage'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
+import { NewsPostPage } from './pages/NewsPostPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { ShopPage } from './pages/ShopPage'
 import { SignupPage } from './pages/SignupPage'
+import { SlugPage } from './pages/SlugPage'
 
 /**
  * URL 状態は Router が担当する（ページ・フィルタ・検索クエリ）。
@@ -43,6 +48,42 @@ const indexRoute = createRoute({
     component: HomePage,
 })
 
+/**
+ * 固定ページ（`/news` など）。slug で記事を引く。
+ * `/settings` のような静的なパスが先に選ばれるので、ページの slug には使えない（`articleSlugSchema`）
+ */
+const slugRoute = createRoute({
+    getParentRoute: () => authenticatedRoute,
+    path: '/$articleSlug',
+    component: SlugPage,
+})
+
+// 個別ページ。種類ごとのデータ（#56〜#60）ができるまでは、決まった内容を出す仮ページ
+const newsPostRoute = createRoute({
+    getParentRoute: () => authenticatedRoute,
+    path: '/news/$postId',
+    component: NewsPostPage,
+})
+
+const blogPostRoute = createRoute({
+    getParentRoute: () => authenticatedRoute,
+    path: '/blog/$postId',
+    component: BlogPostPage,
+})
+
+const shopRoute = createRoute({
+    getParentRoute: () => authenticatedRoute,
+    path: '/shop/$shopId',
+    component: ShopPage,
+})
+
+const artistRoute = createRoute({
+    getParentRoute: () => authenticatedRoute,
+    path: '/artist/$artistId',
+    component: ArtistPage,
+})
+
+/** 記事1件を記事IDで開く（slug を持たない記事の確認用） */
 const articleRoute = createRoute({
     getParentRoute: () => authenticatedRoute,
     path: '/articles/$articleId',
@@ -86,7 +127,16 @@ const signupRoute = createRoute({
 })
 
 export const routeTree = rootRoute.addChildren([
-    authenticatedRoute.addChildren([indexRoute, articleRoute, settingsRoute]),
+    authenticatedRoute.addChildren([
+        indexRoute,
+        slugRoute,
+        newsPostRoute,
+        blogPostRoute,
+        shopRoute,
+        artistRoute,
+        articleRoute,
+        settingsRoute,
+    ]),
     loginRoute,
     signupRoute,
 ])
