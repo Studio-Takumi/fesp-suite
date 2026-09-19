@@ -462,7 +462,7 @@ describe('ArticleRenderer', () => {
         const cards = await screen.findAllByRole('listitem')
         expect(cards).toHaveLength(mockBlogPosts.length)
         const first = within(cards[0]!)
-        expect(first.getByRole('link')).toHaveAttribute('href', '/blogs/blog-5')
+        expect(first.getByRole('link')).toHaveAttribute('href', '/blog/blog-5')
         expect(first.getByText('準備期間の裏側をのぞいてみた')).toBeInTheDocument()
         expect(first.getByText('6月2日')).toBeInTheDocument()
         expect(first.getByText('広報委員会')).toBeInTheDocument()
@@ -511,8 +511,8 @@ describe('ArticleRenderer', () => {
         const links = screen.getAllByRole('link')
         expect(links).toHaveLength(2)
         expect(links[0]).toHaveTextContent('今年のテーマが決まるまで5月28日')
-        expect(links[0]).toHaveAttribute('href', '/blogs/blog-4')
-        expect(links[1]).toHaveAttribute('href', '/blogs/blog-3')
+        expect(links[0]).toHaveAttribute('href', '/blog/blog-4')
+        expect(links[1]).toHaveAttribute('href', '/blog/blog-3')
     })
 
     it('関連する記事は0件ならブロックごと出さない', async () => {
@@ -632,7 +632,7 @@ describe('ArticleRenderer', () => {
         const cards = await screen.findAllByRole('listitem')
         expect(cards).toHaveLength(mockShops.length)
         const first = within(cards[0]!)
-        expect(first.getByRole('link')).toHaveAttribute('href', '/shops/shop-1')
+        expect(first.getByRole('link')).toHaveAttribute('href', '/shop/shop-1')
         // 写真のある模擬店は、カードの上半分が写真になるので店名は1か所だけ
         expect(first.getAllByText('レモネードスタンド')).toHaveLength(1)
         expect(first.getByText('Day1')).toBeInTheDocument()
@@ -681,7 +681,7 @@ describe('ArticleRenderer', () => {
         const hrefs = screen.getAllByRole('listitem').map((card) => within(card).getByRole('link').getAttribute('href'))
         const expected = [...mockShops]
             .sort((a, b) => a.name.localeCompare(b.name, 'ja'))
-            .map((shop) => `/shops/${shop.id}`)
+            .map((shop) => `/shop/${shop.id}`)
         expect(hrefs).toEqual(expected)
     })
 
@@ -861,7 +861,7 @@ describe('ArticleRenderer', () => {
         const rows = await screen.findAllByRole('listitem')
         expect(rows).toHaveLength(mockArtists.length)
         const first = within(rows[0]!)
-        expect(first.getByRole('link')).toHaveAttribute('href', '/artists/artist-1')
+        expect(first.getByRole('link')).toHaveAttribute('href', '/artist/artist-1')
         // 写真のある出演者は、カードの上半分が写真になるので出演者名は1か所だけ
         expect(first.getAllByText('ソラノネ')).toHaveLength(1)
         expect(first.getByText('Day1')).toBeInTheDocument()
