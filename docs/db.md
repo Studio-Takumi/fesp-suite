@@ -153,6 +153,7 @@ erDiagram
         text description
         text image_url
         card_color color
+        jsonb notes
         timestamptz starts_at
         timestamptz ends_at
         timestamptz created_at
@@ -705,12 +706,13 @@ RLS から次の関数を呼んで判定する。`private` スキーマに置き
 | `description`  | `text`        | NO   |         | 紹介文。書式なしの文章で、記事の中では紹介文のブロックが読む                      |
 | `image_url`    | `text`        | YES  |         | 一覧・詳細に出すサムネイル                                                        |
 | `color`        | `card_color`  | NO   |         | カードの枠・Dayバッジ・商品のサムネに使う色。`rose` / `amber` / `emerald` / `sky` |
+| `notes`        | `jsonb`       | NO   | `'[]'`  | 注意事項。文章の配列で、並べた順に出す。無ければ空配列                            |
 | `starts_at`    | `timestamptz` | YES  |         | 開始時刻。未設定なら `NULL`                                                       |
 | `ends_at`      | `timestamptz` | YES  |         | 終了時刻。未設定なら `NULL`                                                       |
 | `created_at`   | `timestamptz` | NO   | `now()` |                                                                                   |
 | `updated_at`   | `timestamptz` | NO   | `now()` | 更新時にトリガーで `now()` にする                                                 |
 
-注意事項は列に持たず、記事の本文に注意書き（`callout`）のブロックで書く。
+注意事項は `notes` の列で持つ（記事の本文には置かない）。管理画面から並べ替えできるので、順序を持つ配列にする。
 
 ### 制約・インデックス
 
