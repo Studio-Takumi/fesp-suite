@@ -18,7 +18,7 @@ export function ShopCard({ shop, showProducts }: ShopCardProps) {
     const color = cardColors[shop.color]
 
     return (
-        <a href={`/shops/${shop.id}`} className='flex flex-col gap-2'>
+        <a href={`/shop/${shop.id}`} className='flex flex-col gap-2'>
             <div
                 className={cn(
                     'relative flex h-44 flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl',

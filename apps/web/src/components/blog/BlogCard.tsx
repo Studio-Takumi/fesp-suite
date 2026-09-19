@@ -13,7 +13,7 @@ export function BlogCard({ post }: BlogCardProps) {
     const day = Number(dateFormatter(post.published_at, 'DD'))
 
     return (
-        <a href={`/blogs/${post.id}`} className='flex flex-col gap-3'>
+        <a href={`/blog/${post.id}`} className='flex flex-col gap-3'>
             <div className='aspect-video overflow-hidden rounded-2xl bg-slate-100'>
                 {post.image_url && <img src={post.image_url} alt='' className='size-full object-cover' />}
             </div>

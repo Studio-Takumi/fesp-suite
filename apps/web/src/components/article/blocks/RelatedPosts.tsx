@@ -51,7 +51,7 @@ function RelatedPostLink({ post }: RelatedPostLinkProps) {
     const day = Number(dateFormatter(post.published_at, 'DD'))
 
     return (
-        <a href={`/blogs/${post.id}`} className='flex items-center gap-3'>
+        <a href={`/blog/${post.id}`} className='flex items-center gap-3'>
             <div className='size-16 shrink-0 overflow-hidden rounded-xl bg-slate-100'>
                 {post.image_url && <img src={post.image_url} alt='' className='size-full object-cover' />}
             </div>
