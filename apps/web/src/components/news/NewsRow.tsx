@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router'
+
 import { dateFormatter } from '@fesp/ui'
 
 import type { NewsPost } from '~/lib/mock/news'
@@ -13,7 +15,12 @@ export function NewsRow({ post }: NewsRowProps) {
     const day = Number(dateFormatter(post.published_at, 'DD'))
 
     return (
-        <a href={`/news/${post.id}`} className='flex gap-4'>
+        <Link
+            to='/news/$postId'
+            params={{ postId: post.id }}
+            className='flex gap-4'
+            activeProps={{ className: 'rounded-xl bg-sky-50' }}
+        >
             <div className='flex size-16 shrink-0 flex-col items-center justify-center rounded-xl bg-slate-50'>
                 <span className='text-xs text-slate-500'>{month}月</span>
                 <span className='font-en text-2xl leading-tight font-medium text-slate-900'>{day}</span>
@@ -29,6 +36,6 @@ export function NewsRow({ post }: NewsRowProps) {
                     </span>
                 )}
             </div>
-        </a>
+        </Link>
     )
 }

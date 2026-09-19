@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router'
+
 import { cn } from '@fesp/ui'
 
 import { DayBadge } from '~/components/common/DayBadge'
@@ -18,7 +20,12 @@ export function ShopCard({ shop, showProducts }: ShopCardProps) {
     const color = cardColors[shop.color]
 
     return (
-        <a href={`/shop/${shop.id}`} className='flex flex-col gap-2'>
+        <Link
+            to='/shop/$shopId'
+            params={{ shopId: shop.id }}
+            className='flex flex-col gap-2'
+            activeProps={{ className: 'rounded-xl bg-sky-50' }}
+        >
             <div
                 className={cn(
                     'relative flex h-44 flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl',
@@ -79,6 +86,6 @@ export function ShopCard({ shop, showProducts }: ShopCardProps) {
                     </div>
                 )}
             </div>
-        </a>
+        </Link>
     )
 }

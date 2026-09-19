@@ -2,6 +2,7 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll, beforeEach, vi } from 'vitest'
 
+import { installMatchMedia, resetMatchMedia } from './media'
 import { server } from './msw/server'
 import { mockSession, supabaseAuth, testSession } from './supabase'
 
@@ -12,7 +13,10 @@ vi.mock('~/lib/supabase', async () => {
 })
 
 // 未定義のリクエストはテストを失敗させる（APIパスの打ち間違いを検出するため）
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+beforeAll(() => {
+    server.listen({ onUnhandledRequest: 'error' })
+    installMatchMedia()
+})
 
 beforeEach(() => {
     for (const fn of Object.values(supabaseAuth)) fn.mockReset()
@@ -23,6 +27,7 @@ beforeEach(() => {
 afterEach(() => {
     cleanup()
     server.resetHandlers()
+    resetMatchMedia()
 })
 
 afterAll(() => server.close())

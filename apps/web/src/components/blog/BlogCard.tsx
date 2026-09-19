@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router'
+
 import { dateFormatter } from '@fesp/ui'
 
 import type { BlogPost } from '~/lib/mock/blog'
@@ -13,7 +15,12 @@ export function BlogCard({ post }: BlogCardProps) {
     const day = Number(dateFormatter(post.published_at, 'DD'))
 
     return (
-        <a href={`/blog/${post.id}`} className='flex flex-col gap-3'>
+        <Link
+            to='/blog/$postId'
+            params={{ postId: post.id }}
+            className='flex flex-col gap-3'
+            activeProps={{ className: 'rounded-xl bg-sky-50' }}
+        >
             <div className='aspect-video overflow-hidden rounded-2xl bg-slate-100'>
                 {post.image_url && <img src={post.image_url} alt='' className='size-full object-cover' />}
             </div>
@@ -37,6 +44,6 @@ export function BlogCard({ post }: BlogCardProps) {
                     </span>
                 )}
             </div>
-        </a>
+        </Link>
     )
 }
