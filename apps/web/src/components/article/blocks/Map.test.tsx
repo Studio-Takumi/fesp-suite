@@ -3,6 +3,8 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { setTabletWidth } from '~/test/media'
+
 import { Map } from './Map'
 
 const renderMap = () => {
@@ -149,5 +151,44 @@ describe('Map', () => {
         fireEvent.pointerUp(handle, { pointerId: 3, clientY: 900 })
         fireEvent.click(handle)
         expect(sheet).toHaveAttribute('data-state', 'closed')
+    })
+})
+
+describe('Map（幅が768px以上）', () => {
+    it('ボトムシートの代わりに左のパネルを出し、見出し・検索バー・カテゴリのタブ・場所の一覧を入れる', async () => {
+        setTabletWidth(true)
+        renderMap()
+
+        const panel = screen.getByRole('region', { name: '場所のパネル' })
+        expect(screen.queryByRole('region', { name: 'ボトムシート' })).not.toBeInTheDocument()
+        expect(within(panel).getByRole('heading', { level: 1, name: 'マップ' })).toBeInTheDocument()
+        expect(within(panel).getByText('MAP')).toBeInTheDocument()
+        expect(within(panel).getByRole('searchbox', { name: '場所・模擬店を検索' })).toBeInTheDocument()
+        expect(within(panel).getByRole('group', { name: 'カテゴリ' })).toBeInTheDocument()
+        expect(await within(panel).findByRole('list', { name: '場所の一覧' })).toBeInTheDocument()
+        // 検索バーは地図の上に浮かべない（パネルの中の1つだけ）
+        expect(screen.getAllByRole('searchbox')).toHaveLength(1)
+    })
+
+    it('パネルの検索バーとカテゴリのタブで場所の一覧を絞り込む', async () => {
+        setTabletWidth(true)
+        const user = userEvent.setup()
+        renderMap()
+        await screen.findByRole('list', { name: '場所の一覧' })
+
+        await user.type(screen.getByRole('searchbox'), 'チュロス')
+        expect(placeNames()).toEqual(['チュロス'])
+
+        await user.clear(screen.getByRole('searchbox'))
+        await user.click(screen.getByRole('button', { name: 'ステージ' }))
+        expect(placeNames()).toEqual(['軽音楽部ライブ'])
+    })
+
+    it('フロア切替と現在地ボタンは、幅が足りていても出す', async () => {
+        setTabletWidth(true)
+        renderMap()
+
+        expect(await screen.findByRole('group', { name: 'フロア' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: '現在地' })).toBeInTheDocument()
     })
 })
