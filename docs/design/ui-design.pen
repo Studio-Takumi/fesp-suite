@@ -50325,20 +50325,6 @@
       "name": "注釈 / ブロック名",
       "children": [
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "mougA",
-          "x": 512,
-          "y": 977,
-          "name": "枠: mainHero #20",
-          "fill": "#C026D314",
-          "width": 386,
-          "height": 215,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "XhwqZ",
           "x": 906,
@@ -50367,20 +50353,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "i5fGMR",
-          "x": 512,
-          "y": 1196,
-          "name": "枠: weatherBar #20",
-          "fill": "#C026D314",
-          "width": 386,
-          "height": 50,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -50413,20 +50385,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "qJpRV",
-          "x": 528,
-          "y": 1270,
-          "name": "枠: newsList #13（件数・すべて見る）",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 388,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "okusG",
           "x": 906,
@@ -50455,20 +50413,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "attB7",
-          "x": 528,
-          "y": 1688,
-          "name": "枠: contentList #20",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 251,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -50501,20 +50445,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "w48xW",
-          "x": 1022,
-          "y": 977,
-          "name": "枠: pageHeader（作成済み）",
-          "fill": "#05966914",
-          "width": 386,
-          "height": 86,
-          "stroke": "#059669",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "HBnul",
           "x": 1416,
@@ -50543,20 +50473,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "iA6h5",
-          "x": 1022,
-          "y": 1067,
-          "name": "枠: newsList #13",
-          "fill": "#C026D314",
-          "width": 386,
-          "height": 698,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -50589,20 +50505,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "uVfGa",
-          "x": 1532,
-          "y": 977,
-          "name": "枠: coverImage #13",
-          "fill": "#C026D314",
-          "width": 386,
-          "height": 215,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "IeLt3",
           "x": 1926,
@@ -50631,20 +50533,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "b26SKW",
-          "x": 1548,
-          "y": 1216,
-          "name": "枠: postSummary #13",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 163,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -50677,20 +50565,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "fLdMs",
-          "x": 1548,
-          "y": 1399,
-          "name": "枠: テキスト系ブロック",
-          "fill": "#64748B14",
-          "width": 354,
-          "height": 631,
-          "stroke": "#64748B",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "D8g9LB",
           "x": 1926,
@@ -50719,20 +50593,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "ha86U",
-          "x": 1548,
-          "y": 2050,
-          "name": "枠: adjacentPosts #13",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 140,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -50765,20 +50625,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "nN41m",
-          "x": 2042,
-          "y": 977,
-          "name": "枠: pageHeader（作成済み）",
-          "fill": "#05966914",
-          "width": 386,
-          "height": 86,
-          "stroke": "#059669",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "mobhN",
           "x": 2436,
@@ -50807,20 +50653,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "W8ZD6",
-          "x": 2042,
-          "y": 1067,
-          "name": "枠: blogList #14",
-          "fill": "#C026D314",
-          "width": 386,
-          "height": 1209,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -50853,20 +50685,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "LWr4x",
-          "x": 2552,
-          "y": 977,
-          "name": "枠: coverImage #13",
-          "fill": "#C026D314",
-          "width": 386,
-          "height": 215,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "hXhsj",
           "x": 2946,
@@ -50895,20 +50713,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "Yvl38",
-          "x": 2572,
-          "y": 1218,
-          "name": "枠: postSummary #13",
-          "fill": "#C026D314",
-          "width": 346,
-          "height": 173,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -50941,20 +50745,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "o40GH",
-          "x": 2572,
-          "y": 1413,
-          "name": "枠: テキスト系ブロック",
-          "fill": "#64748B14",
-          "width": 346,
-          "height": 591,
-          "stroke": "#64748B",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "HOiUh",
           "x": 2946,
@@ -50983,20 +50773,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "H65lBM",
-          "x": 2572,
-          "y": 2026,
-          "name": "枠: relatedPosts #14",
-          "fill": "#C026D314",
-          "width": 346,
-          "height": 184,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -51029,20 +50805,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "ImBnU",
-          "x": 3062,
-          "y": 977,
-          "name": "枠: pageHeader（作成済み）",
-          "fill": "#05966914",
-          "width": 386,
-          "height": 84,
-          "stroke": "#059669",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "CGNgS",
           "x": 3456,
@@ -51071,20 +50833,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "eOfVu",
-          "x": 3062,
-          "y": 1065,
-          "name": "枠: scheduleTable #15",
-          "fill": "#C026D314",
-          "width": 386,
-          "height": 863,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -51117,20 +50865,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "aRx4I",
-          "x": 3600,
-          "y": 1291,
-          "name": "枠: 詳細モーダル（今回は作らない）",
-          "fill": "#D9770614",
-          "width": 330,
-          "height": 541,
-          "stroke": "#D97706",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "VsecM",
           "x": 3966,
@@ -51159,20 +50893,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "euwZb",
-          "x": 4082,
-          "y": 977,
-          "name": "枠: map #18（1ページ1ブロック）",
-          "fill": "#C026D314",
-          "width": 386,
-          "height": 699,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -51205,20 +50925,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "e2vRZ8",
-          "x": 4592,
-          "y": 977,
-          "name": "枠: pageHeader（作成済み）",
-          "fill": "#05966914",
-          "width": 386,
-          "height": 76,
-          "stroke": "#059669",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "FZgKD",
           "x": 4986,
@@ -51247,20 +50953,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "J6RSv",
-          "x": 4608,
-          "y": 1073,
-          "name": "枠: todayWeather #19",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 111,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -51293,20 +50985,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "WqUq4",
-          "x": 4608,
-          "y": 1210,
-          "name": "枠: weeklyForecast #19",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 147,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "bKQib",
           "x": 4986,
@@ -51335,20 +51013,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "ggFEA",
-          "x": 4608,
-          "y": 1383,
-          "name": "枠: weatherAlert #19",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 107,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -51381,20 +51045,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "e5ZNb",
-          "x": 4608,
-          "y": 1516,
-          "name": "枠: wbgt #19",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 134,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "z8yGny",
           "x": 4986,
@@ -51423,20 +51073,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "PCI4n",
-          "x": 4608,
-          "y": 1676,
-          "name": "枠: weatherOverview #19",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 104,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -51469,20 +51105,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "Vtna6",
-          "x": 4608,
-          "y": 1806,
-          "name": "枠: weatherCredit #19",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 22,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "fPU5f",
           "x": 4986,
@@ -51511,20 +51133,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "iu7ra",
-          "x": 5102,
-          "y": 977,
-          "name": "枠: pageHeader（作成済み）",
-          "fill": "#05966914",
-          "width": 386,
-          "height": 86,
-          "stroke": "#059669",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -51557,20 +51165,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "X8Wmqp",
-          "x": 5102,
-          "y": 1067,
-          "name": "枠: shopList #16",
-          "fill": "#C026D314",
-          "width": 386,
-          "height": 1263,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "w2VOus",
           "x": 5496,
@@ -51599,20 +51193,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "TLatK",
-          "x": 5612,
-          "y": 977,
-          "name": "枠: coverImage #13（店名は shopSummary）",
-          "fill": "#C026D314",
-          "width": 386,
-          "height": 226,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -51645,20 +51225,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "y1sQQ",
-          "x": 5628,
-          "y": 1227,
-          "name": "枠: shopSummary #16",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 147,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "mSjZY",
           "x": 6006,
@@ -51687,20 +51253,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "dZ78f",
-          "x": 5628,
-          "y": 1400,
-          "name": "枠: テキスト系ブロック",
-          "fill": "#64748B14",
-          "width": 354,
-          "height": 112,
-          "stroke": "#64748B",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -51733,20 +51285,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "tVSp2",
-          "x": 5628,
-          "y": 1538,
-          "name": "枠: productList #16",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 499,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "voE8E",
           "x": 6006,
@@ -51775,20 +51313,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "J9kcoS",
-          "x": 5628,
-          "y": 2063,
-          "name": "枠: callout #66",
-          "fill": "#D9770614",
-          "width": 354,
-          "height": 183,
-          "stroke": "#D97706",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -51821,20 +51345,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "ymeNi",
-          "x": 5628,
-          "y": 2272,
-          "name": "枠: shopSummary #16（ボタン）",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 44,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "NOJye",
           "x": 6006,
@@ -51863,20 +51373,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "tebky",
-          "x": 6122,
-          "y": 977,
-          "name": "枠: pageHeader（作成済み）",
-          "fill": "#05966914",
-          "width": 386,
-          "height": 86,
-          "stroke": "#059669",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -51909,20 +51405,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "URQ5O",
-          "x": 6122,
-          "y": 1067,
-          "name": "枠: artistList #17",
-          "fill": "#C026D314",
-          "width": 386,
-          "height": 1026,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "EVyPg",
           "x": 6516,
@@ -51951,20 +51433,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "zxGmS",
-          "x": 6632,
-          "y": 977,
-          "name": "枠: coverImage #13（名前・演目は artistSummary）",
-          "fill": "#C026D314",
-          "width": 386,
-          "height": 226,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -51997,20 +51465,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "o3a8Nk",
-          "x": 6648,
-          "y": 1227,
-          "name": "枠: artistSummary #17",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 177,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "UIh3N",
           "x": 7026,
@@ -52039,20 +51493,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "c1Gr8",
-          "x": 6648,
-          "y": 1430,
-          "name": "枠: テキスト系ブロック",
-          "fill": "#64748B14",
-          "width": 354,
-          "height": 112,
-          "stroke": "#64748B",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -52085,20 +51525,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "t6LXq",
-          "x": 6648,
-          "y": 1568,
-          "name": "枠: setList #17",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 271,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "I9ECl",
           "x": 7026,
@@ -52127,20 +51553,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "kmnGg",
-          "x": 6648,
-          "y": 1865,
-          "name": "枠: artistSummary #17（ボタン）",
-          "fill": "#C026D314",
-          "width": 354,
-          "height": 102,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
@@ -52173,20 +51585,6 @@
           ]
         },
         {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "g9UYi",
-          "x": 7142,
-          "y": 977,
-          "name": "枠: pageHeader（作成済み）",
-          "fill": "#05966914",
-          "width": 386,
-          "height": 86,
-          "stroke": "#059669",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
-        },
-        {
           "type": "frame",
           "id": "P2ERP4",
           "x": 7536,
@@ -52215,20 +51613,6 @@
               "fontWeight": "700"
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 4,
-          "id": "g01sFF",
-          "x": 7142,
-          "y": 1067,
-          "name": "枠: newsList #13（0件の空状態・一覧共通）",
-          "fill": "#C026D314",
-          "width": 386,
-          "height": 686,
-          "stroke": "#C026D3",
-          "strokeWidth": 2,
-          "strokeAlignment": "inner"
         },
         {
           "type": "frame",
