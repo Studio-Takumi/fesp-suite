@@ -11,7 +11,7 @@ export function PageHeader({ block, children }: BlockComponentProps) {
     return (
         <>
             {(label || title) && (
-                <header className='flex flex-col gap-1'>
+                <header className='mt-4 flex flex-col gap-1'>
                     {label && (
                         <p className='font-en text-xs font-bold tracking-widest text-sky-500 uppercase'>{label}</p>
                     )}

@@ -62,7 +62,7 @@ export function Wbgt({ block, children }: BlockComponentProps) {
     return (
         <>
             {data && level && (
-                <section aria-labelledby={headingId} className='flex flex-col gap-3 rounded-2xl bg-slate-50 p-4'>
+                <section aria-labelledby={headingId} className='flex flex-col gap-3 rounded-lg bg-slate-50 p-4'>
                     <div className='flex items-end justify-between gap-2'>
                         <div className='flex flex-col gap-1'>
                             <h2 id={headingId} className='text-sm text-slate-500'>

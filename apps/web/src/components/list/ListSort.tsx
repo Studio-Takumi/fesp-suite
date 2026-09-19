@@ -11,7 +11,7 @@ export type ListSortProps = {
 /** 一覧の並び替え（丸い枠の中の選択） */
 export function ListSort({ options, value, onChange }: ListSortProps) {
     return (
-        <div className='relative flex h-9 shrink-0 items-center rounded-full bg-slate-100'>
+        <div className='relative flex h-8 shrink-0 items-center rounded-full bg-slate-100'>
             <select
                 value={value}
                 onChange={(event) => onChange(event.target.value)}

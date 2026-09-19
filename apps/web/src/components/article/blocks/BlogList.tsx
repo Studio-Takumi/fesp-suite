@@ -55,7 +55,7 @@ export function BlogList({ block, children }: BlockComponentProps) {
                                         onRetry={() => void blogs.refetch()}
                                     />
                                 ) : (
-                                    <ul className='flex flex-col gap-7 pt-5 pb-7'>
+                                    <ul className='flex flex-col gap-8'>
                                         {visible.map((post) => (
                                             <li key={post.id}>
                                                 <BlogCard post={post} />

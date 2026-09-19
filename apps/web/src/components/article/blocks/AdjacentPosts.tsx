@@ -18,7 +18,7 @@ export function AdjacentPosts({ children }: BlockComponentProps) {
             <QueryBoundary isPending={adjacent.isPending} error={adjacent.error} data={adjacent.data}>
                 {({ previous, next }) =>
                     (previous || next) && (
-                        <nav aria-label='前後の記事' className='flex flex-col border-t border-slate-200 pt-3'>
+                        <nav aria-label='前後の記事' className='flex flex-col border-t border-slate-200 pt-2'>
                             {previous && <AdjacentPostLink direction='previous' post={previous} />}
                             {next && <AdjacentPostLink direction='next' post={next} />}
                         </nav>
@@ -42,7 +42,7 @@ function AdjacentPostLink({ direction, post }: AdjacentPostLinkProps) {
     return (
         <a
             href={`/news/${post.id}`}
-            className={cn('flex items-center gap-3 py-3', isPrevious ? 'text-left' : 'flex-row-reverse text-right')}
+            className={cn('flex items-center gap-3 py-2', isPrevious ? 'text-left' : 'flex-row-reverse text-right')}
         >
             <Arrow size={18} className='shrink-0 text-slate-400' aria-hidden />
             <span className='flex min-w-0 flex-1 flex-col gap-1'>

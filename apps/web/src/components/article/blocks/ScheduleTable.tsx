@@ -37,7 +37,7 @@ export function ScheduleTable({ block, children }: BlockComponentProps) {
                         const day = days[dayIndex]
 
                         return (
-                            <div className='flex flex-col gap-3'>
+                            <div className='flex flex-col gap-4'>
                                 {showDateTabs && days.length > 0 && (
                                     <DateTabs
                                         days={days.map(({ date }, index) => ({ day: index + 1, date }))}
@@ -75,9 +75,9 @@ function Timetable({ day }: { day: ScheduleDay }) {
 
     return (
         <div>
-            <div className='flex gap-2 border-b border-slate-200 pb-2 pl-12'>
+            <div className='flex gap-2 pb-2 pl-12'>
                 {day.venues.map((venue) => (
-                    <div key={venue.id} className='flex-1 text-center text-sm font-semibold text-slate-700'>
+                    <div key={venue.id} className='flex-1 text-center text-base font-semibold text-slate-700'>
                         {venue.name}
                     </div>
                 ))}
@@ -106,7 +106,7 @@ function Timetable({ day }: { day: ScheduleDay }) {
                                             className='absolute inset-x-0 flex flex-col overflow-hidden rounded-lg bg-amber-400 px-2 py-2'
                                             style={{ top, height: bottom - top }}
                                         >
-                                            <span className='text-xs leading-snug font-semibold text-slate-900'>
+                                            <span className='text-sm leading-snug font-semibold text-slate-900'>
                                                 {item.title}
                                             </span>
                                             <span className='text-xs text-slate-900/80'>

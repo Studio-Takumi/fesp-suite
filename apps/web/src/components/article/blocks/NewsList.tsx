@@ -57,7 +57,7 @@ export function NewsList({ block, children }: BlockComponentProps) {
                                         onRetry={() => void news.refetch()}
                                     />
                                 ) : (
-                                    <ul className='flex flex-col'>
+                                    <ul className='flex flex-col gap-4'>
                                         {visible.map((post) => (
                                             <li key={post.id}>
                                                 <NewsRow post={post} />

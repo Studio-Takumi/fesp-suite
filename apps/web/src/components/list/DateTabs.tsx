@@ -35,7 +35,7 @@ export function DateTabs({ days, selected, onSelect, showAll, align = 'start' }:
                     aria-selected={selected === ALL_TAB}
                     onClick={() => onSelect(ALL_TAB)}
                     className={cn(
-                        'flex h-10 shrink-0 items-center rounded-full px-5 text-sm font-semibold',
+                        'flex h-8 shrink-0 items-center rounded-full px-4 text-base font-semibold',
                         selected === ALL_TAB ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-900',
                     )}
                 >
@@ -52,19 +52,24 @@ export function DateTabs({ days, selected, onSelect, showAll, align = 'start' }:
                         aria-selected={isSelected}
                         onClick={() => onSelect(String(day))}
                         className={cn(
-                            'flex h-10 shrink-0 items-center gap-2 rounded-full px-4',
+                            'flex h-8 shrink-0 items-center rounded-full px-4',
                             isSelected ? 'bg-sky-500' : 'bg-slate-100',
                         )}
                     >
                         <span
-                            className={cn('font-en text-xs font-bold', isSelected ? 'text-white/80' : 'text-slate-400')}
+                            className={cn(
+                                'font-en pr-2 text-base font-bold',
+                                isSelected ? 'text-white' : 'text-slate-900',
+                            )}
                         >
                             Day{day}
                         </span>
-                        <span className={cn('font-en text-lg font-bold', isSelected ? 'text-white' : 'text-slate-900')}>
+                        <span
+                            className={cn('font-en text-sm font-bold', isSelected ? 'text-white/80' : 'text-slate-400')}
+                        >
                             {dateFormatter(date, 'M/D')}
                         </span>
-                        <span className={cn('text-xs', isSelected ? 'text-white/80' : 'text-slate-400')}>
+                        <span className={cn('text-[8px]', isSelected ? 'text-white/80' : 'text-slate-400')}>
                             {dateFormatter(date, '(EEE)')}
                         </span>
                     </button>

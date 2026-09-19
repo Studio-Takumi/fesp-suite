@@ -26,7 +26,7 @@ export function WeatherAlert({ children }: BlockComponentProps) {
             {alert && alert.warnings.length > 0 && (
                 <section
                     aria-label='気象警報・注意報'
-                    className='flex flex-col gap-2 rounded-2xl border border-red-200 bg-red-50 p-4'
+                    className='flex flex-col gap-2 rounded-lg border border-red-200 bg-red-50 p-4'
                 >
                     <div className='flex items-center gap-2'>
                         <TriangleAlert size={18} className='shrink-0 text-rose-500' aria-hidden />
@@ -35,7 +35,7 @@ export function WeatherAlert({ children }: BlockComponentProps) {
                                 <li
                                     key={`${warning.level}-${warning.name}`}
                                     className={cn(
-                                        'rounded-md px-3 py-1 text-xs font-bold',
+                                        'rounded-sm px-3 py-1 text-xs font-bold',
                                         warningLevels[warning.level].className,
                                     )}
                                 >

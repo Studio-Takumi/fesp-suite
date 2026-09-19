@@ -29,6 +29,10 @@ const block = (
 
 const renderBlocks = (blocks: ArticleDocument) => render(<ArticleRenderer blocks={blocks} />)
 
+/** 模擬店カードの商品サムネの価格。「円」だけ小さくして要素が分かれるので、要素をまたいだ文字で照合する */
+const priceText = (value: string) => (_: string, element: Element | null) =>
+    element?.tagName === 'SPAN' && element.textContent === value
+
 /**
  * データを読む独自コンポーネント用。`data` を渡すとそのキーにデータを入れておき、仮データの代わりに使う
  * （`staleTime: Infinity` なので読み直さない）
@@ -635,9 +639,9 @@ describe('ArticleRenderer', () => {
         expect(first.getByText('2年1組')).toBeInTheDocument()
         expect(first.getByText('@ 特別教室A')).toBeInTheDocument()
         // カードの中の商品は先頭から3件まで
-        expect(first.getAllByText('200円')).toHaveLength(2)
-        expect(first.getByText('150円')).toBeInTheDocument()
-        expect(first.queryByText('250円')).not.toBeInTheDocument()
+        expect(first.getAllByText(priceText('200円'))).toHaveLength(2)
+        expect(first.getByText(priceText('150円'))).toBeInTheDocument()
+        expect(first.queryByText(priceText('250円'))).not.toBeInTheDocument()
 
         const dateTabs = within(screen.getByRole('tablist', { name: '日付' })).getAllByRole('tab')
         expect(dateTabs.map((tab) => tab.textContent)).toEqual(['すべて', 'Day16/6(土)', 'Day26/7(日)'])
@@ -701,7 +705,7 @@ describe('ArticleRenderer', () => {
         renderWithQuery([shopList({ showProducts: false })])
 
         expect(await screen.findAllByRole('listitem')).toHaveLength(mockShops.length)
-        expect(screen.queryByText('200円')).not.toBeInTheDocument()
+        expect(screen.queryByText(priceText('200円'))).not.toBeInTheDocument()
     })
 
     it('模擬店一覧は絞り込んだ結果が0件なら空状態を出し、タブ・検索は出したままにする', async () => {
