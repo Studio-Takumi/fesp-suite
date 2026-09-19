@@ -46,10 +46,11 @@ jobs:
             - name: Lint / Typecheck / Test / Build
               run: bun run turbo run lint typecheck test build
 
+    # verify とは独立して走る。E2E は verify の成果物を使わず、
+    # 自分で install してビルドするため、直列にする理由がない。
     e2e:
         runs-on: ubuntu-latest
         timeout-minutes: 30
-        needs: verify
 
         # ビルド・テストを通すためだけのダミー値。実値は deploy.yml 側で渡す。
         # ここに本物のキーを書かないこと（フォークの PR でも実行されるため）
@@ -76,8 +77,24 @@ jobs:
             - name: Install dependencies
               run: bun install --frozen-lockfile
 
+            # ブラウザ本体だけキャッシュする。OS依存パッケージ（webkit の
+            # gstreamer 一式）はキャッシュに載らないので毎回入れる。
+            - name: Resolve Playwright version
+              id: playwright-version
+              run: |
+                  version=$(bunx playwright --version | awk '{print $2}')
+                  echo "version=$version" >> "$GITHUB_OUTPUT"
+
+            - uses: actions/cache@v4
+              with:
+                  path: ~/.cache/ms-playwright
+                  key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+            - name: Install Playwright system dependencies
+              run: bunx playwright install-deps chromium webkit
+
             - name: Install Playwright browsers
-              run: bunx playwright install --with-deps chromium webkit
+              run: bunx playwright install chromium webkit
 
             - name: Run E2E
               run: bun run turbo run e2e
