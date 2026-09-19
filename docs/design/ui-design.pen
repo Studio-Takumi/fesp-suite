@@ -54,6 +54,8 @@
                   "layout": "vertical",
                   "gap": 3,
                   "padding": [
+                    18,
+                    0,
                     2,
                     0
                   ],
@@ -409,10 +411,6 @@
                   "width": 358,
                   "fill": "$white",
                   "gap": 14,
-                  "padding": [
-                    12,
-                    0
-                  ],
                   "children": [
                     {
                       "type": "frame",
@@ -617,11 +615,11 @@
                       "y": 66,
                       "name": "価格",
                       "fill": "$white",
-                      "cornerRadius": 8,
+                      "cornerRadius": 999,
                       "gap": 1,
                       "padding": [
-                        2,
-                        7
+                        0,
+                        10
                       ],
                       "alignItems": "center",
                       "children": [
@@ -632,7 +630,7 @@
                           "fill": "$slate-900",
                           "content": "100",
                           "fontFamily": "$font-en",
-                          "fontSize": 14,
+                          "fontSize": 16,
                           "fontWeight": "600"
                         },
                         {
@@ -642,7 +640,7 @@
                           "fill": "$slate-900",
                           "content": "円",
                           "fontFamily": "$font-jp",
-                          "fontSize": 10,
+                          "fontSize": 12,
                           "fontWeight": "normal"
                         }
                       ]
@@ -675,7 +673,7 @@
                   "reusable": true,
                   "width": 358,
                   "layout": "vertical",
-                  "gap": 10,
+                  "gap": 8,
                   "children": [
                     {
                       "type": "frame",
@@ -812,7 +810,7 @@
                           "content": "レモネードスタンド",
                           "lineHeight": 1.4,
                           "fontFamily": "$font-jp",
-                          "fontSize": 19,
+                          "fontSize": 24,
                           "fontWeight": "700"
                         },
                         {
@@ -1681,6 +1679,7 @@
                   "name": "リスト",
                   "width": "fill_container",
                   "layout": "vertical",
+                  "gap": 16,
                   "children": [
                     {
                       "id": "XfcB6",
@@ -2674,6 +2673,7 @@
                   "name": "リスト",
                   "width": "fill_container",
                   "layout": "vertical",
+                  "gap": 16,
                   "children": [
                     {
                       "id": "hbOKU",
@@ -3561,6 +3561,7 @@
           "name": "リスト",
           "width": "fill_container",
           "layout": "vertical",
+          "gap": 16,
           "padding": [
             4,
             16,
@@ -4247,7 +4248,7 @@
               },
               "layout": "vertical",
               "padding": [
-                12,
+                8,
                 0,
                 0,
                 0
@@ -4260,7 +4261,7 @@
                   "width": "fill_container",
                   "gap": 10,
                   "padding": [
-                    14,
+                    8,
                     0
                   ],
                   "alignItems": "center",
@@ -4318,7 +4319,7 @@
                   "width": "fill_container",
                   "gap": 10,
                   "padding": [
-                    14,
+                    8,
                     0
                   ],
                   "justifyContent": "end",
@@ -4642,6 +4643,7 @@
                   "name": "リスト",
                   "width": "fill_container",
                   "layout": "vertical",
+                  "gap": 16,
                   "padding": [
                     6,
                     10,
@@ -5615,11 +5617,9 @@
           "name": "リスト",
           "width": "fill_container",
           "layout": "vertical",
-          "gap": 28,
+          "gap": 32,
           "padding": [
-            20,
-            16,
-            28,
+            0,
             16
           ],
           "children": [
@@ -6423,11 +6423,9 @@
                   "name": "リスト",
                   "width": "fill_container",
                   "layout": "vertical",
-                  "gap": 6,
+                  "gap": 32,
                   "padding": [
-                    10,
-                    10,
-                    24,
+                    0,
                     10
                   ],
                   "children": [
@@ -6985,7 +6983,7 @@
           "padding": [
             0,
             16,
-            12,
+            16,
             16
           ],
           "justifyContent": "center",
@@ -6994,11 +6992,12 @@
               "type": "frame",
               "id": "PI94O",
               "name": "Day1",
+              "height": 32,
               "fill": "$sky-500",
               "cornerRadius": 999,
               "gap": 8,
               "padding": [
-                8,
+                0,
                 16
               ],
               "alignItems": "center",
@@ -7007,32 +7006,40 @@
                   "type": "text",
                   "id": "YqcVS",
                   "name": "Day",
-                  "fill": "#FFFFFFCC",
+                  "fill": "$white",
                   "content": "Day1",
                   "fontFamily": "$font-en",
-                  "fontSize": 12,
+                  "fontSize": 16,
                   "fontWeight": "700"
                 },
                 {
-                  "type": "text",
-                  "id": "qG9ZW",
-                  "name": "日付",
-                  "fill": "$white",
-                  "content": "6/6",
-                  "lineHeight": 1,
-                  "fontFamily": "$font-en",
-                  "fontSize": 20,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "sTcfC",
-                  "name": "曜日",
-                  "fill": "#FFFFFFCC",
-                  "content": "(土)",
-                  "fontFamily": "$font-jp",
-                  "fontSize": 11,
-                  "fontWeight": "normal"
+                  "type": "frame",
+                  "id": "F0Rs6U",
+                  "name": "日付・曜日",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "qG9ZW",
+                      "name": "日付",
+                      "fill": "#FFFFFFCC",
+                      "content": "6/6",
+                      "lineHeight": 1,
+                      "fontFamily": "$font-en",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "sTcfC",
+                      "name": "曜日",
+                      "fill": "#FFFFFFCC",
+                      "content": "(土)",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 8,
+                      "fontWeight": "normal"
+                    }
+                  ]
                 }
               ]
             },
@@ -7040,11 +7047,12 @@
               "type": "frame",
               "id": "ftqCh",
               "name": "Day2",
+              "height": 32,
               "fill": "$slate-100",
               "cornerRadius": 999,
               "gap": 8,
               "padding": [
-                8,
+                0,
                 16
               ],
               "alignItems": "center",
@@ -7053,32 +7061,40 @@
                   "type": "text",
                   "id": "wPTRr",
                   "name": "Day",
-                  "fill": "$slate-400",
+                  "fill": "$slate-900",
                   "content": "Day2",
                   "fontFamily": "$font-en",
-                  "fontSize": 12,
+                  "fontSize": 16,
                   "fontWeight": "700"
                 },
                 {
-                  "type": "text",
-                  "id": "LEHCj",
-                  "name": "日付",
-                  "fill": "$slate-900",
-                  "content": "6/7",
-                  "lineHeight": 1,
-                  "fontFamily": "$font-en",
-                  "fontSize": 20,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "p4toB",
-                  "name": "曜日",
-                  "fill": "$slate-400",
-                  "content": "(日)",
-                  "fontFamily": "$font-jp",
-                  "fontSize": 11,
-                  "fontWeight": "normal"
+                  "type": "frame",
+                  "id": "O8MYw",
+                  "name": "日付・曜日",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "LEHCj",
+                      "name": "日付",
+                      "fill": "$slate-400",
+                      "content": "6/7",
+                      "lineHeight": 1,
+                      "fontFamily": "$font-en",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "p4toB",
+                      "name": "曜日",
+                      "fill": "$slate-400",
+                      "content": "(日)",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 8,
+                      "fontWeight": "normal"
+                    }
+                  ]
                 }
               ]
             }
@@ -7090,9 +7106,6 @@
           "name": "会場ヘッダー",
           "width": "fill_container",
           "stroke": "$slate-200",
-          "strokeWidth": {
-            "bottom": 1
-          },
           "gap": 6,
           "padding": [
             0,
@@ -7122,7 +7135,7 @@
                   "fill": "$slate-700",
                   "content": "体育館",
                   "fontFamily": "$font-jp",
-                  "fontSize": 13,
+                  "fontSize": 16,
                   "fontWeight": "600"
                 }
               ]
@@ -7141,7 +7154,7 @@
                   "fill": "$slate-700",
                   "content": "中庭",
                   "fontFamily": "$font-jp",
-                  "fontSize": 13,
+                  "fontSize": 16,
                   "fontWeight": "600"
                 }
               ]
@@ -7160,7 +7173,7 @@
                   "fill": "$slate-700",
                   "content": "模擬店",
                   "fontFamily": "$font-jp",
-                  "fontSize": 13,
+                  "fontSize": 16,
                   "fontWeight": "600"
                 }
               ]
@@ -7465,7 +7478,7 @@
                       "content": "オープニング",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -7508,7 +7521,7 @@
                       "content": "ソラノネ",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -7551,7 +7564,7 @@
                       "content": "ギター部",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -7594,7 +7607,7 @@
                       "content": "有志ステージ",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -7637,7 +7650,7 @@
                       "content": "クロージング",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -7680,7 +7693,7 @@
                       "content": "ビンゴ予選",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -7723,7 +7736,7 @@
                       "content": "有志ステージ",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -7766,7 +7779,7 @@
                       "content": "クイズ大会",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -7809,7 +7822,7 @@
                       "content": "ビンゴ予選",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -7852,7 +7865,7 @@
                       "content": "模擬店",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -7976,7 +7989,7 @@
           "padding": [
             0,
             16,
-            12,
+            16,
             16
           ],
           "justifyContent": "center",
@@ -7985,11 +7998,12 @@
               "type": "frame",
               "id": "O7erz",
               "name": "Day1",
+              "height": 32,
               "fill": "$sky-500",
               "cornerRadius": 999,
               "gap": 8,
               "padding": [
-                8,
+                0,
                 16
               ],
               "alignItems": "center",
@@ -7998,32 +8012,40 @@
                   "type": "text",
                   "id": "WzE4w",
                   "name": "Day",
-                  "fill": "#FFFFFFCC",
+                  "fill": "$white",
                   "content": "Day1",
                   "fontFamily": "$font-en",
-                  "fontSize": 12,
+                  "fontSize": 16,
                   "fontWeight": "700"
                 },
                 {
-                  "type": "text",
-                  "id": "CZo79",
-                  "name": "日付",
-                  "fill": "$white",
-                  "content": "6/6",
-                  "lineHeight": 1,
-                  "fontFamily": "$font-en",
-                  "fontSize": 20,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "Jhuyl",
-                  "name": "曜日",
-                  "fill": "#FFFFFFCC",
-                  "content": "(土)",
-                  "fontFamily": "$font-jp",
-                  "fontSize": 11,
-                  "fontWeight": "normal"
+                  "type": "frame",
+                  "id": "W9j6M7",
+                  "name": "日付・曜日",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "CZo79",
+                      "name": "日付",
+                      "fill": "#FFFFFFCC",
+                      "content": "6/6",
+                      "lineHeight": 1,
+                      "fontFamily": "$font-en",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Jhuyl",
+                      "name": "曜日",
+                      "fill": "#FFFFFFCC",
+                      "content": "(土)",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 8,
+                      "fontWeight": "normal"
+                    }
+                  ]
                 }
               ]
             },
@@ -8031,11 +8053,12 @@
               "type": "frame",
               "id": "V6zi0",
               "name": "Day2",
+              "height": 32,
               "fill": "$slate-100",
               "cornerRadius": 999,
               "gap": 8,
               "padding": [
-                8,
+                0,
                 16
               ],
               "alignItems": "center",
@@ -8044,32 +8067,40 @@
                   "type": "text",
                   "id": "AFisI",
                   "name": "Day",
-                  "fill": "$slate-400",
+                  "fill": "$slate-900",
                   "content": "Day2",
                   "fontFamily": "$font-en",
-                  "fontSize": 12,
+                  "fontSize": 16,
                   "fontWeight": "700"
                 },
                 {
-                  "type": "text",
-                  "id": "oLrjc",
-                  "name": "日付",
-                  "fill": "$slate-900",
-                  "content": "6/7",
-                  "lineHeight": 1,
-                  "fontFamily": "$font-en",
-                  "fontSize": 20,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "XsewM",
-                  "name": "曜日",
-                  "fill": "$slate-400",
-                  "content": "(日)",
-                  "fontFamily": "$font-jp",
-                  "fontSize": 11,
-                  "fontWeight": "normal"
+                  "type": "frame",
+                  "id": "f7MKIE",
+                  "name": "日付・曜日",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "oLrjc",
+                      "name": "日付",
+                      "fill": "$slate-400",
+                      "content": "6/7",
+                      "lineHeight": 1,
+                      "fontFamily": "$font-en",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XsewM",
+                      "name": "曜日",
+                      "fill": "$slate-400",
+                      "content": "(日)",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 8,
+                      "fontWeight": "normal"
+                    }
+                  ]
                 }
               ]
             }
@@ -8081,9 +8112,6 @@
           "name": "会場ヘッダー",
           "width": "fill_container",
           "stroke": "$slate-200",
-          "strokeWidth": {
-            "bottom": 1
-          },
           "gap": 6,
           "padding": [
             0,
@@ -8113,7 +8141,7 @@
                   "fill": "$slate-700",
                   "content": "体育館",
                   "fontFamily": "$font-jp",
-                  "fontSize": 13,
+                  "fontSize": 16,
                   "fontWeight": "600"
                 }
               ]
@@ -8132,7 +8160,7 @@
                   "fill": "$slate-700",
                   "content": "中庭",
                   "fontFamily": "$font-jp",
-                  "fontSize": 13,
+                  "fontSize": 16,
                   "fontWeight": "600"
                 }
               ]
@@ -8151,7 +8179,7 @@
                   "fill": "$slate-700",
                   "content": "模擬店",
                   "fontFamily": "$font-jp",
-                  "fontSize": 13,
+                  "fontSize": 16,
                   "fontWeight": "600"
                 }
               ]
@@ -8456,7 +8484,7 @@
                       "content": "オープニング",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -8499,7 +8527,7 @@
                       "content": "ソラノネ",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -8542,7 +8570,7 @@
                       "content": "ギター部",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -8585,7 +8613,7 @@
                       "content": "有志ステージ",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -8628,7 +8656,7 @@
                       "content": "クロージング",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -8671,7 +8699,7 @@
                       "content": "ビンゴ予選",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -8714,7 +8742,7 @@
                       "content": "有志ステージ",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -8757,7 +8785,7 @@
                       "content": "クイズ大会",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -8800,7 +8828,7 @@
                       "content": "ビンゴ予選",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -8843,7 +8871,7 @@
                       "content": "模擬店",
                       "lineHeight": 1.3,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -10186,12 +10214,8 @@
                   "name": "リスト",
                   "width": "fill_container",
                   "layout": "vertical",
-                  "padding": [
-                    4,
-                    16,
-                    16,
-                    16
-                  ],
+                  "gap": 8,
+                  "padding": 16,
                   "children": [
                     {
                       "type": "frame",
@@ -10203,20 +10227,16 @@
                         "bottom": 1
                       },
                       "gap": 12,
-                      "padding": [
-                        12,
-                        0
-                      ],
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
                           "id": "mVD3a",
                           "name": "サムネ",
-                          "width": 52,
-                          "height": 52,
+                          "width": 64,
+                          "height": 64,
                           "fill": "$rose-200",
-                          "cornerRadius": 12,
+                          "cornerRadius": 8,
                           "justifyContent": "center",
                           "alignItems": "center",
                           "children": [
@@ -10238,7 +10258,7 @@
                           "name": "テキスト",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 3,
+                          "gap": 2,
                           "children": [
                             {
                               "type": "frame",
@@ -10327,20 +10347,16 @@
                         "bottom": 1
                       },
                       "gap": 12,
-                      "padding": [
-                        12,
-                        0
-                      ],
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
                           "id": "Bb7sJ",
                           "name": "サムネ",
-                          "width": 52,
-                          "height": 52,
+                          "width": 64,
+                          "height": 64,
                           "fill": "$amber-200",
-                          "cornerRadius": 12,
+                          "cornerRadius": 8,
                           "justifyContent": "center",
                           "alignItems": "center",
                           "children": [
@@ -10362,7 +10378,7 @@
                           "name": "テキスト",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 3,
+                          "gap": 2,
                           "children": [
                             {
                               "type": "frame",
@@ -10451,20 +10467,16 @@
                         "bottom": 1
                       },
                       "gap": 12,
-                      "padding": [
-                        12,
-                        0
-                      ],
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
                           "id": "B3bQf9",
                           "name": "サムネ",
-                          "width": 52,
-                          "height": 52,
+                          "width": 64,
+                          "height": 64,
                           "fill": "$emerald-200",
-                          "cornerRadius": 12,
+                          "cornerRadius": 8,
                           "justifyContent": "center",
                           "alignItems": "center",
                           "children": [
@@ -10486,7 +10498,7 @@
                           "name": "テキスト",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 3,
+                          "gap": 2,
                           "children": [
                             {
                               "type": "frame",
@@ -10652,7 +10664,7 @@
               "name": "今日",
               "width": "fill_container",
               "fill": "$sky-50",
-              "cornerRadius": 18,
+              "cornerRadius": 8,
               "gap": 18,
               "padding": 20,
               "alignItems": "center",
@@ -10691,7 +10703,7 @@
                           "lineHeight": 1,
                           "fontFamily": "$font-en",
                           "fontSize": 52,
-                          "fontWeight": "200"
+                          "fontWeight": "500"
                         },
                         {
                           "type": "text",
@@ -10838,7 +10850,7 @@
                       "name": "今日",
                       "width": 70,
                       "fill": "$slate-50",
-                      "cornerRadius": 14,
+                      "cornerRadius": 8,
                       "layout": "vertical",
                       "gap": 8,
                       "padding": [
@@ -10851,11 +10863,11 @@
                           "type": "text",
                           "id": "P5SSW",
                           "name": "日",
-                          "fill": "$slate-500",
+                          "fill": "$slate-400",
                           "content": "今日",
                           "fontFamily": "$font-jp",
                           "fontSize": 11,
-                          "fontWeight": "500"
+                          "fontWeight": "600"
                         },
                         {
                           "type": "icon",
@@ -10913,7 +10925,7 @@
                       "name": "明日",
                       "width": 70,
                       "fill": "$slate-50",
-                      "cornerRadius": 14,
+                      "cornerRadius": 8,
                       "layout": "vertical",
                       "gap": 8,
                       "padding": [
@@ -10926,11 +10938,11 @@
                           "type": "text",
                           "id": "hCKVd",
                           "name": "日",
-                          "fill": "$slate-500",
+                          "fill": "$slate-400",
                           "content": "明日",
                           "fontFamily": "$font-jp",
                           "fontSize": 11,
-                          "fontWeight": "500"
+                          "fontWeight": "600"
                         },
                         {
                           "type": "icon",
@@ -10988,7 +11000,7 @@
                       "name": "15(土)",
                       "width": 70,
                       "fill": "$slate-50",
-                      "cornerRadius": 14,
+                      "cornerRadius": 8,
                       "layout": "vertical",
                       "gap": 8,
                       "padding": [
@@ -11001,11 +11013,11 @@
                           "type": "text",
                           "id": "NrWoK",
                           "name": "日",
-                          "fill": "$slate-500",
+                          "fill": "$slate-400",
                           "content": "15(土)",
                           "fontFamily": "$font-jp",
                           "fontSize": 11,
-                          "fontWeight": "500"
+                          "fontWeight": "600"
                         },
                         {
                           "type": "icon",
@@ -11063,7 +11075,7 @@
                       "name": "16(日)",
                       "width": 70,
                       "fill": "$slate-50",
-                      "cornerRadius": 14,
+                      "cornerRadius": 8,
                       "layout": "vertical",
                       "gap": 8,
                       "padding": [
@@ -11076,11 +11088,11 @@
                           "type": "text",
                           "id": "juI87",
                           "name": "日",
-                          "fill": "$slate-500",
+                          "fill": "$slate-400",
                           "content": "16(日)",
                           "fontFamily": "$font-jp",
                           "fontSize": 11,
-                          "fontWeight": "500"
+                          "fontWeight": "600"
                         },
                         {
                           "type": "icon",
@@ -11138,7 +11150,7 @@
                       "name": "17(月)",
                       "width": 70,
                       "fill": "$slate-50",
-                      "cornerRadius": 14,
+                      "cornerRadius": 8,
                       "layout": "vertical",
                       "gap": 8,
                       "padding": [
@@ -11151,11 +11163,11 @@
                           "type": "text",
                           "id": "XAWsf",
                           "name": "日",
-                          "fill": "$slate-500",
+                          "fill": "$slate-400",
                           "content": "17(月)",
                           "fontFamily": "$font-jp",
                           "fontSize": 11,
-                          "fontWeight": "500"
+                          "fontWeight": "600"
                         },
                         {
                           "type": "icon",
@@ -11217,7 +11229,7 @@
               "name": "気象警報",
               "width": "fill_container",
               "fill": "#FEF2F2",
-              "cornerRadius": 16,
+              "cornerRadius": 8,
               "stroke": "#FECACA",
               "strokeWidth": 1,
               "layout": "vertical",
@@ -11247,7 +11259,7 @@
                       "id": "EFMhx",
                       "name": "暴風",
                       "fill": "$rose-500",
-                      "cornerRadius": 6,
+                      "cornerRadius": 4,
                       "padding": [
                         3,
                         11
@@ -11270,7 +11282,7 @@
                       "id": "wkgMU",
                       "name": "強風",
                       "fill": "$amber-400",
-                      "cornerRadius": 6,
+                      "cornerRadius": 4,
                       "padding": [
                         3,
                         11
@@ -11293,7 +11305,7 @@
                       "id": "e3KvEI",
                       "name": "波浪",
                       "fill": "$amber-400",
-                      "cornerRadius": 6,
+                      "cornerRadius": 4,
                       "padding": [
                         3,
                         11
@@ -11334,7 +11346,7 @@
               "name": "暑さ指数",
               "width": "fill_container",
               "fill": "$slate-50",
-              "cornerRadius": 16,
+              "cornerRadius": 8,
               "layout": "vertical",
               "gap": 12,
               "padding": 16,
@@ -11817,7 +11829,7 @@
                   "name": "今日",
                   "width": "fill_container",
                   "fill": "$sky-50",
-                  "cornerRadius": 20,
+                  "cornerRadius": 8,
                   "gap": 24,
                   "padding": 26,
                   "alignItems": "center",
@@ -11856,7 +11868,7 @@
                               "lineHeight": 1,
                               "fontFamily": "$font-en",
                               "fontSize": 68,
-                              "fontWeight": "200"
+                              "fontWeight": "500"
                             },
                             {
                               "type": "text",
@@ -12031,7 +12043,7 @@
                           "name": "今日",
                           "width": "fill_container",
                           "fill": "$slate-50",
-                          "cornerRadius": 14,
+                          "cornerRadius": 8,
                           "layout": "vertical",
                           "gap": 9,
                           "padding": [
@@ -12044,11 +12056,11 @@
                               "type": "text",
                               "id": "cYNEY",
                               "name": "日",
-                              "fill": "$slate-500",
+                              "fill": "$slate-400",
                               "content": "今日",
                               "fontFamily": "$font-jp",
                               "fontSize": 11,
-                              "fontWeight": "500"
+                              "fontWeight": "600"
                             },
                             {
                               "type": "icon",
@@ -12106,7 +12118,7 @@
                           "name": "明日",
                           "width": "fill_container",
                           "fill": "$slate-50",
-                          "cornerRadius": 14,
+                          "cornerRadius": 8,
                           "layout": "vertical",
                           "gap": 9,
                           "padding": [
@@ -12119,11 +12131,11 @@
                               "type": "text",
                               "id": "S4Gwu",
                               "name": "日",
-                              "fill": "$slate-500",
+                              "fill": "$slate-400",
                               "content": "明日",
                               "fontFamily": "$font-jp",
                               "fontSize": 11,
-                              "fontWeight": "500"
+                              "fontWeight": "600"
                             },
                             {
                               "type": "icon",
@@ -12181,7 +12193,7 @@
                           "name": "15(土)",
                           "width": "fill_container",
                           "fill": "$slate-50",
-                          "cornerRadius": 14,
+                          "cornerRadius": 8,
                           "layout": "vertical",
                           "gap": 9,
                           "padding": [
@@ -12194,11 +12206,11 @@
                               "type": "text",
                               "id": "V58QWN",
                               "name": "日",
-                              "fill": "$slate-500",
+                              "fill": "$slate-400",
                               "content": "15(土)",
                               "fontFamily": "$font-jp",
                               "fontSize": 11,
-                              "fontWeight": "500"
+                              "fontWeight": "600"
                             },
                             {
                               "type": "icon",
@@ -12256,7 +12268,7 @@
                           "name": "16(日)",
                           "width": "fill_container",
                           "fill": "$slate-50",
-                          "cornerRadius": 14,
+                          "cornerRadius": 8,
                           "layout": "vertical",
                           "gap": 9,
                           "padding": [
@@ -12269,11 +12281,11 @@
                               "type": "text",
                               "id": "nL1LD",
                               "name": "日",
-                              "fill": "$slate-500",
+                              "fill": "$slate-400",
                               "content": "16(日)",
                               "fontFamily": "$font-jp",
                               "fontSize": 11,
-                              "fontWeight": "500"
+                              "fontWeight": "600"
                             },
                             {
                               "type": "icon",
@@ -12331,7 +12343,7 @@
                           "name": "17(月)",
                           "width": "fill_container",
                           "fill": "$slate-50",
-                          "cornerRadius": 14,
+                          "cornerRadius": 8,
                           "layout": "vertical",
                           "gap": 9,
                           "padding": [
@@ -12344,11 +12356,11 @@
                               "type": "text",
                               "id": "RzfJt",
                               "name": "日",
-                              "fill": "$slate-500",
+                              "fill": "$slate-400",
                               "content": "17(月)",
                               "fontFamily": "$font-jp",
                               "fontSize": 11,
-                              "fontWeight": "500"
+                              "fontWeight": "600"
                             },
                             {
                               "type": "icon",
@@ -12406,7 +12418,7 @@
                           "name": "18(火)",
                           "width": "fill_container",
                           "fill": "$slate-50",
-                          "cornerRadius": 14,
+                          "cornerRadius": 8,
                           "layout": "vertical",
                           "gap": 9,
                           "padding": [
@@ -12419,11 +12431,11 @@
                               "type": "text",
                               "id": "B8TCr",
                               "name": "日",
-                              "fill": "$slate-500",
+                              "fill": "$slate-400",
                               "content": "18(火)",
                               "fontFamily": "$font-jp",
                               "fontSize": 11,
-                              "fontWeight": "500"
+                              "fontWeight": "600"
                             },
                             {
                               "type": "icon",
@@ -12481,7 +12493,7 @@
                           "name": "19(水)",
                           "width": "fill_container",
                           "fill": "$slate-50",
-                          "cornerRadius": 14,
+                          "cornerRadius": 8,
                           "layout": "vertical",
                           "gap": 9,
                           "padding": [
@@ -12494,11 +12506,11 @@
                               "type": "text",
                               "id": "wQKWI",
                               "name": "日",
-                              "fill": "$slate-500",
+                              "fill": "$slate-400",
                               "content": "19(水)",
                               "fontFamily": "$font-jp",
                               "fontSize": 11,
-                              "fontWeight": "500"
+                              "fontWeight": "600"
                             },
                             {
                               "type": "icon",
@@ -12603,7 +12615,7 @@
                   "name": "気象警報",
                   "width": "fill_container",
                   "fill": "#FEF2F2",
-                  "cornerRadius": 16,
+                  "cornerRadius": 8,
                   "stroke": "#FECACA",
                   "strokeWidth": 1,
                   "layout": "vertical",
@@ -12633,7 +12645,7 @@
                           "id": "RzbFQ",
                           "name": "暴風",
                           "fill": "$rose-500",
-                          "cornerRadius": 6,
+                          "cornerRadius": 4,
                           "padding": [
                             3,
                             11
@@ -12656,7 +12668,7 @@
                           "id": "YY8sD",
                           "name": "強風",
                           "fill": "$amber-400",
-                          "cornerRadius": 6,
+                          "cornerRadius": 4,
                           "padding": [
                             3,
                             11
@@ -12679,7 +12691,7 @@
                           "id": "JSUyY",
                           "name": "波浪",
                           "fill": "$amber-400",
-                          "cornerRadius": 6,
+                          "cornerRadius": 4,
                           "padding": [
                             3,
                             11
@@ -12720,7 +12732,7 @@
                   "name": "暑さ指数",
                   "width": "fill_container",
                   "fill": "$slate-50",
-                  "cornerRadius": 16,
+                  "cornerRadius": 8,
                   "layout": "vertical",
                   "gap": 12,
                   "padding": 16,
@@ -13134,12 +13146,13 @@
               "type": "frame",
               "id": "ffG7p",
               "name": "すべて",
-              "height": 42,
+              "height": 32,
               "fill": "$sky-500",
               "cornerRadius": 999,
+              "gap": 8,
               "padding": [
                 0,
-                18
+                16
               ],
               "justifyContent": "center",
               "alignItems": "center",
@@ -13151,7 +13164,7 @@
                   "fill": "$white",
                   "content": "すべて",
                   "fontFamily": "$font-jp",
-                  "fontSize": 14,
+                  "fontSize": 16,
                   "fontWeight": "600"
                 }
               ]
@@ -13160,13 +13173,13 @@
               "type": "frame",
               "id": "g9xW9C",
               "name": "Day1",
-              "height": 42,
+              "height": 32,
               "fill": "$slate-100",
               "cornerRadius": 999,
-              "gap": 7,
+              "gap": 8,
               "padding": [
                 0,
-                14
+                16
               ],
               "alignItems": "center",
               "children": [
@@ -13174,32 +13187,40 @@
                   "type": "text",
                   "id": "prqfk",
                   "name": "Day",
-                  "fill": "$slate-400",
+                  "fill": "$slate-900",
                   "content": "Day1",
                   "fontFamily": "$font-en",
-                  "fontSize": 11,
+                  "fontSize": 16,
                   "fontWeight": "700"
                 },
                 {
-                  "type": "text",
-                  "id": "jl84X",
-                  "name": "日付",
-                  "fill": "$slate-900",
-                  "content": "6/6",
-                  "lineHeight": 1,
-                  "fontFamily": "$font-en",
-                  "fontSize": 18,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "M1z5wa",
-                  "name": "曜日",
-                  "fill": "$slate-400",
-                  "content": "(土)",
-                  "fontFamily": "$font-jp",
-                  "fontSize": 10,
-                  "fontWeight": "normal"
+                  "type": "frame",
+                  "id": "iW22R",
+                  "name": "日付・曜日",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "jl84X",
+                      "name": "日付",
+                      "fill": "$slate-400",
+                      "content": "6/6",
+                      "lineHeight": 1,
+                      "fontFamily": "$font-en",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "M1z5wa",
+                      "name": "曜日",
+                      "fill": "$slate-400",
+                      "content": "(土)",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 8,
+                      "fontWeight": "normal"
+                    }
+                  ]
                 }
               ]
             },
@@ -13207,13 +13228,13 @@
               "type": "frame",
               "id": "BNoP0",
               "name": "Day2",
-              "height": 42,
+              "height": 32,
               "fill": "$slate-100",
               "cornerRadius": 999,
-              "gap": 7,
+              "gap": 8,
               "padding": [
                 0,
-                14
+                16
               ],
               "alignItems": "center",
               "children": [
@@ -13221,32 +13242,40 @@
                   "type": "text",
                   "id": "b8Evw",
                   "name": "Day",
-                  "fill": "$slate-400",
+                  "fill": "$slate-900",
                   "content": "Day2",
                   "fontFamily": "$font-en",
-                  "fontSize": 11,
+                  "fontSize": 16,
                   "fontWeight": "700"
                 },
                 {
-                  "type": "text",
-                  "id": "RPzN6",
-                  "name": "日付",
-                  "fill": "$slate-900",
-                  "content": "6/7",
-                  "lineHeight": 1,
-                  "fontFamily": "$font-en",
-                  "fontSize": 18,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "AAyof",
-                  "name": "曜日",
-                  "fill": "$slate-400",
-                  "content": "(日)",
-                  "fontFamily": "$font-jp",
-                  "fontSize": 10,
-                  "fontWeight": "normal"
+                  "type": "frame",
+                  "id": "NknTY",
+                  "name": "日付・曜日",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "RPzN6",
+                      "name": "日付",
+                      "fill": "$slate-400",
+                      "content": "6/7",
+                      "lineHeight": 1,
+                      "fontFamily": "$font-en",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "AAyof",
+                      "name": "曜日",
+                      "fill": "$slate-400",
+                      "content": "(日)",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 8,
+                      "fontWeight": "normal"
+                    }
+                  ]
                 }
               ]
             }
@@ -13271,7 +13300,7 @@
               "id": "CAOQy",
               "name": "検索",
               "width": "fill_container",
-              "height": 36,
+              "height": 32,
               "fill": "$slate-100",
               "cornerRadius": 999,
               "gap": 8,
@@ -13309,7 +13338,7 @@
               "type": "frame",
               "id": "b59vfz",
               "name": "並び替え",
-              "height": 36,
+              "height": 32,
               "fill": "$slate-100",
               "cornerRadius": 999,
               "gap": 6,
@@ -13495,11 +13524,9 @@
           "name": "リスト",
           "width": "fill_container",
           "layout": "vertical",
-          "gap": 26,
+          "gap": 32,
           "padding": [
-            18,
-            16,
-            28,
+            8,
             16
           ],
           "children": [
@@ -14795,12 +14822,13 @@
                       "type": "frame",
                       "id": "ogRqS",
                       "name": "すべて",
-                      "height": 38,
+                      "height": 32,
                       "fill": "$sky-500",
                       "cornerRadius": 999,
+                      "gap": 8,
                       "padding": [
                         0,
-                        18
+                        16
                       ],
                       "justifyContent": "center",
                       "alignItems": "center",
@@ -14812,7 +14840,7 @@
                           "fill": "$white",
                           "content": "すべて",
                           "fontFamily": "$font-jp",
-                          "fontSize": 13,
+                          "fontSize": 16,
                           "fontWeight": "600"
                         }
                       ]
@@ -14821,13 +14849,13 @@
                       "type": "frame",
                       "id": "s33FC",
                       "name": "Day1",
-                      "height": 38,
+                      "height": 32,
                       "fill": "$slate-100",
                       "cornerRadius": 999,
-                      "gap": 7,
+                      "gap": 8,
                       "padding": [
                         0,
-                        14
+                        16
                       ],
                       "alignItems": "center",
                       "children": [
@@ -14835,32 +14863,40 @@
                           "type": "text",
                           "id": "QHMyq",
                           "name": "Day",
-                          "fill": "$slate-400",
-                          "content": "Day1",
-                          "fontFamily": "$font-en",
-                          "fontSize": 11,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "pOftH",
-                          "name": "日付",
                           "fill": "$slate-900",
-                          "content": "6/6",
-                          "lineHeight": 1,
+                          "content": "Day1",
                           "fontFamily": "$font-en",
                           "fontSize": 16,
                           "fontWeight": "700"
                         },
                         {
-                          "type": "text",
-                          "id": "MAP3Y",
-                          "name": "曜日",
-                          "fill": "$slate-400",
-                          "content": "(土)",
-                          "fontFamily": "$font-jp",
-                          "fontSize": 10,
-                          "fontWeight": "normal"
+                          "type": "frame",
+                          "id": "avJWW",
+                          "name": "日付・曜日",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "pOftH",
+                              "name": "日付",
+                              "fill": "$slate-400",
+                              "content": "6/6",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-en",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "MAP3Y",
+                              "name": "曜日",
+                              "fill": "$slate-400",
+                              "content": "(土)",
+                              "fontFamily": "$font-jp",
+                              "fontSize": 8,
+                              "fontWeight": "normal"
+                            }
+                          ]
                         }
                       ]
                     },
@@ -14868,13 +14904,13 @@
                       "type": "frame",
                       "id": "lUMsB",
                       "name": "Day2",
-                      "height": 38,
+                      "height": 32,
                       "fill": "$slate-100",
                       "cornerRadius": 999,
-                      "gap": 7,
+                      "gap": 8,
                       "padding": [
                         0,
-                        14
+                        16
                       ],
                       "alignItems": "center",
                       "children": [
@@ -14882,32 +14918,40 @@
                           "type": "text",
                           "id": "F4xOO1",
                           "name": "Day",
-                          "fill": "$slate-400",
-                          "content": "Day2",
-                          "fontFamily": "$font-en",
-                          "fontSize": 11,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "i2b1Ub",
-                          "name": "日付",
                           "fill": "$slate-900",
-                          "content": "6/7",
-                          "lineHeight": 1,
+                          "content": "Day2",
                           "fontFamily": "$font-en",
                           "fontSize": 16,
                           "fontWeight": "700"
                         },
                         {
-                          "type": "text",
-                          "id": "lc7YP",
-                          "name": "曜日",
-                          "fill": "$slate-400",
-                          "content": "(日)",
-                          "fontFamily": "$font-jp",
-                          "fontSize": 10,
-                          "fontWeight": "normal"
+                          "type": "frame",
+                          "id": "l3x2L",
+                          "name": "日付・曜日",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "i2b1Ub",
+                              "name": "日付",
+                              "fill": "$slate-400",
+                              "content": "6/7",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-en",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "lc7YP",
+                              "name": "曜日",
+                              "fill": "$slate-400",
+                              "content": "(日)",
+                              "fontFamily": "$font-jp",
+                              "fontSize": 8,
+                              "fontWeight": "normal"
+                            }
+                          ]
                         }
                       ]
                     }
@@ -14932,7 +14976,7 @@
                       "id": "L1kLXk",
                       "name": "検索",
                       "width": "fill_container",
-                      "height": 34,
+                      "height": 32,
                       "fill": "$slate-100",
                       "cornerRadius": 999,
                       "gap": 8,
@@ -14970,7 +15014,7 @@
                       "type": "frame",
                       "id": "vxdoA",
                       "name": "並び替え",
-                      "height": 34,
+                      "height": 32,
                       "fill": "$slate-100",
                       "cornerRadius": 999,
                       "gap": 5,
@@ -15156,10 +15200,9 @@
                   "name": "リスト",
                   "width": "fill_container",
                   "layout": "vertical",
+                  "gap": 32,
                   "padding": [
                     8,
-                    10,
-                    24,
                     10
                   ],
                   "children": [
@@ -17228,12 +17271,13 @@
               "type": "frame",
               "id": "RvZOQ",
               "name": "すべて",
-              "height": 42,
+              "height": 32,
               "fill": "$sky-500",
               "cornerRadius": 999,
+              "gap": 8,
               "padding": [
                 0,
-                18
+                16
               ],
               "justifyContent": "center",
               "alignItems": "center",
@@ -17245,7 +17289,7 @@
                   "fill": "$white",
                   "content": "すべて",
                   "fontFamily": "$font-jp",
-                  "fontSize": 14,
+                  "fontSize": 16,
                   "fontWeight": "600"
                 }
               ]
@@ -17254,13 +17298,13 @@
               "type": "frame",
               "id": "O0VHdN",
               "name": "Day1",
-              "height": 42,
+              "height": 32,
               "fill": "$slate-100",
               "cornerRadius": 999,
-              "gap": 7,
+              "gap": 8,
               "padding": [
                 0,
-                14
+                16
               ],
               "alignItems": "center",
               "children": [
@@ -17268,32 +17312,40 @@
                   "type": "text",
                   "id": "P6d0z",
                   "name": "Day",
-                  "fill": "$slate-400",
+                  "fill": "$slate-900",
                   "content": "Day1",
                   "fontFamily": "$font-en",
-                  "fontSize": 11,
+                  "fontSize": 16,
                   "fontWeight": "700"
                 },
                 {
-                  "type": "text",
-                  "id": "yv1w0",
-                  "name": "日付",
-                  "fill": "$slate-900",
-                  "content": "6/6",
-                  "lineHeight": 1,
-                  "fontFamily": "$font-en",
-                  "fontSize": 18,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "IJxuh",
-                  "name": "曜日",
-                  "fill": "$slate-400",
-                  "content": "(土)",
-                  "fontFamily": "$font-jp",
-                  "fontSize": 10,
-                  "fontWeight": "normal"
+                  "type": "frame",
+                  "id": "pHYyw",
+                  "name": "日付・曜日",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "yv1w0",
+                      "name": "日付",
+                      "fill": "$slate-400",
+                      "content": "6/6",
+                      "lineHeight": 1,
+                      "fontFamily": "$font-en",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "IJxuh",
+                      "name": "曜日",
+                      "fill": "$slate-400",
+                      "content": "(土)",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 8,
+                      "fontWeight": "normal"
+                    }
+                  ]
                 }
               ]
             },
@@ -17301,13 +17353,13 @@
               "type": "frame",
               "id": "qdLCG",
               "name": "Day2",
-              "height": 42,
+              "height": 32,
               "fill": "$slate-100",
               "cornerRadius": 999,
-              "gap": 7,
+              "gap": 8,
               "padding": [
                 0,
-                14
+                16
               ],
               "alignItems": "center",
               "children": [
@@ -17315,32 +17367,40 @@
                   "type": "text",
                   "id": "RVP5R",
                   "name": "Day",
-                  "fill": "$slate-400",
+                  "fill": "$slate-900",
                   "content": "Day2",
                   "fontFamily": "$font-en",
-                  "fontSize": 11,
+                  "fontSize": 16,
                   "fontWeight": "700"
                 },
                 {
-                  "type": "text",
-                  "id": "tKZFU",
-                  "name": "日付",
-                  "fill": "$slate-900",
-                  "content": "6/7",
-                  "lineHeight": 1,
-                  "fontFamily": "$font-en",
-                  "fontSize": 18,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "YgYjN",
-                  "name": "曜日",
-                  "fill": "$slate-400",
-                  "content": "(日)",
-                  "fontFamily": "$font-jp",
-                  "fontSize": 10,
-                  "fontWeight": "normal"
+                  "type": "frame",
+                  "id": "ziLuN",
+                  "name": "日付・曜日",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "tKZFU",
+                      "name": "日付",
+                      "fill": "$slate-400",
+                      "content": "6/7",
+                      "lineHeight": 1,
+                      "fontFamily": "$font-en",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "YgYjN",
+                      "name": "曜日",
+                      "fill": "$slate-400",
+                      "content": "(日)",
+                      "fontFamily": "$font-jp",
+                      "fontSize": 8,
+                      "fontWeight": "normal"
+                    }
+                  ]
                 }
               ]
             }
@@ -17365,7 +17425,7 @@
               "id": "S8Hvg",
               "name": "検索",
               "width": "fill_container",
-              "height": 36,
+              "height": 32,
               "fill": "$slate-100",
               "cornerRadius": 999,
               "gap": 8,
@@ -17403,7 +17463,7 @@
               "type": "frame",
               "id": "k4CjLq",
               "name": "並び替え",
-              "height": 36,
+              "height": 32,
               "fill": "$slate-100",
               "cornerRadius": 999,
               "gap": 6,
@@ -17589,11 +17649,9 @@
           "name": "リスト",
           "width": "fill_container",
           "layout": "vertical",
-          "gap": 26,
+          "gap": 32,
           "padding": [
-            18,
-            16,
-            28,
+            8,
             16
           ],
           "children": [
@@ -18645,12 +18703,13 @@
                       "type": "frame",
                       "id": "vQSDE",
                       "name": "すべて",
-                      "height": 38,
+                      "height": 32,
                       "fill": "$sky-500",
                       "cornerRadius": 999,
+                      "gap": 8,
                       "padding": [
                         0,
-                        18
+                        16
                       ],
                       "justifyContent": "center",
                       "alignItems": "center",
@@ -18662,7 +18721,7 @@
                           "fill": "$white",
                           "content": "すべて",
                           "fontFamily": "$font-jp",
-                          "fontSize": 13,
+                          "fontSize": 16,
                           "fontWeight": "600"
                         }
                       ]
@@ -18671,13 +18730,13 @@
                       "type": "frame",
                       "id": "p4Wf5",
                       "name": "Day1",
-                      "height": 38,
+                      "height": 32,
                       "fill": "$slate-100",
                       "cornerRadius": 999,
-                      "gap": 7,
+                      "gap": 8,
                       "padding": [
                         0,
-                        14
+                        16
                       ],
                       "alignItems": "center",
                       "children": [
@@ -18685,32 +18744,40 @@
                           "type": "text",
                           "id": "L9mUH",
                           "name": "Day",
-                          "fill": "$slate-400",
-                          "content": "Day1",
-                          "fontFamily": "$font-en",
-                          "fontSize": 11,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "QRAQo",
-                          "name": "日付",
                           "fill": "$slate-900",
-                          "content": "6/6",
-                          "lineHeight": 1,
+                          "content": "Day1",
                           "fontFamily": "$font-en",
                           "fontSize": 16,
                           "fontWeight": "700"
                         },
                         {
-                          "type": "text",
-                          "id": "ahAAE",
-                          "name": "曜日",
-                          "fill": "$slate-400",
-                          "content": "(土)",
-                          "fontFamily": "$font-jp",
-                          "fontSize": 10,
-                          "fontWeight": "normal"
+                          "type": "frame",
+                          "id": "SXIlL",
+                          "name": "日付・曜日",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "QRAQo",
+                              "name": "日付",
+                              "fill": "$slate-400",
+                              "content": "6/6",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-en",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "ahAAE",
+                              "name": "曜日",
+                              "fill": "$slate-400",
+                              "content": "(土)",
+                              "fontFamily": "$font-jp",
+                              "fontSize": 8,
+                              "fontWeight": "normal"
+                            }
+                          ]
                         }
                       ]
                     },
@@ -18718,13 +18785,13 @@
                       "type": "frame",
                       "id": "C9oHrE",
                       "name": "Day2",
-                      "height": 38,
+                      "height": 32,
                       "fill": "$slate-100",
                       "cornerRadius": 999,
-                      "gap": 7,
+                      "gap": 8,
                       "padding": [
                         0,
-                        14
+                        16
                       ],
                       "alignItems": "center",
                       "children": [
@@ -18732,32 +18799,40 @@
                           "type": "text",
                           "id": "kqXw5",
                           "name": "Day",
-                          "fill": "$slate-400",
-                          "content": "Day2",
-                          "fontFamily": "$font-en",
-                          "fontSize": 11,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "S95CD",
-                          "name": "日付",
                           "fill": "$slate-900",
-                          "content": "6/7",
-                          "lineHeight": 1,
+                          "content": "Day2",
                           "fontFamily": "$font-en",
                           "fontSize": 16,
                           "fontWeight": "700"
                         },
                         {
-                          "type": "text",
-                          "id": "sBXvd",
-                          "name": "曜日",
-                          "fill": "$slate-400",
-                          "content": "(日)",
-                          "fontFamily": "$font-jp",
-                          "fontSize": 10,
-                          "fontWeight": "normal"
+                          "type": "frame",
+                          "id": "e5MUA",
+                          "name": "日付・曜日",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "S95CD",
+                              "name": "日付",
+                              "fill": "$slate-400",
+                              "content": "6/7",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-en",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "sBXvd",
+                              "name": "曜日",
+                              "fill": "$slate-400",
+                              "content": "(日)",
+                              "fontFamily": "$font-jp",
+                              "fontSize": 8,
+                              "fontWeight": "normal"
+                            }
+                          ]
                         }
                       ]
                     }
@@ -18782,7 +18857,7 @@
                       "id": "bk43P",
                       "name": "検索",
                       "width": "fill_container",
-                      "height": 34,
+                      "height": 32,
                       "fill": "$slate-100",
                       "cornerRadius": 999,
                       "gap": 8,
@@ -18820,7 +18895,7 @@
                       "type": "frame",
                       "id": "g5SA9",
                       "name": "並び替え",
-                      "height": 34,
+                      "height": 32,
                       "fill": "$slate-100",
                       "cornerRadius": 999,
                       "gap": 5,
@@ -19006,10 +19081,9 @@
                   "name": "リスト",
                   "width": "fill_container",
                   "layout": "vertical",
+                  "gap": 32,
                   "padding": [
                     8,
-                    10,
-                    24,
                     10
                   ],
                   "children": [
@@ -46277,12 +46351,13 @@
                   "type": "frame",
                   "id": "e16mrM",
                   "name": "Day1",
+                  "height": 32,
                   "fill": "$sky-500",
                   "cornerRadius": 999,
-                  "gap": 10,
+                  "gap": 8,
                   "padding": [
-                    9,
-                    20
+                    0,
+                    16
                   ],
                   "alignItems": "center",
                   "children": [
@@ -46290,32 +46365,40 @@
                       "type": "text",
                       "id": "Y6469q",
                       "name": "Day",
-                      "fill": "#FFFFFFCC",
+                      "fill": "$white",
                       "content": "Day1",
                       "fontFamily": "$font-en",
-                      "fontSize": 13,
+                      "fontSize": 16,
                       "fontWeight": "700"
                     },
                     {
-                      "type": "text",
-                      "id": "l7LQBh",
-                      "name": "日付",
-                      "fill": "$white",
-                      "content": "6/6",
-                      "lineHeight": 1,
-                      "fontFamily": "$font-en",
-                      "fontSize": 22,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "pE0Uf",
-                      "name": "曜日",
-                      "fill": "#FFFFFFCC",
-                      "content": "(土)",
-                      "fontFamily": "$font-jp",
-                      "fontSize": 12,
-                      "fontWeight": "normal"
+                      "type": "frame",
+                      "id": "cbiaV",
+                      "name": "日付・曜日",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "l7LQBh",
+                          "name": "日付",
+                          "fill": "#FFFFFFCC",
+                          "content": "6/6",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-en",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "pE0Uf",
+                          "name": "曜日",
+                          "fill": "#FFFFFFCC",
+                          "content": "(土)",
+                          "fontFamily": "$font-jp",
+                          "fontSize": 8,
+                          "fontWeight": "normal"
+                        }
+                      ]
                     }
                   ]
                 },
@@ -46323,12 +46406,13 @@
                   "type": "frame",
                   "id": "EVaqj",
                   "name": "Day2",
+                  "height": 32,
                   "fill": "$slate-100",
                   "cornerRadius": 999,
-                  "gap": 10,
+                  "gap": 8,
                   "padding": [
-                    9,
-                    20
+                    0,
+                    16
                   ],
                   "alignItems": "center",
                   "children": [
@@ -46336,32 +46420,40 @@
                       "type": "text",
                       "id": "z0jj0",
                       "name": "Day",
-                      "fill": "$slate-400",
+                      "fill": "$slate-900",
                       "content": "Day2",
                       "fontFamily": "$font-en",
-                      "fontSize": 13,
+                      "fontSize": 16,
                       "fontWeight": "700"
                     },
                     {
-                      "type": "text",
-                      "id": "bIR9z",
-                      "name": "日付",
-                      "fill": "$slate-900",
-                      "content": "6/7",
-                      "lineHeight": 1,
-                      "fontFamily": "$font-en",
-                      "fontSize": 22,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "U1Wy5",
-                      "name": "曜日",
-                      "fill": "$slate-400",
-                      "content": "(日)",
-                      "fontFamily": "$font-jp",
-                      "fontSize": 12,
-                      "fontWeight": "normal"
+                      "type": "frame",
+                      "id": "g80qz7",
+                      "name": "日付・曜日",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "bIR9z",
+                          "name": "日付",
+                          "fill": "$slate-400",
+                          "content": "6/7",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-en",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "U1Wy5",
+                          "name": "曜日",
+                          "fill": "$slate-400",
+                          "content": "(日)",
+                          "fontFamily": "$font-jp",
+                          "fontSize": 8,
+                          "fontWeight": "normal"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -46375,9 +46467,6 @@
           "name": "会場ヘッダー",
           "width": "fill_container",
           "stroke": "$slate-200",
-          "strokeWidth": {
-            "bottom": 1
-          },
           "gap": 8,
           "padding": [
             0,
@@ -46407,7 +46496,7 @@
                   "fill": "$slate-700",
                   "content": "体育館ステージ",
                   "fontFamily": "$font-jp",
-                  "fontSize": 13,
+                  "fontSize": 16,
                   "fontWeight": "600"
                 }
               ]
@@ -46426,7 +46515,7 @@
                   "fill": "$slate-700",
                   "content": "中庭ステージ",
                   "fontFamily": "$font-jp",
-                  "fontSize": 13,
+                  "fontSize": 16,
                   "fontWeight": "600"
                 }
               ]
@@ -46445,7 +46534,7 @@
                   "fill": "$slate-700",
                   "content": "教室展示",
                   "fontFamily": "$font-jp",
-                  "fontSize": 13,
+                  "fontSize": 16,
                   "fontWeight": "600"
                 }
               ]
@@ -46464,7 +46553,7 @@
                   "fill": "$slate-700",
                   "content": "視聴覚室",
                   "fontFamily": "$font-jp",
-                  "fontSize": 13,
+                  "fontSize": 16,
                   "fontWeight": "600"
                 }
               ]
@@ -46483,7 +46572,7 @@
                   "fill": "$slate-700",
                   "content": "模擬店エリア",
                   "fontFamily": "$font-jp",
-                  "fontSize": 13,
+                  "fontSize": 16,
                   "fontWeight": "600"
                 }
               ]
@@ -46788,7 +46877,7 @@
                       "content": "オープニングセレモニー",
                       "lineHeight": 1.35,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -46831,7 +46920,7 @@
                       "content": "ソラノネ",
                       "lineHeight": 1.35,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -46874,7 +46963,7 @@
                       "content": "ギター部 演奏",
                       "lineHeight": 1.35,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -46917,7 +47006,7 @@
                       "content": "有志ステージ",
                       "lineHeight": 1.35,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -46973,7 +47062,7 @@
                       "content": "クロージング",
                       "lineHeight": 1.35,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -47016,7 +47105,7 @@
                       "content": "ビンゴ予選",
                       "lineHeight": 1.35,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -47059,7 +47148,7 @@
                       "content": "和太鼓 演舞",
                       "lineHeight": 1.35,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -47102,7 +47191,7 @@
                       "content": "クイズ大会",
                       "lineHeight": 1.35,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -47145,7 +47234,7 @@
                       "content": "ビンゴ決勝",
                       "lineHeight": 1.35,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -47188,7 +47277,7 @@
                       "content": "教室展示・体験",
                       "lineHeight": 1.35,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -47244,7 +47333,7 @@
                       "content": "吹奏楽部 演奏",
                       "lineHeight": 1.35,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -47287,7 +47376,7 @@
                       "content": "青葉ダンスステージ",
                       "lineHeight": 1.35,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -47330,7 +47419,7 @@
                       "content": "模擬店 営業",
                       "lineHeight": 1.35,
                       "fontFamily": "$font-jp",
-                      "fontSize": 12,
+                      "fontSize": 14,
                       "fontWeight": "600"
                     },
                     {
@@ -48251,8 +48340,9 @@
                   "name": "リスト",
                   "width": "fill_container",
                   "layout": "vertical",
+                  "gap": 8,
                   "padding": [
-                    4,
+                    16,
                     20,
                     20,
                     20
@@ -48268,20 +48358,16 @@
                         "bottom": 1
                       },
                       "gap": 12,
-                      "padding": [
-                        13,
-                        0
-                      ],
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
                           "id": "Dmrrn",
                           "name": "サムネ",
-                          "width": 52,
-                          "height": 52,
+                          "width": 64,
+                          "height": 64,
                           "fill": "$rose-200",
-                          "cornerRadius": 12,
+                          "cornerRadius": 8,
                           "justifyContent": "center",
                           "alignItems": "center",
                           "children": [
@@ -48303,7 +48389,7 @@
                           "name": "テキスト",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 3,
+                          "gap": 2,
                           "children": [
                             {
                               "type": "frame",
@@ -48392,20 +48478,16 @@
                         "bottom": 1
                       },
                       "gap": 12,
-                      "padding": [
-                        13,
-                        0
-                      ],
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
                           "id": "lERNH",
                           "name": "サムネ",
-                          "width": 52,
-                          "height": 52,
+                          "width": 64,
+                          "height": 64,
                           "fill": "$amber-200",
-                          "cornerRadius": 12,
+                          "cornerRadius": 8,
                           "justifyContent": "center",
                           "alignItems": "center",
                           "children": [
@@ -48427,7 +48509,7 @@
                           "name": "テキスト",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 3,
+                          "gap": 2,
                           "children": [
                             {
                               "type": "frame",
@@ -48516,20 +48598,16 @@
                         "bottom": 1
                       },
                       "gap": 12,
-                      "padding": [
-                        13,
-                        0
-                      ],
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
                           "id": "klgUB",
                           "name": "サムネ",
-                          "width": 52,
-                          "height": 52,
+                          "width": 64,
+                          "height": 64,
                           "fill": "$emerald-200",
-                          "cornerRadius": 12,
+                          "cornerRadius": 8,
                           "justifyContent": "center",
                           "alignItems": "center",
                           "children": [
@@ -48551,7 +48629,7 @@
                           "name": "テキスト",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 3,
+                          "gap": 2,
                           "children": [
                             {
                               "type": "frame",
@@ -48640,20 +48718,16 @@
                         "bottom": 1
                       },
                       "gap": 12,
-                      "padding": [
-                        13,
-                        0
-                      ],
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
                           "id": "i2zTbK",
                           "name": "サムネ",
-                          "width": 52,
-                          "height": 52,
+                          "width": 64,
+                          "height": 64,
                           "fill": "$violet-200",
-                          "cornerRadius": 12,
+                          "cornerRadius": 8,
                           "justifyContent": "center",
                           "alignItems": "center",
                           "children": [
@@ -48675,7 +48749,7 @@
                           "name": "テキスト",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 3,
+                          "gap": 2,
                           "children": [
                             {
                               "type": "frame",
@@ -48764,20 +48838,16 @@
                         "bottom": 1
                       },
                       "gap": 12,
-                      "padding": [
-                        13,
-                        0
-                      ],
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
                           "id": "H7wND",
                           "name": "サムネ",
-                          "width": 52,
-                          "height": 52,
+                          "width": 64,
+                          "height": 64,
                           "fill": "$fuchsia-200",
-                          "cornerRadius": 12,
+                          "cornerRadius": 8,
                           "justifyContent": "center",
                           "alignItems": "center",
                           "children": [
@@ -48799,7 +48869,7 @@
                           "name": "テキスト",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 3,
+                          "gap": 2,
                           "children": [
                             {
                               "type": "frame",
@@ -48888,20 +48958,16 @@
                         "bottom": 1
                       },
                       "gap": 12,
-                      "padding": [
-                        13,
-                        0
-                      ],
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
                           "id": "S0cORS",
                           "name": "サムネ",
-                          "width": 52,
-                          "height": 52,
+                          "width": 64,
+                          "height": 64,
                           "fill": "$sky-200",
-                          "cornerRadius": 12,
+                          "cornerRadius": 8,
                           "justifyContent": "center",
                           "alignItems": "center",
                           "children": [
@@ -48923,7 +48989,7 @@
                           "name": "テキスト",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 3,
+                          "gap": 2,
                           "children": [
                             {
                               "type": "frame",
