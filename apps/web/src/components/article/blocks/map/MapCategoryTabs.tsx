@@ -20,7 +20,7 @@ type MapCategoryTabsProps = {
 /** カテゴリのタブ。選んでいるタブをもう一度押すと選択を外す */
 export function MapCategoryTabs({ selectedCategory, onSelect }: MapCategoryTabsProps) {
     return (
-        <div role='group' aria-label='カテゴリ' className='flex h-22 gap-3 px-4 pt-2 pb-3'>
+        <div role='group' aria-label='カテゴリ' className='flex h-22 gap-3 border-b border-slate-200 px-4 pt-2 pb-3'>
             {categories.map(({ id, label, icon: Icon }) => {
                 const isSelected = id === selectedCategory
                 return (

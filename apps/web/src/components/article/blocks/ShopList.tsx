@@ -51,7 +51,7 @@ export function ShopList({ block, children }: BlockComponentProps) {
 
     return (
         <>
-            <section aria-label='模擬店' className='flex flex-col gap-3'>
+            <section aria-label='模擬店' className='flex flex-col gap-2'>
                 <QueryBoundary
                     isPending={shops.isPending || tags.isPending || days.isPending}
                     error={shops.error ?? tags.error ?? days.error}
@@ -105,7 +105,7 @@ export function ShopList({ block, children }: BlockComponentProps) {
                                         onRetry={() => void shops.refetch()}
                                     />
                                 ) : (
-                                    <ul className='flex flex-col gap-6 py-3'>
+                                    <ul className='flex flex-col gap-8 py-2'>
                                         {visible.map((shop) => (
                                             <li key={shop.id}>
                                                 <ShopCard shop={shop} showProducts={showProducts} />

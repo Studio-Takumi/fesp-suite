@@ -41,9 +41,9 @@ export function WeeklyForecast({ block, children }: BlockComponentProps) {
                             return (
                                 <li
                                     key={forecast.date}
-                                    className='flex w-18 shrink-0 flex-col items-center gap-2 rounded-xl bg-slate-50 py-3'
+                                    className='flex w-18 shrink-0 flex-col items-center gap-2 rounded-lg bg-slate-50 py-3'
                                 >
-                                    <span className='text-xs font-medium text-slate-500'>
+                                    <span className='text-xs font-semibold text-slate-400'>
                                         {dayLabel(forecast.date, now)}
                                     </span>
                                     <kind.Icon size={26} className={kind.className} aria-hidden />

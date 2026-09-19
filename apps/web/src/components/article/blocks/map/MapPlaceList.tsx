@@ -25,21 +25,21 @@ export function MapPlaceList({ places }: MapPlaceListProps) {
     }
 
     return (
-        <ul aria-label='場所の一覧'>
+        <ul aria-label='場所の一覧' className='space-y-2 py-4'>
             {places.map((place, index) => {
                 const color = colors[index % colors.length]!
                 return (
-                    <li key={place.id} className='flex items-center gap-3 py-3'>
+                    <li key={place.id} className='flex items-center gap-3'>
                         <span
                             aria-hidden
                             className={cn(
-                                'flex size-13 shrink-0 items-center justify-center rounded-xl text-xl font-bold',
+                                'flex size-16 shrink-0 items-center justify-center rounded-lg text-xl font-bold',
                                 color.thumbnail,
                             )}
                         >
                             {place.name.charAt(0)}
                         </span>
-                        <div className='flex min-w-0 flex-1 flex-col gap-1'>
+                        <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
                             <div className='flex items-center gap-2'>
                                 <DayBadge day={place.day} className={color.badge} />
                                 <span className='truncate text-xs text-slate-400'>{place.group}</span>

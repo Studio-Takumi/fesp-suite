@@ -18,7 +18,7 @@ export function ShopCard({ shop, showProducts }: ShopCardProps) {
     const color = cardColors[shop.color]
 
     return (
-        <a href={`/shops/${shop.id}`} className='flex flex-col gap-3'>
+        <a href={`/shops/${shop.id}`} className='flex flex-col gap-2'>
             <div
                 className={cn(
                     'relative flex h-44 flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl',
@@ -46,7 +46,7 @@ export function ShopCard({ shop, showProducts }: ShopCardProps) {
                     <span>{shop.group}</span>
                     <span>@ {shop.location}</span>
                 </div>
-                <span className='text-lg leading-snug font-bold text-slate-900'>{shop.name}</span>
+                <span className='text-2xl leading-snug font-bold text-slate-900'>{shop.name}</span>
                 {showProducts && shop.products.length > 0 && (
                     <div className='flex gap-2'>
                         {shop.products.slice(0, VISIBLE_PRODUCTS).map((product, index) => (
@@ -70,8 +70,9 @@ export function ShopCard({ shop, showProducts }: ShopCardProps) {
                                         </span>
                                     </>
                                 )}
-                                <span className='absolute bottom-2 left-2 rounded-lg bg-white px-2 py-1 text-xs font-semibold text-slate-900'>
-                                    {product.price}円
+                                <span className='absolute bottom-2 left-2 rounded-full bg-white px-2.5 text-base font-semibold text-slate-900'>
+                                    {product.price}
+                                    <span className='text-xs'>円</span>
                                 </span>
                             </div>
                         ))}

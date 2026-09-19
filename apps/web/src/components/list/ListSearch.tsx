@@ -10,7 +10,7 @@ export type ListSearchProps = {
 /** 一覧の検索欄（虫めがねのアイコンと入力欄を丸い枠に入れる） */
 export function ListSearch({ value, onChange, placeholder }: ListSearchProps) {
     return (
-        <div className='flex h-9 min-w-0 flex-1 items-center gap-2 rounded-full bg-slate-100 px-4'>
+        <div className='flex h-8 min-w-0 flex-1 items-center gap-2 rounded-full bg-slate-100 px-4'>
             <Search size={16} aria-hidden className='shrink-0 text-slate-400' />
             <input
                 type='search'

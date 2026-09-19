@@ -57,7 +57,7 @@ export function ArtistList({ block, children }: BlockComponentProps) {
 
     return (
         <>
-            <section aria-label='出演者' className='flex flex-col gap-3'>
+            <section aria-label='出演者' className='flex flex-col gap-2'>
                 <QueryBoundary
                     isPending={artists.isPending || tags.isPending}
                     error={artists.error ?? tags.error}
@@ -112,7 +112,7 @@ export function ArtistList({ block, children }: BlockComponentProps) {
                                         onRetry={() => void artists.refetch()}
                                     />
                                 ) : (
-                                    <ul className='flex flex-col gap-6 pt-3'>
+                                    <ul className='flex flex-col gap-8 py-2'>
                                         {visible.map((artist) => (
                                             <li key={artist.id}>
                                                 <ArtistCard artist={artist} />

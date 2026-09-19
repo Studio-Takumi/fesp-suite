@@ -17,12 +17,12 @@ export function TodayWeather({ children }: BlockComponentProps) {
     return (
         <>
             {today && kind && (
-                <section aria-label='今日の天気' className='flex items-center gap-4 rounded-2xl bg-sky-50 p-5'>
+                <section aria-label='今日の天気' className='flex items-center gap-4 rounded-lg bg-sky-50 p-5'>
                     <kind.Icon size={72} className={kind.className} aria-hidden />
                     <div className='flex min-w-0 flex-1 flex-col gap-1'>
                         <p className='flex items-end gap-1'>
                             <span className='sr-only'>{kind.label} 現在の気温</span>
-                            <span className='text-5xl leading-none font-extralight text-slate-900'>
+                            <span className='text-5xl leading-none font-medium text-slate-900'>
                                 {today.temperature}
                             </span>
                             <span className='text-lg text-slate-500'>°C</span>
