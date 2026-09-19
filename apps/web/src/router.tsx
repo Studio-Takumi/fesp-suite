@@ -3,6 +3,7 @@ import { createRootRoute, createRoute, createRouter, Outlet, redirect } from '@t
 import { redirectPathSchema } from '@fesp/schema'
 
 import { AppShell } from './components/AppShell'
+import { ListDetailPanes } from './components/list/ListDetailPanes'
 import { supabase } from './lib/supabase'
 import { ArticlePage } from './pages/ArticlePage'
 import { ArtistPage } from './pages/ArtistPage'
@@ -58,28 +59,57 @@ const slugRoute = createRoute({
     component: SlugPage,
 })
 
+/**
+ * 一覧のページ（`/news` など）。固定ページと同じく slug で記事を引くが、個別ページを子に持ち、
+ * 幅が足りていれば一覧と個別を並べて出す（`ListDetailPanes`）。
+ * 個別を開いていないときに右へ出す記事は、種類ごとのデータ（#56〜#60）ができるまで仮ページのまま
+ */
+const newsListRoute = createRoute({
+    getParentRoute: () => authenticatedRoute,
+    path: '/news',
+    component: () => <ListDetailPanes slug='news' detail={<NewsPostPage />} />,
+})
+
+const blogListRoute = createRoute({
+    getParentRoute: () => authenticatedRoute,
+    path: '/blog',
+    component: () => <ListDetailPanes slug='blog' detail={<BlogPostPage />} />,
+})
+
+const shopListRoute = createRoute({
+    getParentRoute: () => authenticatedRoute,
+    path: '/shop',
+    component: () => <ListDetailPanes slug='shop' detail={<ShopPage />} />,
+})
+
+const artistListRoute = createRoute({
+    getParentRoute: () => authenticatedRoute,
+    path: '/artist',
+    component: () => <ListDetailPanes slug='artist' detail={<ArtistPage />} />,
+})
+
 // 個別ページ。種類ごとのデータ（#56〜#60）ができるまでは、決まった内容を出す仮ページ
 const newsPostRoute = createRoute({
-    getParentRoute: () => authenticatedRoute,
-    path: '/news/$postId',
+    getParentRoute: () => newsListRoute,
+    path: '$postId',
     component: NewsPostPage,
 })
 
 const blogPostRoute = createRoute({
-    getParentRoute: () => authenticatedRoute,
-    path: '/blog/$postId',
+    getParentRoute: () => blogListRoute,
+    path: '$postId',
     component: BlogPostPage,
 })
 
 const shopRoute = createRoute({
-    getParentRoute: () => authenticatedRoute,
-    path: '/shop/$shopId',
+    getParentRoute: () => shopListRoute,
+    path: '$shopId',
     component: ShopPage,
 })
 
 const artistRoute = createRoute({
-    getParentRoute: () => authenticatedRoute,
-    path: '/artist/$artistId',
+    getParentRoute: () => artistListRoute,
+    path: '$artistId',
     component: ArtistPage,
 })
 
@@ -130,10 +160,10 @@ export const routeTree = rootRoute.addChildren([
     authenticatedRoute.addChildren([
         indexRoute,
         slugRoute,
-        newsPostRoute,
-        blogPostRoute,
-        shopRoute,
-        artistRoute,
+        newsListRoute.addChildren([newsPostRoute]),
+        blogListRoute.addChildren([blogPostRoute]),
+        shopListRoute.addChildren([shopRoute]),
+        artistListRoute.addChildren([artistRoute]),
         articleRoute,
         settingsRoute,
     ]),

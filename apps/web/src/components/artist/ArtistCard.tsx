@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { MapPin, Timer } from 'lucide-react'
 
 import { cn, dateFormatter } from '@fesp/ui'
@@ -16,7 +17,12 @@ export function ArtistCard({ artist }: ArtistCardProps) {
     const time = `${dateFormatter(artist.starts_at, 'H:mm')} - ${dateFormatter(artist.ends_at, 'H:mm')}`
 
     return (
-        <a href={`/artist/${artist.id}`} className='flex flex-col gap-3'>
+        <Link
+            to='/artist/$artistId'
+            params={{ artistId: artist.id }}
+            className='flex flex-col gap-3'
+            activeProps={{ className: 'rounded-xl bg-sky-50' }}
+        >
             <div
                 className={cn(
                     'relative flex h-44 flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl',
@@ -65,6 +71,6 @@ export function ArtistCard({ artist }: ArtistCardProps) {
                     </span>
                 </div>
             </div>
-        </a>
+        </Link>
     )
 }

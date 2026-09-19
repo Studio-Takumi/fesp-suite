@@ -15,7 +15,7 @@ export function BottomNav() {
             aria-label='メインメニュー'
             className='sticky bottom-0 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)]'
         >
-            <ul className='mx-auto flex max-w-3xl px-2 pt-3 pb-2'>
+            <ul className='mx-auto flex max-w-3xl px-2 pt-3 pb-2 md:max-w-6xl'>
                 {navItems.map((item) => {
                     const Icon = item.icon
                     const isCurrent = isCurrentNavItem(pathname, item.href)

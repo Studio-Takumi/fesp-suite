@@ -1,5 +1,5 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { QueryClient } from '@tanstack/react-query'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
@@ -11,7 +11,7 @@ import { mockNewsPosts, type NewsPost } from '~/lib/mock/news'
 import { mockCurrentShop, mockShops } from '~/lib/mock/shop'
 import { createMockWeather } from '~/lib/mock/weather'
 import { queryKeys, weatherQuery } from '~/lib/queries'
-import { createTestQueryClient, renderWithQueryClient } from '~/test/render'
+import { createTestQueryClient, renderInRouter, renderWithQueryClient } from '~/test/render'
 
 import { ArticleRenderer } from './ArticleRenderer'
 import { blockRegistry } from './block-registry'
@@ -27,7 +27,7 @@ const block = (
     { props = {}, children = [] }: { props?: Record<string, unknown>; children?: ArticleBlock[] } = {},
 ): ArticleBlock => ({ id, type, props: { ...defaultBlockProps, ...props }, content, children })
 
-const renderBlocks = (blocks: ArticleDocument) => render(<ArticleRenderer blocks={blocks} />)
+const renderBlocks = (blocks: ArticleDocument) => renderInRouter(<ArticleRenderer blocks={blocks} />)
 
 /** 模擬店カードの商品サムネの価格。「円」だけ小さくして要素が分かれるので、要素をまたいだ文字で照合する */
 const priceText = (value: string) => (_: string, element: Element | null) =>
@@ -40,11 +40,7 @@ const priceText = (value: string) => (_: string, element: Element | null) =>
 const renderWithQuery = (blocks: ArticleDocument, data: [readonly unknown[], unknown][] = []) => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })
     for (const [key, value] of data) queryClient.setQueryData(key, value)
-    return render(
-        <QueryClientProvider client={queryClient}>
-            <ArticleRenderer blocks={blocks} />
-        </QueryClientProvider>,
-    )
+    return renderInRouter(<ArticleRenderer blocks={blocks} />, queryClient)
 }
 
 const componentBlock = (type: ArticleBlock['type'], props: Record<string, unknown> = {}): ArticleBlock => ({
@@ -284,7 +280,7 @@ describe('ArticleRenderer', () => {
     })
 
     it('レジストリに無い type のブロックは飛ばして、続きを描画する', () => {
-        render(
+        renderInRouter(
             <ArticleRenderer
                 blocks={[
                     { id: '1', type: 'quote', props: {}, content: [text('引用')], children: [] },
@@ -1158,7 +1154,7 @@ describe('ArticleRenderer', () => {
     })
 
     it('レジストリを差し替えると、差し替えたコンポーネントで描画する', () => {
-        render(
+        renderInRouter(
             <ArticleRenderer
                 blocks={[block('1', 'paragraph', [text('本文')])]}
                 registry={{ ...blockRegistry, paragraph: ({ block }) => <p>差し替え: {block.id}</p> }}
