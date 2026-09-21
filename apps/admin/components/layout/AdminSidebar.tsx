@@ -10,9 +10,69 @@ import { cn } from '~/lib/utils'
 import { useAdminUiStore } from '~/stores/ui'
 
 import { useSession } from '../auth/session-context'
-import { navGroups } from './admin-nav-items'
+import { navGroups, type NavItem } from './admin-nav-items'
 
 const ICON_SIZE = 20
+
+type NavRowProps = {
+    item: NavItem
+    pathname: string
+    isOpen: boolean
+    /** 下位項目なら字下げする */
+    isChild?: boolean
+}
+
+/**
+ * メニューの1項目。下位項目（`children`）があれば、その下に字下げして続けて出す。
+ * 親が準備中でも下位項目は開ける（下のナビは親の「基本設定」より先に実装している）
+ */
+function NavRow({ item, pathname, isOpen, isChild }: NavRowProps) {
+    const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
+    const Icon = item.icon
+    // たたんでいるときは字下げできないので、アイコンだけを中央に出す（親と同じ見た目）
+    const itemLayout = isOpen ? cn('h-10 gap-2 px-3', isChild && 'pl-9') : 'mx-auto h-10 w-10 justify-center'
+
+    const row = !item.implemented ? (
+        <div
+            aria-disabled='true'
+            title={!isOpen ? item.label : undefined}
+            className={cn('flex cursor-not-allowed items-center rounded-lg text-slate-300', itemLayout)}
+        >
+            <Icon size={ICON_SIZE} className='shrink-0' />
+            {isOpen ? (
+                <>
+                    <span className='flex-1 truncate text-sm'>{item.label}</span>
+                    <span className='shrink-0 rounded-full bg-slate-100 px-2 py-px text-xs text-slate-400'>準備中</span>
+                </>
+            ) : null}
+        </div>
+    ) : (
+        <Link
+            href={item.href}
+            aria-current={isActive ? 'page' : undefined}
+            title={!isOpen ? item.label : undefined}
+            className={cn(
+                'flex items-center rounded-lg text-slate-700 hover:bg-slate-100',
+                itemLayout,
+                isActive && 'bg-sky-100 font-semibold text-sky-500 hover:bg-sky-100',
+            )}
+        >
+            <Icon size={ICON_SIZE} className={cn('shrink-0', isActive ? 'text-sky-500' : 'text-slate-500')} />
+            {isOpen ? <span className='truncate text-sm'>{item.label}</span> : null}
+        </Link>
+    )
+
+    if (!item.children) return row
+
+    return (
+        <>
+            {row}
+            {item.children.map((child) => (
+                <NavRow key={child.href} item={child} pathname={pathname} isOpen={isOpen} isChild />
+            ))}
+        </>
+    )
+}
 
 export function AdminSidebar() {
     const pathname = usePathname()
@@ -56,55 +116,9 @@ export function AdminSidebar() {
                                 {group.heading}
                             </p>
                         ) : null}
-                        {group.items.map((item) => {
-                            const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
-                            const Icon = item.icon
-                            const itemLayout = isOpen ? 'h-10 gap-2 px-3' : 'mx-auto h-10 w-10 justify-center'
-
-                            if (!item.implemented) {
-                                return (
-                                    <div
-                                        key={item.href}
-                                        aria-disabled='true'
-                                        title={!isOpen ? item.label : undefined}
-                                        className={cn(
-                                            'flex cursor-not-allowed items-center rounded-lg text-slate-300',
-                                            itemLayout,
-                                        )}
-                                    >
-                                        <Icon size={ICON_SIZE} className='shrink-0' />
-                                        {isOpen ? (
-                                            <>
-                                                <span className='flex-1 truncate text-sm'>{item.label}</span>
-                                                <span className='shrink-0 rounded-full bg-slate-100 px-2 py-px text-xs text-slate-400'>
-                                                    準備中
-                                                </span>
-                                            </>
-                                        ) : null}
-                                    </div>
-                                )
-                            }
-
-                            return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    aria-current={isActive ? 'page' : undefined}
-                                    title={!isOpen ? item.label : undefined}
-                                    className={cn(
-                                        'flex items-center rounded-lg text-slate-700 hover:bg-slate-100',
-                                        itemLayout,
-                                        isActive && 'bg-sky-100 font-semibold text-sky-500 hover:bg-sky-100',
-                                    )}
-                                >
-                                    <Icon
-                                        size={ICON_SIZE}
-                                        className={cn('shrink-0', isActive ? 'text-sky-500' : 'text-slate-500')}
-                                    />
-                                    {isOpen ? <span className='truncate text-sm'>{item.label}</span> : null}
-                                </Link>
-                            )
-                        })}
+                        {group.items.map((item) => (
+                            <NavRow key={item.href} item={item} pathname={pathname} isOpen={isOpen} />
+                        ))}
                     </div>
                 ))}
             </nav>

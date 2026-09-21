@@ -105,6 +105,39 @@ export type Database = {
                     },
                 ]
             }
+            article_tags: {
+                Row: {
+                    article_id: string
+                    created_at: string
+                    tag_id: string
+                }
+                Insert: {
+                    article_id: string
+                    created_at?: string
+                    tag_id: string
+                }
+                Update: {
+                    article_id?: string
+                    created_at?: string
+                    tag_id?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: 'article_tags_article_id_fkey'
+                        columns: ['article_id']
+                        isOneToOne: false
+                        referencedRelation: 'articles'
+                        referencedColumns: ['id']
+                    },
+                    {
+                        foreignKeyName: 'article_tags_tag_id_fkey'
+                        columns: ['tag_id']
+                        isOneToOne: false
+                        referencedRelation: 'tags'
+                        referencedColumns: ['id']
+                    },
+                ]
+            }
             articles: {
                 Row: {
                     created_at: string
@@ -173,6 +206,85 @@ export type Database = {
                     },
                 ]
             }
+            bottom_navs: {
+                Row: {
+                    created_at: string
+                    event_id: string
+                    href: string
+                    icon: string
+                    id: string
+                    label: string
+                    sort_order: number
+                    updated_at: string
+                }
+                Insert: {
+                    created_at?: string
+                    event_id: string
+                    href: string
+                    icon: string
+                    id?: string
+                    label: string
+                    sort_order?: number
+                    updated_at?: string
+                }
+                Update: {
+                    created_at?: string
+                    event_id?: string
+                    href?: string
+                    icon?: string
+                    id?: string
+                    label?: string
+                    sort_order?: number
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: 'bottom_navs_event_id_fkey'
+                        columns: ['event_id']
+                        isOneToOne: false
+                        referencedRelation: 'events'
+                        referencedColumns: ['id']
+                    },
+                ]
+            }
+            event_days: {
+                Row: {
+                    created_at: string
+                    date: string
+                    day: number
+                    event_id: string
+                    id: string
+                    name: string | null
+                    updated_at: string
+                }
+                Insert: {
+                    created_at?: string
+                    date: string
+                    day: number
+                    event_id: string
+                    id?: string
+                    name?: string | null
+                    updated_at?: string
+                }
+                Update: {
+                    created_at?: string
+                    date?: string
+                    day?: number
+                    event_id?: string
+                    id?: string
+                    name?: string | null
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: 'event_days_event_id_fkey'
+                        columns: ['event_id']
+                        isOneToOne: false
+                        referencedRelation: 'events'
+                        referencedColumns: ['id']
+                    },
+                ]
+            }
             event_members: {
                 Row: {
                     created_at: string
@@ -235,6 +347,82 @@ export type Database = {
                     updated_at?: string
                 }
                 Relationships: []
+            }
+            places: {
+                Row: {
+                    building: string | null
+                    created_at: string
+                    event_id: string
+                    floor: string | null
+                    id: string
+                    name: string
+                    sort_order: number
+                    updated_at: string
+                }
+                Insert: {
+                    building?: string | null
+                    created_at?: string
+                    event_id: string
+                    floor?: string | null
+                    id?: string
+                    name: string
+                    sort_order?: number
+                    updated_at?: string
+                }
+                Update: {
+                    building?: string | null
+                    created_at?: string
+                    event_id?: string
+                    floor?: string | null
+                    id?: string
+                    name?: string
+                    sort_order?: number
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: 'places_event_id_fkey'
+                        columns: ['event_id']
+                        isOneToOne: false
+                        referencedRelation: 'events'
+                        referencedColumns: ['id']
+                    },
+                ]
+            }
+            tags: {
+                Row: {
+                    created_at: string
+                    event_id: string
+                    id: string
+                    name: string
+                    sort_order: number
+                    updated_at: string
+                }
+                Insert: {
+                    created_at?: string
+                    event_id: string
+                    id?: string
+                    name: string
+                    sort_order?: number
+                    updated_at?: string
+                }
+                Update: {
+                    created_at?: string
+                    event_id?: string
+                    id?: string
+                    name?: string
+                    sort_order?: number
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: 'tags_event_id_fkey'
+                        columns: ['event_id']
+                        isOneToOne: false
+                        referencedRelation: 'events'
+                        referencedColumns: ['id']
+                    },
+                ]
             }
             users: {
                 Row: {

@@ -8,6 +8,8 @@ import {
     type ArticleInput,
     articleListResponseSchema,
     articleResponseSchema,
+    type BottomNavItemInput,
+    bottomNavListResponseSchema,
     type ExampleInput,
     exampleInputSchema,
     exampleResponseSchema,
@@ -33,6 +35,7 @@ export const queryKeys = {
     shopTags: ['shops', 'tags'] as const,
     shopProducts: ['shops', 'current', 'products'] as const,
     blogTags: ['blogs', 'tags'] as const,
+    bottomNavs: ['bottom-navs'] as const,
 }
 
 export const exampleQuery = () =>
@@ -168,5 +171,34 @@ export function useSaveArticle(id: string) {
                 queryClient.invalidateQueries({ queryKey: queryKeys.article(id), exact: true }),
                 queryClient.invalidateQueries({ queryKey: queryKeys.articles, exact: true }),
             ]),
+    })
+}
+
+/** 下のナビの項目（`sort_order` の順） */
+export const bottomNavsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.bottomNavs,
+        queryFn: ({ signal }) =>
+            adminFetch(`/api/bottom-navs?event_id=${env.NEXT_PUBLIC_EVENT_ID}`, bottomNavListResponseSchema, {
+                signal,
+                authenticated: true,
+            }),
+    })
+
+/**
+ * 下のナビの項目をまとめて置き換える。渡した順が `sort_order` になる。
+ * API が一括置き換えなので、画面の「変更を保存」から1回だけ呼ぶ
+ */
+export function useSaveBottomNavs() {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: (items: BottomNavItemInput[]) =>
+            adminFetch('/api/bottom-navs', bottomNavListResponseSchema, {
+                method: 'PUT',
+                body: { event_id: env.NEXT_PUBLIC_EVENT_ID, items },
+                authenticated: true,
+            }),
+        onSuccess: (saved) => queryClient.setQueryData(queryKeys.bottomNavs, saved),
     })
 }

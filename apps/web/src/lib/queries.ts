@@ -1,6 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 
-import { articleViewResponseSchema, exampleResponseSchema } from '@fesp/schema'
+import { articleViewResponseSchema, bottomNavListResponseSchema, exampleResponseSchema } from '@fesp/schema'
 
 import { apiFetch } from './api'
 import { env } from './env'
@@ -40,6 +40,7 @@ export const queryKeys = {
     blogs: ['blogs'] as const,
     blogTags: ['blogs', 'tags'] as const,
     weather: ['weather'] as const,
+    bottomNavs: ['bottom-navs'] as const,
 }
 
 export const exampleQuery = () =>
@@ -201,4 +202,18 @@ export const weatherQuery = () =>
     queryOptions({
         queryKey: queryKeys.weather,
         queryFn: () => Promise.resolve(createMockWeather()),
+    })
+
+/**
+ * 下のナビゲーションバーの項目（`sort_order` の順）。管理者サイトから編集する。
+ * 項目が0件のときは `BottomNav` がナビ自体を出さない
+ */
+export const bottomNavsQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.bottomNavs,
+        queryFn: ({ signal }) =>
+            apiFetch(`/api/bottom-navs?event_id=${env.VITE_EVENT_ID}`, bottomNavListResponseSchema, {
+                signal,
+                authenticated: true,
+            }),
     })

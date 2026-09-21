@@ -8,6 +8,7 @@ import {
     Megaphone,
     Music,
     Newspaper,
+    PanelBottom,
     Settings,
     ShieldCheck,
     Store,
@@ -19,6 +20,8 @@ export type NavItem = {
     href: string
     icon: LucideIcon
     implemented?: boolean
+    /** 下位項目。親の下に字下げして出す。親が準備中でも下位項目は開ける */
+    children?: NavItem[]
 }
 
 export type NavGroup = {
@@ -31,7 +34,12 @@ export const navGroups: NavGroup[] = [
     {
         items: [
             { label: 'ダッシュボード', href: '/', icon: LayoutDashboard, implemented: true },
-            { label: '基本設定', href: '/settings', icon: Settings },
+            {
+                label: '基本設定',
+                href: '/settings',
+                icon: Settings,
+                children: [{ label: '下のナビ', href: '/settings/bottom-nav', icon: PanelBottom, implemented: true }],
+            },
             { label: '機能オン・オフ', href: '/features', icon: ToggleRight },
         ],
     },
