@@ -8,9 +8,18 @@ import {
     type ArticleInput,
     articleListResponseSchema,
     articleResponseSchema,
+    type EventDay,
+    type EventDayInput,
+    eventDayListResponseSchema,
     type ExampleInput,
     exampleInputSchema,
     exampleResponseSchema,
+    type Place,
+    type PlaceInput,
+    placeListResponseSchema,
+    type Tag,
+    type TagInput,
+    tagListResponseSchema,
 } from '@fesp/schema'
 
 import { adminFetch } from './api'
@@ -33,6 +42,9 @@ export const queryKeys = {
     shopTags: ['shops', 'tags'] as const,
     shopProducts: ['shops', 'current', 'products'] as const,
     blogTags: ['blogs', 'tags'] as const,
+    eventDays: ['event-days'] as const,
+    places: ['places'] as const,
+    tags: ['tags'] as const,
 }
 
 export const exampleQuery = () =>
@@ -170,3 +182,81 @@ export function useSaveArticle(id: string) {
             ]),
     })
 }
+
+/**
+ * 開催日・場所・タグの読み書き。3つとも「イベントに属する行を1件ずつ作る・直す・消す」で
+ * API の形が同じなので、queryOptions とミューテーションをまとめて作る。
+ *
+ * 行を直した時点で保存するので、成功したら一覧を読み直す（docs/admin.md）
+ */
+function createEventResourceQueries<Item extends { id: string }, Input>(
+    path: string,
+    queryKey: readonly string[],
+    listSchema: z.ZodType<{ items: Item[] }>,
+) {
+    const list = () =>
+        queryOptions({
+            queryKey,
+            queryFn: ({ signal }) =>
+                adminFetch(`${path}?event_id=${env.NEXT_PUBLIC_EVENT_ID}`, listSchema, {
+                    signal,
+                    authenticated: true,
+                }),
+        })
+
+    /** 作成・更新・削除で共通の後片付け。一覧を読み直す */
+    const useInvalidate = () => {
+        const queryClient = useQueryClient()
+        return () => queryClient.invalidateQueries({ queryKey, exact: true })
+    }
+
+    const useCreate = () => {
+        const invalidate = useInvalidate()
+        return useMutation({
+            mutationFn: (input: Input) =>
+                adminFetch(path, z.custom<Item>(), {
+                    method: 'POST',
+                    body: { ...input, event_id: env.NEXT_PUBLIC_EVENT_ID },
+                    authenticated: true,
+                }),
+            onSuccess: invalidate,
+        })
+    }
+
+    const useUpdate = () => {
+        const invalidate = useInvalidate()
+        return useMutation({
+            mutationFn: ({ id, ...input }: Input & { id: string }) =>
+                adminFetch(`${path}/${id}`, z.custom<Item>(), { method: 'PUT', body: input, authenticated: true }),
+            onSuccess: invalidate,
+        })
+    }
+
+    const useDelete = () => {
+        const invalidate = useInvalidate()
+        return useMutation({
+            mutationFn: (id: string) =>
+                adminFetch(`${path}/${id}`, z.void(), { method: 'DELETE', authenticated: true }),
+            onSuccess: invalidate,
+        })
+    }
+
+    return { list, useCreate, useUpdate, useDelete }
+}
+
+/** 開催日（`/schedule/event-days`） */
+export const eventDayQueries = createEventResourceQueries<EventDay, EventDayInput>(
+    '/api/event-days',
+    queryKeys.eventDays,
+    eventDayListResponseSchema,
+)
+
+/** 場所（`/map/places`） */
+export const placeQueries = createEventResourceQueries<Place, PlaceInput>(
+    '/api/places',
+    queryKeys.places,
+    placeListResponseSchema,
+)
+
+/** タグ（`/news/tags`） */
+export const tagQueries = createEventResourceQueries<Tag, TagInput>('/api/tags', queryKeys.tags, tagListResponseSchema)
