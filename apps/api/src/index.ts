@@ -8,7 +8,10 @@ import { type ErrorResponse, exampleInputSchema, type ExampleResponse, paginatio
 
 import { validationHook } from './lib/validator'
 import { articlesRoute } from './routes/articles'
+import { eventDaysRoute } from './routes/event-days'
 import { meRoute } from './routes/me'
+import { placesRoute } from './routes/places'
+import { tagsRoute } from './routes/tags'
 import type { AppEnv } from './types'
 
 const app = new Hono<AppEnv>()
@@ -55,6 +58,9 @@ export const routes = app
 
     .route('/api/me', meRoute)
     .route('/api/articles', articlesRoute)
+    .route('/api/event-days', eventDaysRoute)
+    .route('/api/places', placesRoute)
+    .route('/api/tags', tagsRoute)
 
 app.notFound((c) => {
     const body: ErrorResponse = {

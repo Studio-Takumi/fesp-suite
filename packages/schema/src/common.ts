@@ -15,6 +15,17 @@ export const dateSchema = z.iso.date({ message: '日付の形式が正しくあ�
 /** URL */
 export const urlSchema = z.url({ message: 'URLの形式が正しくありません' })
 
+/** 対象のイベントを指定するクエリ。イベントに属するものの一覧で使う */
+export const eventQuerySchema = z.object({
+    event_id: uuidSchema,
+})
+export type EventQuery = z.infer<typeof eventQuerySchema>
+
+/** `:id` のパスパラメータ */
+export const idParamSchema = z.object({
+    id: uuidSchema,
+})
+
 /** 一覧APIの共通クエリ */
 export const paginationQuerySchema = z.object({
     limit: z.coerce.number().int().min(1).max(100).default(20),
