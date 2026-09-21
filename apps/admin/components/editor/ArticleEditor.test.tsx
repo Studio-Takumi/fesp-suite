@@ -36,9 +36,11 @@ describe('articleSchema', () => {
                 'artistList',
                 'artistSummary',
                 'setList',
+                'artistActions',
                 'shopList',
                 'shopSummary',
                 'productList',
+                'shopActions',
                 'map',
                 'postSummary',
                 'scheduleTable',
@@ -1002,8 +1004,8 @@ describe('componentSlashMenuItems', () => {
             '天気概況',
             '天気の更新時刻・出典',
         ])
-        expect(titlesOf('Shop')).toEqual(['模擬店一覧', '模擬店のサマリー', '商品一覧'])
-        expect(titlesOf('Artist')).toEqual(['出演者一覧', '出演者のサマリー', 'セットリスト'])
+        expect(titlesOf('Shop')).toEqual(['模擬店一覧', '模擬店のサマリー', '商品一覧', '模擬店のアクション'])
+        expect(titlesOf('Artist')).toEqual(['出演者一覧', '出演者のサマリー', 'セットリスト', '出演者のアクション'])
     })
 
     it('独自コンポーネントのブロックをすべて、重複なく出す', () => {

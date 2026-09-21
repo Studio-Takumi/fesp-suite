@@ -3,6 +3,7 @@ import type { ComponentType, ReactNode } from 'react'
 import type { ArticleBlock } from '@fesp/schema'
 
 import { AdjacentPosts } from './blocks/AdjacentPosts'
+import { ArtistActions } from './blocks/ArtistActions'
 import { ArtistList } from './blocks/ArtistList'
 import { ArtistSummary } from './blocks/ArtistSummary'
 import { BlogList } from './blocks/BlogList'
@@ -25,6 +26,7 @@ import { Quote } from './blocks/Quote'
 import { RelatedPosts } from './blocks/RelatedPosts'
 import { ScheduleTable } from './blocks/ScheduleTable'
 import { SetList } from './blocks/SetList'
+import { ShopActions } from './blocks/ShopActions'
 import { ShopList } from './blocks/ShopList'
 import { ShopSummary } from './blocks/ShopSummary'
 import { Table } from './blocks/Table'
@@ -94,8 +96,10 @@ export const blockRegistry: BlockRegistry = {
     shopList: ShopList, // 模擬店一覧
     shopSummary: ShopSummary, // 模擬店のサマリー
     productList: ProductList, // 商品一覧
+    shopActions: ShopActions, // 模擬店のアクション
 
     artistList: ArtistList, // 出演者一覧
     artistSummary: ArtistSummary, // 出演者のサマリー
     setList: SetList, // セットリスト
+    artistActions: ArtistActions, // 出演者のアクション
 }

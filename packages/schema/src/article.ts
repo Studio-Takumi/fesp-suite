@@ -473,9 +473,11 @@ export type ArticleBlock = {
         | 'shopList'
         | 'shopSummary'
         | 'productList'
+        | 'shopActions'
         | 'artistList'
         | 'artistSummary'
         | 'setList'
+        | 'artistActions'
         | 'mainHero'
         | 'weatherBar'
         | 'contentList'
@@ -622,6 +624,7 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
             children: z.array(articleBlockSchema),
         }),
         emptyComponentBlockSchema('shopSummary'),
+        emptyComponentBlockSchema('shopActions'),
         z.object({
             id: z.string().min(1),
             type: z.literal('artistList'),
@@ -631,6 +634,7 @@ const articleBlockSchema: z.ZodType<ArticleBlock> = z.lazy(() =>
         }),
         emptyComponentBlockSchema('artistSummary'),
         emptyComponentBlockSchema('setList'),
+        emptyComponentBlockSchema('artistActions'),
         z.object({
             id: z.string().min(1),
             type: z.literal('mainHero'),

@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
-import { MapIcon, MapPin, Timer } from 'lucide-react'
+import { MapPin, Timer } from 'lucide-react'
 
 import { dateFormatter } from '@fesp/ui'
 
-import { ActionLink } from '~/components/common/ActionLink'
 import { DayBadge } from '~/components/common/DayBadge'
 import { cardColors } from '~/components/list/card-color'
 import { QueryBoundary } from '~/components/QueryBoundary'
@@ -12,8 +11,8 @@ import { currentShopQuery } from '~/lib/queries'
 import type { BlockComponentProps } from '../block-registry'
 
 /**
- * 模擬店のサマリー（独自コンポーネント `shopSummary`）。表示中の模擬店の Day・団体・店名・時間・場所と
- * 「マップで見る」を出す。props は持たない
+ * 模擬店のサマリー（独自コンポーネント `shopSummary`）。表示中の模擬店の Day・団体・店名・時間・場所を出す。
+ * props は持たない。マップへのボタンは `shopActions` の担当
  */
 export function ShopSummary({ children }: BlockComponentProps) {
     const shop = useQuery(currentShopQuery())
@@ -49,9 +48,6 @@ export function ShopSummary({ children }: BlockComponentProps) {
                                     </dd>
                                 </div>
                             </dl>
-                            <ActionLink href='/map' icon={<MapIcon size={18} aria-hidden />}>
-                                マップで見る
-                            </ActionLink>
                         </>
                     )}
                 </QueryBoundary>

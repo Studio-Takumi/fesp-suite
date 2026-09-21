@@ -46,10 +46,12 @@ export const blogPostArticle: ArticleDocument = [
 export const shopArticle: ArticleDocument = [
     component('shop-detail-summary', 'shopSummary'),
     { id: 'shop-detail-products', type: 'productList', props: { products: '' }, children: [] },
+    component('shop-detail-actions', 'shopActions'),
 ]
 
 /** 出演者1件（`/artist/:artistId`） */
 export const artistArticle: ArticleDocument = [
     component('artist-detail-summary', 'artistSummary'),
     component('artist-detail-set-list', 'setList'),
+    component('artist-detail-actions', 'artistActions'),
 ]

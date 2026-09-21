@@ -45,8 +45,10 @@ export type ComponentBlock =
           type:
               | 'weatherBar'
               | 'shopSummary'
+              | 'shopActions'
               | 'artistSummary'
               | 'setList'
+              | 'artistActions'
               | 'map'
               | 'postSummary'
               | 'adjacentPosts'
@@ -88,12 +90,14 @@ const componentPanels: {
         renderForm: (block, onChange) => <ProductListPropsForm defaultValues={block.props} onValidChange={onChange} />,
     },
     shopSummary: { name: '模擬店のサマリー' },
+    shopActions: { name: '模擬店のアクション' },
     artistList: {
         name: '出演者一覧',
         renderForm: (block, onChange) => <ArtistListPropsForm defaultValues={block.props} onValidChange={onChange} />,
     },
     artistSummary: { name: '出演者のサマリー' },
     setList: { name: 'セットリスト' },
+    artistActions: { name: '出演者のアクション' },
     mainHero: {
         name: 'メインスライダー',
         renderForm: (block, onChange) => <MainHeroPropsForm defaultValues={block.props} onValidChange={onChange} />,
