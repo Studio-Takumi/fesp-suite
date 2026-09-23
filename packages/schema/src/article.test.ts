@@ -905,6 +905,35 @@ describe('articleDocumentSchema の出演者一覧（artistList）', () => {
     })
 })
 
+describe('articleDocumentSchema の模擬店・出演者のアクション（shopActions / artistActions）', () => {
+    it('props なしを受理する（JSONを経由してcontentキーが消えていてもよい）', () => {
+        for (const type of ['shopActions', 'artistActions']) {
+            expect(
+                articleDocumentSchema.safeParse([{ id: '1', type, props: {}, content: undefined, children: [] }])
+                    .success,
+            ).toBe(true)
+            expect(articleDocumentSchema.safeParse(componentBlock(type, {})).success).toBe(true)
+        }
+    })
+
+    it('props がある・中身（content）を持っていたら拒否する', () => {
+        for (const type of ['shopActions', 'artistActions']) {
+            expect(articleDocumentSchema.safeParse(componentBlock(type, { href: '/map' })).success).toBe(false)
+            expect(
+                articleDocumentSchema.safeParse([
+                    {
+                        id: '1',
+                        type,
+                        props: {},
+                        content: [{ type: 'text', text: 'マップで見る', styles: {} }],
+                        children: [],
+                    },
+                ]).success,
+            ).toBe(false)
+        }
+    })
+})
+
 describe('articleDocumentSchema のメインスライダー（mainHero）', () => {
     const slides = [
         'https://example.com/a.jpg|第42回 あおば祭|あおば祭へ、ようこそ',
