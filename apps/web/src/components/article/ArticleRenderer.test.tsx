@@ -717,7 +717,7 @@ describe('ArticleRenderer', () => {
         expect(screen.getByRole('tablist', { name: '日付' })).toBeInTheDocument()
     })
 
-    it('模擬店のサマリーは表示中の模擬店の Day・団体・店名・時間・場所とマップへのリンクを出す', async () => {
+    it('模擬店のサマリーは表示中の模擬店の Day・団体・店名・時間・場所を出し、アクションのボタンは出さない', async () => {
         renderWithQuery([componentBlock('shopSummary')])
 
         expect(await screen.findByRole('heading', { name: 'レモネードスタンド' })).toBeInTheDocument()
@@ -725,6 +725,12 @@ describe('ArticleRenderer', () => {
         expect(screen.getByText('2年1組')).toBeInTheDocument()
         expect(screen.getByText('9:10 - 14:30')).toBeInTheDocument()
         expect(screen.getByText('特別教室A')).toBeInTheDocument()
+        expect(screen.queryByRole('link', { name: 'マップで見る' })).not.toBeInTheDocument()
+    })
+
+    it('模擬店のアクションはマップへのリンクを出す', () => {
+        renderBlocks([componentBlock('shopActions')])
+
         expect(screen.getByRole('link', { name: 'マップで見る' })).toHaveAttribute('href', '/map')
     })
 
@@ -947,7 +953,7 @@ describe('ArticleRenderer', () => {
         expect(screen.queryByRole('list')).not.toBeInTheDocument()
     })
 
-    it('出演者のサマリーは Day・団体・演目・出演日時・会場・人数と、スケジュール・マップへのボタンを出す', async () => {
+    it('出演者のサマリーは Day・団体・演目・出演日時・会場・人数を出し、アクションのボタンは出さない', async () => {
         renderWithQuery([componentBlock('artistSummary')])
 
         expect(await screen.findByRole('heading', { level: 1, name: 'ソラノネ' })).toBeInTheDocument()
@@ -957,6 +963,13 @@ describe('ArticleRenderer', () => {
         expect(screen.getByText('1日目 10:20 - 11:00')).toBeInTheDocument()
         expect(screen.getByText('体育館ステージ')).toBeInTheDocument()
         expect(screen.getByText('5名')).toBeInTheDocument()
+        expect(screen.queryByRole('link', { name: 'スケジュールで見る' })).not.toBeInTheDocument()
+        expect(screen.queryByRole('link', { name: '会場をマップで見る' })).not.toBeInTheDocument()
+    })
+
+    it('出演者のアクションはスケジュール・マップへのリンクを出す', () => {
+        renderBlocks([componentBlock('artistActions')])
+
         expect(screen.getByRole('link', { name: 'スケジュールで見る' })).toHaveAttribute('href', '/schedule')
         expect(screen.getByRole('link', { name: '会場をマップで見る' })).toHaveAttribute('href', '/map')
     })

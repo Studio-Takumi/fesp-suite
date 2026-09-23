@@ -7,6 +7,7 @@ import {
     defaultBlockSpecs,
     filterSuggestionItems,
     insertOrUpdateBlockForSlashMenu,
+    type PartialBlock,
     SyntaxHighlightingExtension,
 } from '@blocknote/core'
 import { ja } from '@blocknote/core/locales'
@@ -36,6 +37,7 @@ import {
     ListMusic,
     MapIcon,
     Mic,
+    MousePointerClick,
     Music,
     Newspaper,
     PanelTop,
@@ -52,6 +54,7 @@ import { createHighlighter } from 'shiki'
 import type { ArticleDocument } from '@fesp/schema'
 
 import { createAdjacentPostsBlock } from './blocks/AdjacentPostsBlock'
+import { createArtistActionsBlock } from './blocks/ArtistActionsBlock'
 import { createArtistListBlock } from './blocks/ArtistListBlock'
 import { createArtistSummaryBlock } from './blocks/ArtistSummaryBlock'
 import { createBlogListBlock } from './blocks/BlogListBlock'
@@ -67,6 +70,7 @@ import { createProductListBlock } from './blocks/ProductListBlock'
 import { createRelatedPostsBlock } from './blocks/RelatedPostsBlock'
 import { createScheduleTableBlock } from './blocks/ScheduleTableBlock'
 import { createSetListBlock } from './blocks/SetListBlock'
+import { createShopActionsBlock } from './blocks/ShopActionsBlock'
 import { createShopListBlock } from './blocks/ShopListBlock'
 import { createShopSummaryBlock } from './blocks/ShopSummaryBlock'
 import { createTodayWeatherBlock } from './blocks/TodayWeatherBlock'
@@ -126,9 +130,11 @@ export const articleSchema = BlockNoteSchema.create({
         shopList: createShopListBlock(),
         shopSummary: createShopSummaryBlock(),
         productList: createProductListBlock(),
+        shopActions: createShopActionsBlock(),
         artistList: createArtistListBlock(),
         artistSummary: createArtistSummaryBlock(),
         setList: createSetListBlock(),
+        artistActions: createArtistActionsBlock(),
         mainHero: createMainHeroBlock(),
         weatherBar: createWeatherBarBlock(),
         contentList: createContentListBlock(),
@@ -331,6 +337,14 @@ export const componentSlashMenuItems: {
         icon: <ShoppingBag size={SLASH_MENU_ICON_SIZE} />,
     },
     {
+        type: 'shopActions',
+        group: 'Shop',
+        title: '模擬店のアクション',
+        subtext: 'マップへ移動するボタン',
+        aliases: ['shopactions', 'action', 'button', 'akusyon', 'アクション', 'ぼたん'],
+        icon: <MousePointerClick size={SLASH_MENU_ICON_SIZE} />,
+    },
+    {
         type: 'artistList',
         group: 'Artist',
         title: '出演者一覧',
@@ -353,6 +367,14 @@ export const componentSlashMenuItems: {
         subtext: '表示中の出演者のセットリスト',
         aliases: ['setlist', 'setto', 'セトリ', 'せっとりすと'],
         icon: <ListMusic size={SLASH_MENU_ICON_SIZE} />,
+    },
+    {
+        type: 'artistActions',
+        group: 'Artist',
+        title: '出演者のアクション',
+        subtext: 'スケジュール・マップへ移動するボタン',
+        aliases: ['artistactions', 'action', 'button', 'akusyon', 'アクション', 'ぼたん'],
+        icon: <MousePointerClick size={SLASH_MENU_ICON_SIZE} />,
     },
 ]
 
@@ -406,8 +428,12 @@ export function ArticleEditor({ content, onChange }: ArticleEditorProps) {
                     ...componentSlashMenuItems.map(({ type, ...item }): DefaultReactSuggestionItem => ({
                         ...item,
                         onItemClick: () => {
-                            // 中身の無いブロックを入れるとカーソルが次のブロックに移るので、サイドパネルを開くために戻す
-                            const block = insertOrUpdateBlockForSlashMenu(editor, { type })
+                            // 中身の無いブロックを入れるとカーソルが次のブロックに移るので、サイドパネルを開くために戻す。
+                            // `{ type: 共用体 }` は、ブロックの種類が増えると TypeScript が PartialBlock の
+                            // 共用体へ展開しきれなくなる（判別プロパティの組み合わせに上限がある）ので、ここで型を付ける
+                            const block = insertOrUpdateBlockForSlashMenu(editor, {
+                                type,
+                            } as PartialBlock<typeof articleSchema.blockSchema>)
                             editor.setTextCursorPosition(block)
                         },
                     })),
