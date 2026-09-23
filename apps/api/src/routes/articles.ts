@@ -13,17 +13,16 @@ import {
     type ArticleResponse,
     articleScheduleInputSchema,
     articleSlugParamSchema,
+    articleTagsInputSchema,
 } from '@fesp/schema'
 import type { Json } from '@fesp/types'
 
 import { conflict, forbidden, notFound } from '../lib/errors'
+import { INSUFFICIENT_PRIVILEGE } from '../lib/pg-errors'
 import { createUserClient } from '../lib/supabase'
 import { validationHook } from '../lib/validator'
 import { requireAuth } from '../middleware/auth'
 import type { AppEnv } from '../types'
-
-/** RLS の with check に通らなかったときの Postgres のエラーコード */
-const INSUFFICIENT_PRIVILEGE = '42501'
 
 /** 予約しようとした版が無い・上書きされていたときに schedule_article が返すコード（docs/db.md の「予約」） */
 const VERSION_CONFLICT = 'PT409'
@@ -238,6 +237,47 @@ export const articlesRoute = new Hono<AppEnv>()
             return c.json<ArticleResponse>(
                 await readWrittenArticle(supabase, id, scheduled, 'この記事を予約する権限がありません'),
             )
+        },
+    )
+
+    .put(
+        '/:id/tags',
+        zValidator('param', articleIdParamSchema, validationHook),
+        zValidator('json', articleTagsInputSchema, validationHook),
+        async (c) => {
+            const { id } = c.req.valid('param')
+            const { tag_ids } = c.req.valid('json')
+            const supabase = createUserClient(c.env, c.get('accessToken'))
+
+            // 1件ずつ足し引きせず、いまの結び付きを消してから渡されたぶんを入れ直す。
+            // 記事が読めないときは RLS で0件になるので、消す前に読めるかを確かめる
+            const { data: article, error: readError } = await supabase
+                .from('articles')
+                .select('id')
+                .eq('id', id)
+                .maybeSingle()
+            if (readError) throw readError
+            if (!article) throw notFound('記事が見つかりません')
+
+            const { error: deleteError } = await supabase.from('article_tags').delete().eq('article_id', id)
+            if (deleteError) throw deleteError
+
+            if (tag_ids.length > 0) {
+                const { error: insertError } = await supabase
+                    .from('article_tags')
+                    .insert(tag_ids.map((tag_id) => ({ article_id: id, tag_id })))
+                // 記事と違うイベントのタグが混ざっていると RLS の with check に落ちる（docs/api.md では 404）
+                if (insertError?.code === INSUFFICIENT_PRIVILEGE) {
+                    throw notFound('記事と違うイベントのタグが混ざっています')
+                }
+                if (insertError) throw insertError
+            }
+
+            const { data, error } = await selectArticle(supabase, id)
+            if (error) throw error
+            if (!data) throw notFound('記事が見つかりません')
+
+            return c.json<ArticleResponse>(toArticleResponse(data as ArticleRow))
         },
     )
 

@@ -72,6 +72,23 @@ describe('AdminSidebar', () => {
         expect(screen.getAllByText('準備中')).toHaveLength(11)
     })
 
+    it('下位項目（開催日・場所・タグ）は、親が準備中でもリンクとして出す', () => {
+        render(<AdminSidebar />)
+
+        expect(screen.getByRole('link', { name: '開催日' })).toHaveAttribute('href', '/schedule/event-days')
+        expect(screen.getByRole('link', { name: '場所' })).toHaveAttribute('href', '/map/places')
+        expect(screen.getByRole('link', { name: 'タグ' })).toHaveAttribute('href', '/news/tags')
+        // 親は準備中のまま
+        expect(screen.getByText('スケジュール').closest('div')).toHaveAttribute('aria-disabled', 'true')
+    })
+
+    it('下位項目は字下げして出す', () => {
+        render(<AdminSidebar />)
+
+        expect(screen.getByRole('link', { name: '開催日' }).className).toContain('pl-9')
+        expect(screen.getByRole('link', { name: 'ダッシュボード' }).className).not.toContain('pl-9')
+    })
+
     it('いま開いているページの項目をハイライトする', () => {
         render(<AdminSidebar />)
 
