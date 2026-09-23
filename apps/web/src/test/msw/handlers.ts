@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
 
-import type { ExampleResponse } from '@fesp/schema'
+import type { BottomNavListResponse, ExampleResponse } from '@fesp/schema'
 
 const API = 'http://localhost:8787'
 
@@ -27,10 +27,27 @@ export function slugArticleFixture(slug: string) {
     }
 }
 
+/** 下のナビの項目。デザインと同じ4つ */
+export const bottomNavsFixture: BottomNavListResponse = {
+    items: [
+        { id: '7a8b9c0d-1e2f-4a3b-8c4d-000000000001', label: 'ホーム', icon: 'House', href: '/', sort_order: 0 },
+        { id: '7a8b9c0d-1e2f-4a3b-8c4d-000000000002', label: 'お知らせ', icon: 'Bell', href: '/news', sort_order: 1 },
+        { id: '7a8b9c0d-1e2f-4a3b-8c4d-000000000003', label: 'マップ', icon: 'Map', href: '/map', sort_order: 2 },
+        {
+            id: '7a8b9c0d-1e2f-4a3b-8c4d-000000000004',
+            label: 'スケジュール',
+            icon: 'CalendarDays',
+            href: '/schedule',
+            sort_order: 3,
+        },
+    ],
+}
+
 /** 既定のハッピーパス。個別テストで server.use() して上書きする */
 export const handlers = [
     http.get(`${API}/api/example`, () => HttpResponse.json(exampleFixture)),
     http.get(`${API}/api/articles/slug/:slug`, ({ params }) =>
         HttpResponse.json(slugArticleFixture(String(params.slug))),
     ),
+    http.get(`${API}/api/bottom-navs`, () => HttpResponse.json(bottomNavsFixture)),
 ]

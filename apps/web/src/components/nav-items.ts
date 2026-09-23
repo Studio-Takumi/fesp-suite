@@ -1,22 +1,7 @@
-import { Bell, CalendarDays, House, type LucideIcon, MapIcon } from 'lucide-react'
-
-export type NavItem = {
-    label: string
-    /** 移動先のパス */
-    href: string
-    icon: LucideIcon
-}
-
 /**
- * 下のナビゲーションバー（`BottomNav`）の項目の唯一の定義。
- * 管理者サイトから編集できるようにするのは #93。それまではここに持つ
+ * 下のナビゲーションバー（`BottomNav`）の現在地の判定と、アイコン名の変換。
+ * 項目そのものは管理者サイトから編集するので、コードには持たず API（`bottomNavsQuery`）から引く
  */
-export const navItems: NavItem[] = [
-    { label: 'ホーム', href: '/', icon: House },
-    { label: 'お知らせ', href: '/news', icon: Bell },
-    { label: 'マップ', href: '/map', icon: MapIcon },
-    { label: 'スケジュール', href: '/schedule', icon: CalendarDays },
-]
 
 /**
  * いま開いているパス（`pathname`）が項目の現在地かどうか。
@@ -25,4 +10,15 @@ export const navItems: NavItem[] = [
 export function isCurrentNavItem(pathname: string, href: string): boolean {
     if (href === '/') return pathname === '/'
     return pathname === href || pathname.startsWith(`${href}/`)
+}
+
+/**
+ * lucide のアイコン名（`CalendarDays`）を、`DynamicIcon` が受け取るケバブケース（`calendar-days`）にする。
+ * DB には `docs/api.md` のとおり PascalCase で持つので、描画のときにここで変換する
+ */
+export function iconNameToKebab(name: string): string {
+    return name
+        .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+        .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+        .toLowerCase()
 }

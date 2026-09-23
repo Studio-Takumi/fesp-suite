@@ -72,6 +72,16 @@ describe('AdminSidebar', () => {
         expect(screen.getAllByText('準備中')).toHaveLength(11)
     })
 
+    it('下位項目（下のナビ）は、親が準備中でもリンクとして字下げして出す', () => {
+        render(<AdminSidebar />)
+
+        const link = screen.getByRole('link', { name: '下のナビ' })
+        expect(link).toHaveAttribute('href', '/settings/bottom-nav')
+        expect(link.className).toContain('pl-9')
+        // 親の「基本設定」は準備中のまま
+        expect(screen.getByText('基本設定').closest('div')).toHaveAttribute('aria-disabled', 'true')
+    })
+
     it('いま開いているページの項目をハイライトする', () => {
         render(<AdminSidebar />)
 

@@ -8,6 +8,7 @@ import { type ErrorResponse, exampleInputSchema, type ExampleResponse, paginatio
 
 import { validationHook } from './lib/validator'
 import { articlesRoute } from './routes/articles'
+import { bottomNavsRoute } from './routes/bottom-navs'
 import { meRoute } from './routes/me'
 import type { AppEnv } from './types'
 
@@ -55,6 +56,7 @@ export const routes = app
 
     .route('/api/me', meRoute)
     .route('/api/articles', articlesRoute)
+    .route('/api/bottom-navs', bottomNavsRoute)
 
 app.notFound((c) => {
     const body: ErrorResponse = {
